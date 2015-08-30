@@ -20,7 +20,7 @@ int cargarArchivoDeConfiguracion()
 	char* algoritmo_planificacion;
 	int quantum;
 
-	configuracion= config_create("/home/utnso/projects/tp-2015-2c-coderrangers/Archivo de configuracion/configPlanificador.txt");
+	configuracion= config_create("Archivo de configuracion/configPlanificador.txt");
 	
 	if (!conf_es_valida(configuracion)) //ver que el archivo de config tenga todo
 	{
