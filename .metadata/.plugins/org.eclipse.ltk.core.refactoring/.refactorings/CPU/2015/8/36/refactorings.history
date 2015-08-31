@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;CPU/Archivo de Configuracion/configPlanificador.txt&apos; to &apos;configCPU.txt&apos;" description="Rename resource &apos;configPlanificador.txt&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="Archivo de Configuracion/configPlanificador.txt" name="configCPU.txt" stamp="1440979538351" updateReferences="true"/>
+</session>
