@@ -36,6 +36,8 @@
 #Archivos generables por Eclipse
 .cproject
 .project
+.metadata
+.settings
 
 #Carpeta de debug
 Debug/
