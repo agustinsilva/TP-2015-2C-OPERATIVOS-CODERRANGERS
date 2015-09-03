@@ -1,10 +1,9 @@
 //********************ARCHIVO DE CONFIGURACION*******************//
 //****************************PLANIFICADOR***********************//
 
-#include <commons/config.h>
-#include <stdio.h>
+#include "funcionesConfig.h"
 
-int conf_es_valida(t_config * configuracion)
+int conf_es_valida(t_config* configuracion)
 {
 	// config_has_property Retorna true si key se encuentra en la configuracion.
 	return (config_has_property(configuracion, "PUERTO_ESCUCHA")
@@ -20,7 +19,7 @@ int cargarArchivoDeConfiguracion()
 	char* algoritmo_planificacion;
 	int quantum;
 
-	configuracion= config_create("Archivo de configuracion/configPlanificador.txt");
+	configuracion= config_create("ArchivoDeConfiguracion/configPlanificador.txt");
 	
 	if (!conf_es_valida(configuracion)) //ver que el archivo de config tenga todo
 	{

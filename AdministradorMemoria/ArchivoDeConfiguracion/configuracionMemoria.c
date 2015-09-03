@@ -1,8 +1,7 @@
 //********************ARCHIVO DE CONFIGURACION*******************//
 //****************************CPU***********************//
 
-#include <commons/config.h>
-#include <stdio.h>
+#include "funcionesConfig.h"
 
 int conf_es_valida(t_config * configuracion)
 {
@@ -32,7 +31,7 @@ int cargarArchivoDeConfiguracion()
 	int tlb_habilitada;
 	int retardo_memoria;
 
-	configuracion= config_create("Archivo de Configuracion/configMemoria.txt");
+	configuracion= config_create("ArchivoDeConfiguracion/configMemoria.txt");
 	
 	if (!conf_es_valida(configuracion)) //ver que el archivo config este completo
 	{

@@ -1,7 +1,6 @@
 /*********** ADMINISTRADOR SWAP ************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "administradorSwap.h"
 
 int main(void) {
 

@@ -1,8 +1,7 @@
 /*********** AD
 }MINISTRADOR MEMORIA ************/
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "administradorMemoria.h"
 
 int main(void) {
 
