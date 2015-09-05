@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <commons/config.h>
 #include <commons/string.h>
+#include <sockets/socket.h>
 
 int32_t conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
@@ -22,6 +23,6 @@ typedef struct{
 	int32_t retardo_memoria;
 } t_Memoria_Config;
 
-t_Memoria_Config configuracion;
+t_Memoria_Config* configuracion;
 
 #endif /* ADMINMEMORIA_H_ */

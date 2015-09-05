@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commons/config.h>
+#include <sockets/socket.h>
+#include <commons/string.h>
 
 typedef struct {
 	u_int32_t puerto_escucha;

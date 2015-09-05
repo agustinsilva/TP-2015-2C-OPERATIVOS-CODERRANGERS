@@ -17,11 +17,6 @@ int cargarArchivoDeConfiguracion()
 
 {
 	t_config* td_configuracion;
-	int puerto_escucha;
-	char* nombre_swap;
-	int cantidad_paginas;
-	int tamano_pagina;
-	int retardo_compactacion;
 
 	td_configuracion= config_create("src/configSwap.txt");
 	
