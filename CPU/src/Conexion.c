@@ -14,7 +14,7 @@ void* ConectarAPlanificador()
 
 	status = recv(socketCliente->fd, (void*)message, PAQUETE, 0);
 	if(status > 0 ) printf("Mensaje de Planificador: %s \n",message);
-	printf("Enviar mensaje a Administrador de memoria");
+	printf("Enviar mensaje a Administrador de memoria \n");
 
 	sock_t* socketAAdminMemoria = create_client_socket(configuracion.ipMemoria,configuracion.puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);

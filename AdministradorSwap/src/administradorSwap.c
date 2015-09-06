@@ -16,7 +16,7 @@ int main(void) {
 	printf("Conexión: %d\n", socketCliente->fd);
 
 	char* mensaje = recibirMensaje(socketCliente);
-	printf("Se recibió: %s\n", mensaje);
+	printf("Mensaje de Admin memoria: %s\n", mensaje);
 
 	/* envia mensaje*/
 	char* respuesta = "Hola Memoria, un gusto.";

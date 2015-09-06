@@ -13,10 +13,10 @@ int main(void) {
 	listen_connections(servidor);
 	sock_t* cpuSocket = accept_connection(servidor);
 	printf("Esperando mensaje de Cpu \n");
-	char message[1024];
+	char mensajeCpu[1024];
 	int32_t status;
-	status = recv(cpuSocket->fd, (void*)message, 1024, 0);
-	printf("Mensaje de cpu %s \n",message);
+	status = recv(cpuSocket->fd, (void*)mensajeCpu, 1024, 0);
+	printf("Mensaje de cpu : %s \n",mensajeCpu);
 
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
@@ -27,14 +27,14 @@ int main(void) {
 		printf("Se conectó al Swap\n");
 
 		/* prepara mensaje para enviar */
-		char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto";
-		int32_t status = enviarMensaje(clientSocketSwap,mensaje);
+		/*char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto ";*/
+		int32_t status = enviarMensaje(clientSocketSwap,mensajeCpu);
 
 		/*chequea envío*/
 		if(!status){
 			printf("No se envió el mensaje al swap\n");
 		} else{
-			printf("Se envió a Swap: %s\n", mensaje);
+			printf("Se envió a Swap: %s\n", mensajeCpu);
 		}
 
 

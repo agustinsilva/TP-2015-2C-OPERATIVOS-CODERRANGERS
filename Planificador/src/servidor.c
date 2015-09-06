@@ -83,25 +83,16 @@ void* iniciarServidor()
 						}
 						printf("Se recibio nueva conexion\n");
 						printf("Mandar mensaje a CPU\n");
-							while(enviar)
-							{
-							printf("Ingresar mensaje\n");
-							fgets(paquete, PAQUETE, stdin);
-							if (!strcmp(paquete,"exit\n"))
-							{
-								enviar = 0;
-							}
-							if (enviar)
-							{
-								send(nuevoFd, paquete, strlen(paquete) + 1, 0);
-							}
-							}
+						printf("Ingresar mensaje\n");
+						fgets(paquete, PAQUETE, stdin);
+						send(nuevoFd, paquete, strlen(paquete) + 1, 0);
+
 					}
 				}
 				else //Aca se ejecuta el socket procesado
 				{
 
-					/*status = recv(socketProcesado, (void*)paquete, PAQUETE, 0);
+					status = recv(socketProcesado, (void*)paquete, PAQUETE, 0);
 					if (status > 0)
 					{
 						printf("%s", paquete);
@@ -110,7 +101,8 @@ void* iniciarServidor()
 						puts("Se desconecto cliente");
 						close(socketProcesado);
 						FD_CLR(socketProcesado,&set_maestro);
-					}*/
+						return NULL;
+					}
 
 				}
 			}
