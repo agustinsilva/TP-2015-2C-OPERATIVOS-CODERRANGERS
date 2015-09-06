@@ -48,6 +48,7 @@ void* iniciarServidor()
 	fdMaximo = socketReceptor;
 	uint32_t status = 1;
 	char paquete[PAQUETE];
+	int enviar = 1;
     printf("Esperando conexiones");
 	for (;;)
 	{
@@ -81,15 +82,36 @@ void* iniciarServidor()
 							fdMaximo = nuevoFd;
 						}
 						printf("Se recibio nueva conexion\n");
+						printf("Mandar mensaje a CPU\n");
+							while(enviar)
+							{
+							printf("Ingresar mensaje\n");
+							fgets(paquete, PAQUETE, stdin);
+							if (!strcmp(paquete,"exit\n"))
+							{
+								enviar = 0;
+							}
+							if (enviar)
+							{
+								send(nuevoFd, paquete, strlen(paquete) + 1, 0);
+							}
+							}
 					}
 				}
 				else //Aca se ejecuta el socket procesado
 				{
-					while (status != 0)
+
+					/*status = recv(socketProcesado, (void*)paquete, PAQUETE, 0);
+					if (status > 0)
 					{
-					status = recv(socketProcesado, (void*) paquete, PAQUETE, 0);
-					if (status != 0) printf("%s", paquete);
+						printf("%s", paquete);
 					}
+					if(status <= 0){
+						puts("Se desconecto cliente");
+						close(socketProcesado);
+						FD_CLR(socketProcesado,&set_maestro);
+					}*/
+
 				}
 			}
 		}

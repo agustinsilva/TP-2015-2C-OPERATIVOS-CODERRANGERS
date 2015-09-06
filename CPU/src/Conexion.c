@@ -4,22 +4,27 @@ void* ConectarAPlanificador()
 {
 	sock_t* socketCliente = create_client_socket(configuracion.ipPlanificador,configuracion.puertoPlanificador);
 
-	int32_t resultadoConexion = connect_to_server(socketCliente);
-	if (resultadoConexion != 0) {
+	int32_t conexionPlafificador = connect_to_server(socketCliente);
+	if (conexionPlafificador != 0) {
 		perror("Error al conectar socket");
 		return (void*)EXIT_FAILURE;
 	}
-	int32_t resultadoEnvio;
 	char message[1024];
-	int enviar = 1;
-	while(enviar)
-	{
-	fgets(message, 1024, stdin);
-	if (!strcmp(message,"exit\n")) enviar = 0;
-	if (enviar){
-	send_msg(socketCliente,message);
-	}
-	}
+	int status = 0;
+
+	status = recv(socketCliente->fd, (void*)message, PAQUETE, 0);
+	if(status > 0 ) printf("Mensaje de Planificador: %s \n",message);
+	printf("Enviar mensaje a Administrador de memoria");
+
+	sock_t* socketAAdminMemoria = create_client_socket(configuracion.ipMemoria,configuracion.puertoMemoria);
+	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
+	if (conexionAdminMemoria != 0) {
+			perror("Error al conectar socket");
+			return (void*)EXIT_FAILURE;
+		}
+	send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
+	sleep(10);
 	clean_socket(socketCliente);
+	clean_socket(socketAAdminMemoria);
    return NULL;
 }

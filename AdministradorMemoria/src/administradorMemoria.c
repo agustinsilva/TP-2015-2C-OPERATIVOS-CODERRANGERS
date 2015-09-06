@@ -3,41 +3,20 @@
 
 #include "administradorMemoria.h"
 
-char* recibirMensaje(sock_t* socket){
-
-	/*recibe la cantidad de bytes que va a tener el mensaje*/
-	int32_t longitudMensaje;
-
-	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
-
-	char* mensaje = malloc(sizeof(longitudMensaje));
-	recv(socket->fd, mensaje, longitudMensaje, 0);
-	mensaje[longitudMensaje]='\0';
-
-	return mensaje;
-}
-
-int32_t enviarMensaje(sock_t* socket, char* mensaje){
-
-	/*prepara la longitud del archivo a mandar, así el receptor sabe cuánto recibir*/
-	int32_t longitud = string_length(mensaje);
-	int32_t status = send(socket->fd, &longitud, sizeof(int32_t),0);
-
-	/*chequea envío*/
-	if(!status){
-		printf("No se envió la cantidad de bytes a enviar luego\n");
-		return status;
-	}
-	status = send(socket->fd, mensaje, longitud,0);
-	return status;
-}
-
 int main(void) {
 
   	printf("Inicia el Administrador de Memoria \n");
 	puts("Cargo archivo de configuración de Administrador Memoria\n");
 	cargarArchivoDeConfiguracion();
+
+	sock_t* servidor = create_server_socket(configuracion->puerto_escucha);
+	listen_connections(servidor);
+	sock_t* cpuSocket = accept_connection(servidor);
+	printf("Esperando mensaje de Cpu \n");
+	char message[1024];
+	int32_t status;
+	status = recv(cpuSocket->fd, (void*)message, 1024, 0);
+	printf("Mensaje de cpu %s \n",message);
 
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
@@ -68,4 +47,34 @@ int main(void) {
 	}
 
 	return EXIT_SUCCESS;
+}
+
+char* recibirMensaje(sock_t* socket){
+
+	/*recibe la cantidad de bytes que va a tener el mensaje*/
+	int32_t longitudMensaje;
+
+	/*recibe el mensaje sabiendo cuánto va a ocupar*/
+	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
+
+	char* mensaje = malloc(sizeof(longitudMensaje));
+	recv(socket->fd, mensaje, longitudMensaje, 0);
+	mensaje[longitudMensaje]='\0';
+
+	return mensaje;
+}
+
+int32_t enviarMensaje(sock_t* socket, char* mensaje){
+
+	/*prepara la longitud del archivo a mandar, así el receptor sabe cuánto recibir*/
+	int32_t longitud = string_length(mensaje);
+	int32_t status = send(socket->fd, &longitud, sizeof(int32_t),0);
+
+	/*chequea envío*/
+	if(!status){
+		printf("No se envió la cantidad de bytes a enviar luego\n");
+		return status;
+	}
+	status = send(socket->fd, mensaje, longitud,0);
+	return status;
 }

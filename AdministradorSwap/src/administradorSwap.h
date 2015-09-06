@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commons/config.h>
-#include <sockets/socket.h>
+#include <socket.h>
 #include <commons/string.h>
 
 typedef struct {
@@ -19,5 +19,7 @@ t_configuracion configuracion;
 
 int conf_es_valida(t_config * td_configuracion);
 int cargarArchivoDeConfiguracion();
+int32_t enviarMensaje(sock_t* socket, char* mensaje);
+char* recibirMensaje(sock_t* socket);
 
 #endif /* ADMINSWAP_H_ */

@@ -12,7 +12,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <socket.h>
+#include <commons/string.h>
 //Estructuras
 typedef struct {
 	uint32_t puertoEscucha;
