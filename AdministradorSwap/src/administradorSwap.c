@@ -17,6 +17,7 @@ int main(void) {
 
 	char* mensaje = recibirMensaje(socketCliente);
 	printf("Se recibió: %s\n", mensaje);
+	free(mensaje);
 
 	/* envia mensaje*/
 	char* respuesta = "Hola Memoria, un gusto.";
@@ -41,7 +42,7 @@ char* recibirMensaje(sock_t* socket){
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
 	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
 
-	char* mensaje = malloc(sizeof(longitudMensaje));
+	char* mensaje = malloc(longitudMensaje+1);
 
 	recv(socket->fd, mensaje, longitudMensaje, 0);
 	mensaje[longitudMensaje]='\0';
