@@ -17,7 +17,7 @@
 
 //Estructuras
 typedef struct{
-	int32_t puerto_escucha;
+	uint32_t puerto_escucha;
 	char* ip_swap;
 	int32_t puerto_swap;
 	int32_t maximo_marcos_por_proceso;

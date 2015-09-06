@@ -26,6 +26,7 @@ int cargarArchivoDeConfiguracion()
 		return -2;
 	}
        
+
 	configuracion.puerto_escucha = config_get_int_value(td_configuracion, "PUERTO_ESCUCHA");
 	configuracion.nombre_swap = config_get_string_value(td_configuracion, "NOMBRE_SWAP");
 	configuracion.cantidad_paginas = config_get_int_value(td_configuracion, "CANTIDAD_PAGINAS");
