@@ -1,0 +1,2 @@
+Para instalar ejecutar : sudo make install
+Para desinstalar ejecutar: sudo make uninstall

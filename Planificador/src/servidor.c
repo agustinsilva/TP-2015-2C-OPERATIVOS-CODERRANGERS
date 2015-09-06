@@ -46,6 +46,8 @@ void* iniciarServidor()
 
 	// Hacer seguimiento de descriptor maximo
 	fdMaximo = socketReceptor;
+	uint32_t status = 1;
+	char paquete[PAQUETE];
     printf("Esperando conexiones");
 	for (;;)
 	{
@@ -78,11 +80,16 @@ void* iniciarServidor()
 						{
 							fdMaximo = nuevoFd;
 						}
+						printf("Se recibio nueva conexion\n");
 					}
 				}
 				else //Aca se ejecuta el socket procesado
 				{
-					printf("Aca ejecuta el cliente");
+					while (status != 0)
+					{
+					status = recv(socketProcesado, (void*) paquete, PAQUETE, 0);
+					if (status != 0) printf("%s", paquete);
+					}
 				}
 			}
 		}

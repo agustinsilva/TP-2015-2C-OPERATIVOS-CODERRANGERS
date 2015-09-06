@@ -21,7 +21,7 @@ typedef struct {
 }t_configuracion;
 
 //Constantes
-
+#define PAQUETE 1024
 //Variables globales
 t_configuracion configuracion;
 
