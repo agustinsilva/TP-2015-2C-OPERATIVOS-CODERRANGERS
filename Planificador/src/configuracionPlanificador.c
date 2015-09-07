@@ -14,7 +14,7 @@ int conf_es_valida(t_config* fdConfiguracion)
 int cargarArchivoDeConfiguracion()
 
 {
-	t_config* fdConfiguracion;
+	configuracion = malloc(sizeof(t_configuracion));
 
 	fdConfiguracion= config_create("src/configPlanificador.txt");
 	
@@ -24,14 +24,20 @@ int cargarArchivoDeConfiguracion()
 		return -2;
 	}
        
-	configuracion.puertoEscucha = config_get_int_value(fdConfiguracion, "PUERTO_ESCUCHA");
-	configuracion.algoritmoPlanificacion = config_get_string_value(fdConfiguracion, "ALGORITMO_PLANIFICACION");
-	configuracion.quantum = config_get_int_value(fdConfiguracion, "QUANTUM");
+	configuracion->puertoEscucha = config_get_int_value(fdConfiguracion, "PUERTO_ESCUCHA");
+	configuracion->algoritmoPlanificacion = config_get_string_value(fdConfiguracion, "ALGORITMO_PLANIFICACION");
+	configuracion->quantum = config_get_int_value(fdConfiguracion, "QUANTUM");
 
-	printf("PUERTO_ESCUCHA:%d\n", configuracion.puertoEscucha);
-	printf("ALGORITMO_PLANIFICACION:%s\n", configuracion.algoritmoPlanificacion);
-	printf("QUANTUM:%d\n", configuracion.quantum);
+	printf("PUERTO_ESCUCHA:%d\n", configuracion->puertoEscucha);
+	printf("ALGORITMO_PLANIFICACION:%s\n", configuracion->algoritmoPlanificacion);
+	printf("QUANTUM:%d\n", configuracion->quantum);
 	return 0;
+}
+
+void limpiarConfiguracion()
+{
+	config_destroy(fdConfiguracion);
+	free(configuracion);
 }
 
 //***************************FIN********************************//

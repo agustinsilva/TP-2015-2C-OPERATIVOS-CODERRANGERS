@@ -28,10 +28,12 @@ typedef struct {
 #define PAQUETE 1024
 
 //Variables globales
-t_configuracion configuracion;
+t_configuracion* configuracion;
+t_config * fd_configuracion;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
 int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
+void limpiarConfiguracion();
 #endif /* CPU_H_ */

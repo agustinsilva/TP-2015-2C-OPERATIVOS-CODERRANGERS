@@ -32,11 +32,13 @@ typedef struct{
 
 //Variables globales
 t_Memoria_Config* configuracion;
+t_config * fd_configuracion;
 
 //Firma de funciones
 char* recibirMensaje(sock_t* socket);
 int32_t enviarMensaje(sock_t* socket, char* mensaje);
 int32_t conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
+void limpiarConfiguracion();
 
 #endif /* ADMINMEMORIA_H_ */

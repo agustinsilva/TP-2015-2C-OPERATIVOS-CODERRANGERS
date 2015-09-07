@@ -24,11 +24,14 @@ typedef struct {
 //Constantes
 #define PAQUETE 1024
 //Variables globales
-t_configuracion configuracion;
+t_configuracion* configuracion; //Puntero a configuracion
+t_config* fdConfiguracion; //Descriptor de archivo
 
 //Firma de funciones
 void* iniciarServidor();
 int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
+uint32_t crearSocketReceptor();
+void limpiarConfiguracion();
 
 #endif /* PLANIFICADOR_H_ */

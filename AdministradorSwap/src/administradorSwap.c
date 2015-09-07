@@ -8,7 +8,7 @@ int main(void) {
 	puts("Cargo archivo de configuracion de Administrador Swap");
 	cargarArchivoDeConfiguracion();
 
-	sock_t* socketServerSwap = create_server_socket(configuracion.puerto_escucha);
+	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
 
@@ -33,6 +33,7 @@ int main(void) {
 	}
 
 	printf("Finaliza Administrador de Swap\n");
+	limpiarConfiguracion();
 	return EXIT_SUCCESS;
 }
 

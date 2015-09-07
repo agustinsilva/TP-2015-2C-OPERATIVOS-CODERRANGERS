@@ -48,6 +48,7 @@ int main(void) {
 	printf("Finaliza Administrador de Memoria\n");
 	}
 
+	limpiarConfiguracion();
 	return EXIT_SUCCESS;
 }
 
