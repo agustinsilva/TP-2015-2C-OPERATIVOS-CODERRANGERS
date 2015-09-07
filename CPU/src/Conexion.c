@@ -2,7 +2,7 @@
 
 void* ConectarAPlanificador()
 {
-	sock_t* socketCliente = create_client_socket(configuracion.ipPlanificador,configuracion.puertoPlanificador);
+	sock_t* socketCliente = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 
 	int32_t conexionPlafificador = connect_to_server(socketCliente);
 	if (conexionPlafificador != 0) {
@@ -16,7 +16,7 @@ void* ConectarAPlanificador()
 	if(status > 0 ) printf("Mensaje de Planificador: %s \n",message);
 	printf("Enviar mensaje a Administrador de memoria \n");
 
-	sock_t* socketAAdminMemoria = create_client_socket(configuracion.ipMemoria,configuracion.puertoMemoria);
+	sock_t* socketAAdminMemoria = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
 	if (conexionAdminMemoria != 0) {
 			perror("Error al conectar socket");

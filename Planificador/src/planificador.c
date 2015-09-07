@@ -8,6 +8,7 @@ int main(void)
 	cargarArchivoDeConfiguracion();
 	iniciarServidor();
 	puts("Fin de planificador");
+	limpiarConfiguracion();
 	return EXIT_SUCCESS;
 }
 
