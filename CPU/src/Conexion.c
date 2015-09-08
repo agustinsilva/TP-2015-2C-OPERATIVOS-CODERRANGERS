@@ -7,6 +7,7 @@ void* ConectarAPlanificador()
 	int32_t conexionPlafificador = connect_to_server(socketCliente);
 	if (conexionPlafificador != 0) {
 		perror("Error al conectar socket");
+		log_error(CPULog,"Error al conectar CPU a Planificador");
 		return (void*)EXIT_FAILURE;
 	}
 	char message[1024];
@@ -20,6 +21,7 @@ void* ConectarAPlanificador()
 	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
 	if (conexionAdminMemoria != 0) {
 			perror("Error al conectar socket");
+			log_error(CPULog,"Error al conectar CPU a Planificador");
 			return (void*)EXIT_FAILURE;
 		}
 	send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);

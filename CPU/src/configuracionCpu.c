@@ -22,7 +22,8 @@ int cargarArchivoDeConfiguracion()
 	
 	if (!conf_es_valida(fd_configuracion)) //ver que el archivo config este completo
 	{
-		puts("Archivo de configuracion incompleto o invalido.\n");
+		log_error(CPULog,"Archivo de configuración inválido.","ERROR");
+		//puts("Archivo de configuracion incompleto o invalido.\n");
 		return -2;
 	}
        

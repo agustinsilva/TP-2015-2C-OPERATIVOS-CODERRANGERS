@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <socket.h>
+#include <commons/log.h>
 
 //Estructuras
 typedef struct {
@@ -30,6 +31,7 @@ typedef struct {
 //Variables globales
 t_configuracion* configuracion;
 t_config * fd_configuracion;
+t_log* CPULog;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
