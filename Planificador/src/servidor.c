@@ -3,6 +3,8 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor()
 {
+	char** lista;
+	char*comandoCorrer="correr";
 	fd_set set_maestro,set_temporal;
 	uint32_t fdMaximo,socketProcesado,socketReceptor,nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
@@ -54,7 +56,17 @@ void* iniciarServidor()
 						printf("Mandar mensaje a CPU\n");
 						printf("Ingresar mensaje\n");
 						fgets(paquete, PAQUETE, stdin);
-						send(nuevoFd, paquete, strlen(paquete) + 1, 0);
+
+
+						if(validarArgumentosCorrer(paquete,comandoCorrer)==1  )
+							{
+								lista = string_split(paquete," ");
+								printf("El comando es correr, se enviará el mensaje\n");
+								send(nuevoFd, lista[1], strlen(paquete) + 1, 0);
+							}
+								else {printf("El comando no es correr, se enviará igual\n");
+								send(nuevoFd, paquete, strlen(paquete) + 1, 0);}
+
 
 					}
 				}
@@ -108,4 +120,16 @@ uint32_t crearSocketReceptor()
 	bind(socketReceptor, serverInfo->ai_addr, serverInfo->ai_addrlen);
 	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
 	return socketReceptor;
+}
+
+int validarArgumentosCorrer(char *comando,char*comandoEsperado)
+{
+	char** lista;
+	lista = string_split(comando," ");
+
+	if (string_equals_ignore_case(lista[0], comandoEsperado)) return 1;
+
+			//if ( (sizeof(lista)/sizeof(char*)) == 2 ) return 1;
+
+return 0;
 }

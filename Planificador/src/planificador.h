@@ -33,5 +33,6 @@ int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
 void limpiarConfiguracion();
+int validarArgumentosCorrer(char* comando,char*comandoEsperado);
 
 #endif /* PLANIFICADOR_H_ */
