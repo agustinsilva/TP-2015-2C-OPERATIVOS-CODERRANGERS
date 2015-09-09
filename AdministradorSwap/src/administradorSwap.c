@@ -6,7 +6,7 @@ int main(void) {
 
 	printf("Inicia Administrador de Swap\n");
 	puts("Cargo archivo de configuracion de Administrador Swap");
-	SwapLog = log_create("SwapLog", "CPU", true, LOG_LEVEL_INFO);
+	SwapLog = log_create("SwapLog", "AdministradorSwap", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);

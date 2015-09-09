@@ -14,6 +14,7 @@
 #include <commons/config.h>
 #include <commons/string.h>
 #include <socket.h>
+#include <commons/log.h>
 
 //Estructuras
 typedef struct{
@@ -33,6 +34,7 @@ typedef struct{
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
+t_log* MemoriaLog;
 
 //Firma de funciones
 char* recibirMensaje(sock_t* socket);

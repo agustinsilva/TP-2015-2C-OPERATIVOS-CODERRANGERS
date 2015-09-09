@@ -1,5 +1,4 @@
-/*********** AD
-}MINISTRADOR MEMORIA ************/
+/*********** ADMINISTRADOR MEMORIA ************/
 
 #include "administradorMemoria.h"
 
@@ -7,6 +6,7 @@ int main(void) {
 
   	printf("Inicia el Administrador de Memoria \n");
 	puts("Cargo archivo de configuración de Administrador Memoria\n");
+	MemoriaLog = log_create("MemoriaLog", "AdministradorMemoria", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 
 	/*conecta con swap*/
@@ -49,6 +49,7 @@ int main(void) {
 	}
 
 	limpiarConfiguracion();
+	log_destroy(MemoriaLog);
 	return EXIT_SUCCESS;
 }
 

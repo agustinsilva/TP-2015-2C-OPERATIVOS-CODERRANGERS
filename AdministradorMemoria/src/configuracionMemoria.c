@@ -28,7 +28,8 @@ int cargarArchivoDeConfiguracion()
 	
 	if (!conf_es_valida(fd_configuracion)) //ver que el archivo config este completo
 	{
-		printf("Archivo de configuracion incompleto o invalido.\n");
+		//printf("Archivo de configuracion incompleto o invalido.\n");
+		log_error(MemoriaLog,"Archivo de configuración inválido.","ERROR");
 		return -1;
 	}
        
