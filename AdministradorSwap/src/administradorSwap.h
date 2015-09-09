@@ -7,6 +7,7 @@
 #include <commons/config.h>
 #include <socket.h>
 #include <commons/string.h>
+#include <commons/log.h>
 
 //Estructuras
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
 //Variables globales
 t_configuracion* configuracion;
 t_config* fd_configuracion;
+t_log* SwapLog;
 
 //Firma de funciones
 int conf_es_valida(t_config * fd_configuracion);

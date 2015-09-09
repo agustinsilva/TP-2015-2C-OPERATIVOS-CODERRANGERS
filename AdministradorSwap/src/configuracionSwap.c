@@ -1,5 +1,5 @@
 //********************ARCHIVO DE CONFIGURACION*******************//
-//****************************CPU***********************//
+//****************************SWAP***********************//
 
 #include "administradorSwap.h"
 
@@ -22,7 +22,8 @@ int cargarArchivoDeConfiguracion()
 	
 	if (!conf_es_valida(fd_configuracion)) //ver que el archivo config este completo
 	{
-		puts("Archivo de configuracion incompleto o invalido.\n");
+		//puts("Archivo de configuracion incompleto o invalido.\n");
+		log_error(SwapLog,"Archivo de configuración inválido.","ERROR");
 		return -2;
 	}
        
@@ -50,4 +51,4 @@ void limpiarConfiguracion()
 
 //***************************FIN********************************//
 //*******************ARCHIVO DE CONFIGURACION*******************//
-//***********************CPU***************************//
+//***********************SWAP***************************//
