@@ -29,6 +29,8 @@ t_config* fdConfiguracion; //Descriptor de archivo
 
 //Firma de funciones
 void* iniciarServidor();
+void* mostrarConsola();
+void leerComando(int* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
