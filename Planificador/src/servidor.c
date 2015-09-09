@@ -61,10 +61,10 @@ void* iniciarServidor()
 						if(validarArgumentosCorrer(paquete,comandoCorrer)==1  )
 							{
 								lista = string_split(paquete," ");
-								printf("El comando es correr, se enviará el mensaje\n");
+								printf("El comando es correr, se enviará el mensaje %s\n",lista[1]);
 								send(nuevoFd, lista[1], strlen(paquete) + 1, 0);
 							}
-								else {printf("El comando no es correr, se enviará igual\n");
+								else {printf("El comando no es correr, se enviará igual %s\n",paquete);
 								send(nuevoFd, paquete, strlen(paquete) + 1, 0);}
 
 
