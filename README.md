@@ -12,5 +12,11 @@
 ####1444440 	Torralba, Diego Andres
 
 
+TAGS:
 
+IR AL TAG---> 			git checkout tags/<nombre_TAG>
+					 Ej:  git checkout tags/v1.0
 
+PARA VER LOS TAGS-->  git tag -l
+
+PARA VOLVER DESPUES DE UN TAG---> git checkout master
