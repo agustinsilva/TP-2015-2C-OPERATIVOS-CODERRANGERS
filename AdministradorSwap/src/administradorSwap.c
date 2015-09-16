@@ -5,10 +5,13 @@
 int main(void) {
 
 	printf("Inicia Administrador de Swap\n");
-	puts("Cargo archivo de configuracion de Administrador Swap");
+	puts("Cargo archivo de configuracion de Administrador Swap\n");
 	SwapLog = log_create("SwapLog", "AdministradorSwap", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 
+	printf("Creando particion\n");
+	crearParticion();
+	printf("Particion creada con exito\n");
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
@@ -22,11 +25,11 @@ int main(void) {
 	free(mensaje);
 
 
-	/* envia mensaje*/
+	 //envia mensaje
 	char* respuesta = "Hola Memoria, un gusto.";
 	int32_t status = enviarMensaje(socketCliente,respuesta);
 
-	/*chequea envío*/
+	//chequea envío
 	if(!status){
 		printf("No se envió el mensaje al swap\n");
 	} else{
@@ -34,6 +37,7 @@ int main(void) {
 	}
 
 	printf("Finaliza Administrador de Swap\n");
+	eliminarParticion();
 	limpiarConfiguracion();
 	log_destroy(SwapLog);
 	return EXIT_SUCCESS;
@@ -69,5 +73,19 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 	return status;
 }
 
+void crearParticion()
+{
+	char instruccion[1000]={0};
+	sprintf(instruccion, "dd if=/dev/zero of=%s bs=%d count=%d", configuracion->nombre_swap,configuracion->tamano_pagina,configuracion->cantidad_paginas);
+	system(instruccion);
+}
 
-
+void eliminarParticion()
+{
+	if (remove(configuracion->nombre_swap) == 0){
+		printf("Elimino correctamente la particion \n");
+	}
+	else{
+		printf("No se elimino correctamente la particion \n");
+	}
+}

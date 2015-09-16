@@ -31,5 +31,7 @@ int cargarArchivoDeConfiguracion();
 int32_t enviarMensaje(sock_t* socket, char* mensaje);
 char* recibirMensaje(sock_t* socket);
 void limpiarConfiguracion();
+void crearParticion();
+void eliminarParticion();
 
 #endif /* ADMINSWAP_H_ */
