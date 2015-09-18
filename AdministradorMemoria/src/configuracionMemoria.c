@@ -24,7 +24,7 @@ int cargarArchivoDeConfiguracion()
 	fd_configuracion= config_create("src/configMemoria.txt");
 
 	/* para correr por consola */
-//	td_configuracion= config_create("configMemoria.txt");
+//	fd_configuracion= config_create("configMemoria.txt");
 	
 	if (!conf_es_valida(fd_configuracion)) //ver que el archivo config este completo
 	{

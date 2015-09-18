@@ -15,6 +15,7 @@
 #include <commons/string.h>
 #include <socket.h>
 #include <commons/log.h>
+#include <pthread.h>
 
 //Estructuras
 typedef struct{
@@ -29,6 +30,11 @@ typedef struct{
 	int32_t retardo_memoria;
 } t_Memoria_Config;
 
+typedef struct{
+	sock_t* cpuSocket;
+	sock_t* swapSocket;
+} t_HiloCPU;
+
 //Constantes
 
 //Variables globales
@@ -42,5 +48,6 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje);
 int32_t conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 void limpiarConfiguracion();
+void* hiloEjecucionCPU(t_HiloCPU* );
 
 #endif /* ADMINMEMORIA_H_ */
