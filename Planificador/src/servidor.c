@@ -3,6 +3,7 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor()
 {
+	pthread_mutex_lock(&count_mutex);
 	char** lista;
 	char*comandoCorrer="correr";
 	fd_set set_maestro,set_temporal;
@@ -47,6 +48,7 @@ void* iniciarServidor()
 					}
 					else
 					{
+
 						FD_SET(nuevoFd, &set_maestro);
 						if (nuevoFd > fdMaximo) //Maximo descriptor de socket
 						{
@@ -63,9 +65,13 @@ void* iniciarServidor()
 								lista = string_split(paquete," ");
 								printf("El comando es correr, se enviará el mensaje %s\n",lista[1]);
 								send(nuevoFd, lista[1], strlen(paquete) + 1, 0);
+								pthread_mutex_unlock(&count_mutex);
 							}
-								else {printf("El comando no es correr, se enviará igual %s\n",paquete);
-								send(nuevoFd, paquete, strlen(paquete) + 1, 0);}
+						else {
+							printf("El comando no es correr, se enviará igual %s\n",paquete);
+							send(nuevoFd, paquete, strlen(paquete) + 1, 0);
+							pthread_mutex_unlock(&count_mutex);
+						}
 
 
 					}
@@ -86,6 +92,7 @@ void* iniciarServidor()
 					}
 
 				}
+				pthread_mutex_unlock(&count_mutex);
 			}
 		}
 	}
@@ -133,3 +140,5 @@ int validarArgumentosCorrer(char *comando,char*comandoEsperado)
 
 return 0;
 }
+
+

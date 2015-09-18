@@ -2,8 +2,11 @@
 
 #include "planificador.h"
 
+
+
 int main(void)
 {
+
 	int respHilo = 0;
 	int respServidor = 0;
 	pthread_t hiloConsola;
@@ -19,6 +22,7 @@ int main(void)
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
+
 	respHilo = pthread_create(&hiloConsola, NULL, mostrarConsola, NULL);
 	if(respHilo)
 	{
@@ -30,9 +34,6 @@ int main(void)
 
 	pthread_join(hiloConsola, NULL);
 	pthread_join(hiloServidor, NULL);
-
-	//	mostrarConsola();
-	//	iniciarServidor();
 
 	puts("Fin de planificador");
 	limpiarConfiguracion();
