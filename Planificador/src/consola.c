@@ -8,7 +8,6 @@
 void* mostrarConsola() {
 		int* comando = malloc(sizeof(int));
 		while (1) {
-			pthread_mutex_lock(&count_mutex);
 			printf("-------------------- \n");
 			printf("Bienvenido a la consola del Planificador \n");
 			printf("Por favor seleccione un comando a realizar: \n");
@@ -50,7 +49,6 @@ void* mostrarConsola() {
 			default:
 				printf("Se selecciono un comando incorrecto.\n");
 				break;
-				pthread_mutex_unlock(&count_mutex);
 		}
 	}
 }

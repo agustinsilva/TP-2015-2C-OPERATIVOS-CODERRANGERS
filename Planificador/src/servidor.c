@@ -3,9 +3,7 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor()
 {
-	pthread_mutex_lock(&count_mutex);
 	char** lista;
-	char*comandoCorrer="correr";
 	fd_set set_maestro,set_temporal;
 	uint32_t fdMaximo,socketProcesado,socketReceptor,nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
@@ -20,83 +18,54 @@ void* iniciarServidor()
 	fdMaximo = socketReceptor;
 	uint32_t status = 1;
 	char paquete[PAQUETE];
-	int enviar = 1;
-    printf("Esperando conexiones");
+	printf("Esperando conexiones\n");
 	for (;;)
 	{
 		set_temporal = set_maestro;
-
 		if (select(fdMaximo + 1, &set_temporal, NULL, NULL, NULL) == -1)
 		{
-		perror("select");
-		exit(EXIT_SUCCESS);
+			perror("select");
+			exit(EXIT_SUCCESS);
 		}
-
 		//Recorre las conexiones existentes en busca de datos para leer
 		for (socketProcesado = 0; socketProcesado <= fdMaximo; socketProcesado++)
 		{
-			if (FD_ISSET(socketProcesado, &set_temporal))
+			if (FD_ISSET(socketProcesado, &set_temporal)) //Si el socketProcesado pertenece al setTemporal
 			{
 				if (socketProcesado == socketReceptor) //Aca se recibe nueva conexion
 				{
 					addrlen = sizeof(remoteaddr);
-					nuevoFd = accept(socketReceptor, (struct sockaddr *) &remoteaddr,
-												&addrlen);
-					if (nuevoFd == -1)
+					if ((nuevoFd = accept(socketReceptor, (struct sockaddr *) &remoteaddr, &addrlen)) == -1)
 					{
-					  printf("Error en accept\n");
+						printf("Error en accept\n");
 					}
 					else
 					{
-
 						FD_SET(nuevoFd, &set_maestro);
-						if (nuevoFd > fdMaximo) //Maximo descriptor de socket
+						if (nuevoFd > fdMaximo) //Actualizo maximo descriptor de socket
 						{
 							fdMaximo = nuevoFd;
 						}
-						printf("Se recibio nueva conexion\n");
-						printf("Mandar mensaje a CPU\n");
-						printf("Ingresar mensaje\n");
-						fgets(paquete, PAQUETE, stdin);
-
-
-						if(validarArgumentosCorrer(paquete,comandoCorrer)==1  )
-							{
-								lista = string_split(paquete," ");
-								printf("El comando es correr, se enviará el mensaje %s\n",lista[1]);
-								send(nuevoFd, lista[1], strlen(paquete) + 1, 0);
-								pthread_mutex_unlock(&count_mutex);
-							}
-						else {
-							printf("El comando no es correr, se enviará igual %s\n",paquete);
-							send(nuevoFd, paquete, strlen(paquete) + 1, 0);
-							pthread_mutex_unlock(&count_mutex);
-						}
-
-
+						printf("Se recibio nueva conexion Cpu\n");
 					}
 				}
 				else //Aca se ejecuta el socket procesado
 				{
-
 					status = recv(socketProcesado, (void*)paquete, PAQUETE, 0);
 					if (status > 0)
 					{
 						printf("%s", paquete);
 					}
 					if(status <= 0){
-						puts("Se desconecto cliente \n");
+						printf("Se desconecto socket cpu %d \n", socketProcesado);
 						close(socketProcesado);
 						FD_CLR(socketProcesado,&set_maestro);
-						return NULL;
 					}
-
 				}
-				pthread_mutex_unlock(&count_mutex);
 			}
 		}
 	}
-return NULL;
+	return NULL;
 }
 
 
@@ -136,9 +105,9 @@ int validarArgumentosCorrer(char *comando,char*comandoEsperado)
 
 	if (string_equals_ignore_case(lista[0], comandoEsperado)) return 1;
 
-			//if ( (sizeof(lista)/sizeof(char*)) == 2 ) return 1;
+	//if ( (sizeof(lista)/sizeof(char*)) == 2 ) return 1;
 
-return 0;
+	return 0;
 }
 
 
