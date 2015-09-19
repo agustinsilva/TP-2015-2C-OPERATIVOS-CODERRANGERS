@@ -40,6 +40,7 @@ t_config* fd_configuracion;
 t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
+uint32_t paginasProceso;  //cuidado con esta variable A.S.
 
 //Firma de funciones
 int conf_es_valida(t_config * fd_configuracion);
@@ -50,5 +51,9 @@ void limpiarConfiguracion();
 void crearParticion();
 void eliminarParticion();
 void inicializarParticion();
+uint32_t contarPaginasLibres();
+short hayEspacio(uint32_t paginas);
+bool hayEspacioSecuencial(uint32_t paginas);
+bool validarEspacioLibre(void* nodo);
 
 #endif /* ADMINSWAP_H_ */

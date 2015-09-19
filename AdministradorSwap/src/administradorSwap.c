@@ -11,6 +11,7 @@ int main(void) {
 	printf("Creando particion\n");
 	inicializarParticion();
 	printf("Particion creada con exito\n");
+
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
@@ -34,7 +35,6 @@ int main(void) {
 	} else{
 		printf("Se envió a Memoria: %s\n", respuesta);
 	}
-
 	printf("Finaliza Administrador de Swap\n");
 	eliminarParticion();
 	limpiarConfiguracion();
@@ -72,30 +72,3 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 	return status;
 }
 
-void crearParticion()
-{
-	char instruccion[1000]={0};
-	sprintf(instruccion, "dd if=/dev/zero of=%s bs=%d count=%d", configuracion->nombre_swap,configuracion->tamano_pagina,configuracion->cantidad_paginas);
-	system(instruccion);
-}
-
-void inicializarParticion()
-{
-	crearParticion();
-	espacioLibre = list_create();
-	espacioOcupado = list_create();
-	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
-	nodoLibre->comienzo = 0;
-	nodoLibre->paginas = configuracion->cantidad_paginas;
-	list_add(espacioLibre,nodoLibre);
-}
-
-void eliminarParticion()
-{
-	if (remove(configuracion->nombre_swap) == 0){
-		printf("Elimino correctamente la particion \n");
-	}
-	else{
-		printf("No se elimino correctamente la particion \n");
-	}
-}
