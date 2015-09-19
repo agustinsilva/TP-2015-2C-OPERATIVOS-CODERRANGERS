@@ -8,9 +8,8 @@ int main(void) {
 	puts("Cargo archivo de configuracion de Administrador Swap\n");
 	SwapLog = log_create("SwapLog", "AdministradorSwap", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
-
 	printf("Creando particion\n");
-	crearParticion();
+	inicializarParticion();
 	printf("Particion creada con exito\n");
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
@@ -78,6 +77,17 @@ void crearParticion()
 	char instruccion[1000]={0};
 	sprintf(instruccion, "dd if=/dev/zero of=%s bs=%d count=%d", configuracion->nombre_swap,configuracion->tamano_pagina,configuracion->cantidad_paginas);
 	system(instruccion);
+}
+
+void inicializarParticion()
+{
+	crearParticion();
+	espacioLibre = list_create();
+	espacioOcupado = list_create();
+	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
+	nodoLibre->comienzo = 0;
+	nodoLibre->paginas = configuracion->cantidad_paginas;
+	list_add(espacioLibre,nodoLibre);
 }
 
 void eliminarParticion()
