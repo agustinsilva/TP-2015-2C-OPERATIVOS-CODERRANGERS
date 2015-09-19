@@ -5,9 +5,12 @@
 int main(void) {
 
 	printf("Inicia Administrador de Swap\n");
-	puts("Cargo archivo de configuracion de Administrador Swap");
+	puts("Cargo archivo de configuracion de Administrador Swap\n");
 	SwapLog = log_create("SwapLog", "AdministradorSwap", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
+	printf("Creando particion\n");
+	inicializarParticion();
+	printf("Particion creada con exito\n");
 
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
@@ -22,18 +25,18 @@ int main(void) {
 	free(mensaje);
 
 
-	/* envia mensaje*/
+	 //envia mensaje
 	char* respuesta = "Hola Memoria, un gusto.";
 	int32_t status = enviarMensaje(socketCliente,respuesta);
 
-	/*chequea envío*/
+	//chequea envío
 	if(!status){
 		printf("No se envió el mensaje al swap\n");
 	} else{
 		printf("Se envió a Memoria: %s\n", respuesta);
 	}
-
 	printf("Finaliza Administrador de Swap\n");
+	eliminarParticion();
 	limpiarConfiguracion();
 	log_destroy(SwapLog);
 	return EXIT_SUCCESS;
@@ -68,6 +71,4 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 	status = send(socket->fd, mensaje, longitud,0);
 	return status;
 }
-
-
 

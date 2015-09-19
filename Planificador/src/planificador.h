@@ -13,7 +13,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <socket.h>
+#include <pthread.h>
 #include <commons/string.h>
+pthread_mutex_t count_mutex;
 //Estructuras
 typedef struct {
 	uint32_t puertoEscucha;
