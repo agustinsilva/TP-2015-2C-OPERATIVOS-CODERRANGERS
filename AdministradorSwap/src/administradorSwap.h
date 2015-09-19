@@ -40,8 +40,9 @@ t_config* fd_configuracion;
 t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
-uint32_t paginasProceso;  //cuidado con esta variable A.S.
-uint32_t ubicacionNodo;
+uint32_t paginasCondicion;  //cuidado con esta variable A.S.
+uint32_t ubicacionCondicion;
+uint32_t pidCondicion;
 
 //Firma de funciones
 int conf_es_valida(t_config* fd_configuracion);
@@ -58,5 +59,7 @@ bool hayEspacioSecuencial(uint32_t paginas);
 bool validarEspacioLibre(void* nodo);
 void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
 bool validarUbicacionLibre(void* nodo);
+void liberarEspacio(uint32_t PID);
+bool validarMismoPid(void* nodo);
 
 #endif /* ADMINSWAP_H_ */

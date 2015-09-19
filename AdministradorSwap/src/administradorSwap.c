@@ -10,9 +10,8 @@ int main(void) {
 	cargarArchivoDeConfiguracion();
 	printf("Creando particion\n");
 	inicializarParticion();
-	printf("Particion creada con exito\n");
 
-		sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
+	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
 
