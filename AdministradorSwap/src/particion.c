@@ -37,7 +37,7 @@ uint32_t contarPaginasLibres()
 	for(indice = 0;indice < sizeLista;indice++)
 	{
 		nodo = list_get(espacioLibre,indice);
-		total = total + (nodo->paginas - nodo->comienzo);
+		total = total + nodo->paginas;
 	}
 
 	return total;
@@ -62,4 +62,34 @@ bool validarEspacioLibre(void* nodo)
 	t_nodoLibre* nodoLibre = nodo;
 	bool resultado = nodoLibre->paginas >= paginasProceso;
 	return resultado;
+}
+
+//Se ejecuta funcion despues de validar
+void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
+{
+	t_nodoLibre* nodoLibre;
+	t_nodoOcupado* nodoOcupado = malloc(sizeof(t_nodoOcupado));
+	nodoOcupado->paginas = paginasAOcupar;
+	nodoOcupado->PID = PID;
+	paginasProceso = paginasAOcupar;
+	nodoLibre = list_find(espacioLibre, validarEspacioLibre);
+	nodoOcupado->comienzo = nodoLibre->comienzo;
+	if(nodoLibre->paginas > paginasAOcupar)
+	{
+		nodoLibre->comienzo = nodoLibre->comienzo + paginasAOcupar;
+		nodoLibre->paginas = nodoLibre->paginas - paginasAOcupar;
+	}
+	else
+	{
+		//Cantidad de paginas a ocupar es igual a cantidad libre
+		ubicacionNodo = nodoLibre->comienzo;
+		list_remove_by_condition(espacioLibre, validarUbicacionLibre);
+	}
+	list_add(espacioOcupado,nodoOcupado);
+}
+
+bool validarUbicacionLibre(void* nodo)
+{
+	t_nodoLibre* nodoLibre = nodo;
+	return nodoLibre->comienzo == ubicacionNodo;
 }

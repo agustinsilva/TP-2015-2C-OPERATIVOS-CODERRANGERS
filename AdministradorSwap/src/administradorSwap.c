@@ -12,7 +12,7 @@ int main(void) {
 	inicializarParticion();
 	printf("Particion creada con exito\n");
 
-	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
+		sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
 
@@ -36,6 +36,7 @@ int main(void) {
 		printf("Se envió a Memoria: %s\n", respuesta);
 	}
 	printf("Finaliza Administrador de Swap\n");
+
 	eliminarParticion();
 	limpiarConfiguracion();
 	log_destroy(SwapLog);

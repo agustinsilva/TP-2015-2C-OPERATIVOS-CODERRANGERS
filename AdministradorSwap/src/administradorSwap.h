@@ -41,9 +41,10 @@ t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
 uint32_t paginasProceso;  //cuidado con esta variable A.S.
+uint32_t ubicacionNodo;
 
 //Firma de funciones
-int conf_es_valida(t_config * fd_configuracion);
+int conf_es_valida(t_config* fd_configuracion);
 int cargarArchivoDeConfiguracion();
 int32_t enviarMensaje(sock_t* socket, char* mensaje);
 char* recibirMensaje(sock_t* socket);
@@ -55,5 +56,7 @@ uint32_t contarPaginasLibres();
 short hayEspacio(uint32_t paginas);
 bool hayEspacioSecuencial(uint32_t paginas);
 bool validarEspacioLibre(void* nodo);
+void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
+bool validarUbicacionLibre(void* nodo);
 
 #endif /* ADMINSWAP_H_ */
