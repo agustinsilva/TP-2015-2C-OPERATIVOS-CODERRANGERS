@@ -10,30 +10,7 @@ int main(void) {
 	cargarArchivoDeConfiguracion();
 	printf("Creando particion\n");
 	inicializarParticion();
-
-	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
-	listen_connections(socketServerSwap);
-	printf("Escucha conexiones \n");
-
-	sock_t* socketCliente = accept_connection(socketServerSwap);
-	printf("Conexión: %d\n", socketCliente->fd);
-
-	char* mensaje = recibirMensaje(socketCliente);
-
-	printf("Mensaje de Admin memoria: %s\n", mensaje);
-	free(mensaje);
-
-
-	 //envia mensaje
-	char* respuesta = "Hola Memoria, un gusto.";
-	int32_t status = enviarMensaje(socketCliente,respuesta);
-
-	//chequea envío
-	if(!status){
-		printf("No se envió el mensaje al swap\n");
-	} else{
-		printf("Se envió a Memoria: %s\n", respuesta);
-	}
+	//iniciarServidor();
 	printf("Finaliza Administrador de Swap\n");
 
 	eliminarParticion();
@@ -72,3 +49,30 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 	return status;
 }
 
+
+void iniciarServidor()
+{
+	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
+		listen_connections(socketServerSwap);
+		printf("Escucha conexiones \n");
+
+		sock_t* socketCliente = accept_connection(socketServerSwap);
+		printf("Conexión: %d\n", socketCliente->fd);
+
+		char* mensaje = recibirMensaje(socketCliente);
+
+		printf("Mensaje de Admin memoria: %s\n", mensaje);
+		free(mensaje);
+
+
+		 //envia mensaje
+		char* respuesta = "Hola Memoria, un gusto.";
+		int32_t status = enviarMensaje(socketCliente,respuesta);
+
+		//chequea envío
+		if(!status){
+			printf("No se envió el mensaje al swap\n");
+		} else{
+			printf("Se envió a Memoria: %s\n", respuesta);
+		}
+}

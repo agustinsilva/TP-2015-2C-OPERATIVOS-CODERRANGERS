@@ -16,6 +16,7 @@ void inicializarParticion()
 	nodoLibre->comienzo = 0;
 	nodoLibre->paginas = configuracion->cantidad_paginas;
 	list_add(espacioLibre,nodoLibre);
+	mappear_archivo();
 }
 
 void eliminarParticion()
@@ -26,6 +27,9 @@ void eliminarParticion()
 	else{
 		printf("No se elimino correctamente la particion \n");
 	}
+	munmap(archivoMapeado->memoria,archivoMapeado->tamanio);
+	free(archivoMapeado->memoria);
+	free(archivoMapeado);
 }
 
 uint32_t contarPaginasLibres()
@@ -115,6 +119,7 @@ bool validarUbicacionLibre(void* nodo)
 void mappear_archivo()
 {
 	archivoMapeado = malloc(sizeof(t_archivoSwap));
+	archivoMapeado->memoria = malloc(configuracion->tamano_pagina * configuracion->cantidad_paginas);
 	int tamanio = 0;
 	FILE *archivo = fopen(configuracion->nombre_swap, "r");
 	if (archivo == NULL)
@@ -140,7 +145,17 @@ char* buscarPagina(uint32_t PID, uint32_t pagina)
 	char* paginaBuscada = malloc(sizeof(configuracion->tamano_pagina));
 	pidCondicion = PID;
 	t_nodoOcupado* nodo = list_find(espacioOcupado,validarMismoPid);
-	uint32_t ubicacionPagina = nodo->comienzo + pagina;
+	uint32_t ubicacionPagina = nodo->comienzo + (pagina - 1);
 	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
 	return paginaBuscada;
+}
+
+void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion)
+{
+	pidCondicion = PID;
+	t_nodoOcupado* nodo = list_find(espacioOcupado,validarMismoPid);
+	uint32_t posicionEnArchivo = (nodo->comienzo + ubicacion)*configuracion->tamano_pagina;
+	char* areaMemoriaAEscribir = archivoMapeado->memoria + posicionEnArchivo;
+	memcpy(areaMemoriaAEscribir, pagina,configuracion->tamano_pagina);
+
 }

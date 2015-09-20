@@ -72,5 +72,8 @@ void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
 bool validarUbicacionLibre(void* nodo);
 void liberarEspacio(uint32_t PID);
 bool validarMismoPid(void* nodo);
-
+char* buscarPagina(uint32_t PID, uint32_t pagina);
+void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion);
+void iniciarServidor();
+void mappear_archivo();
 #endif /* ADMINSWAP_H_ */
