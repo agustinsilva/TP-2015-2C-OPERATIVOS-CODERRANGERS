@@ -10,7 +10,7 @@ int main(void) {
 	cargarArchivoDeConfiguracion();
 	printf("Creando particion\n");
 	inicializarParticion();
-	//iniciarServidor();
+	iniciarServidor();
 	printf("Finaliza Administrador de Swap\n");
 
 	eliminarParticion();
