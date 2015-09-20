@@ -37,7 +37,7 @@ uint32_t contarPaginasLibres()
 	for(indice = 0;indice < sizeLista;indice++)
 	{
 		nodo = list_get(espacioLibre,indice);
-		total = total + (nodo->paginas - nodo->comienzo);
+		total = total + nodo->paginas;
 	}
 
 	return total;
@@ -52,7 +52,7 @@ short hayEspacio(uint32_t paginas)
 
 bool hayEspacioSecuencial(uint32_t paginas)
 {
-	paginasProceso = paginas;
+	paginasCondicion = paginas;
 	bool resultado = list_any_satisfy(espacioLibre,validarEspacioLibre);
 	return resultado;
 }
@@ -60,6 +60,54 @@ bool hayEspacioSecuencial(uint32_t paginas)
 bool validarEspacioLibre(void* nodo)
 {
 	t_nodoLibre* nodoLibre = nodo;
-	bool resultado = nodoLibre->paginas >= paginasProceso;
+	bool resultado = nodoLibre->paginas >= paginasCondicion;
 	return resultado;
+}
+
+//Se ejecuta funcion despues de validar
+void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
+{
+	t_nodoLibre* nodoLibre;
+	t_nodoOcupado* nodoOcupado = malloc(sizeof(t_nodoOcupado));
+	nodoOcupado->paginas = paginasAOcupar;
+	nodoOcupado->PID = PID;
+	paginasCondicion = paginasAOcupar;
+	nodoLibre = list_find(espacioLibre, validarEspacioLibre);
+	nodoOcupado->comienzo = nodoLibre->comienzo;
+	if(nodoLibre->paginas > paginasAOcupar)
+	{
+		nodoLibre->comienzo = nodoLibre->comienzo + paginasAOcupar;
+		nodoLibre->paginas = nodoLibre->paginas - paginasAOcupar;
+	}
+	else
+	{
+		//Cantidad de paginas a ocupar es igual a cantidad libre
+		ubicacionCondicion = nodoLibre->comienzo;
+		nodoLibre = list_remove_by_condition(espacioLibre, validarUbicacionLibre);
+		free(nodoLibre);
+	}
+	list_add(espacioOcupado,nodoOcupado);
+}
+
+void liberarEspacio(uint32_t PID)
+{	t_nodoOcupado* nodoOcupado;
+	pidCondicion = PID;
+	nodoOcupado = list_remove_by_condition(espacioOcupado,validarMismoPid);
+    t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
+    nodoLibre->comienzo = nodoOcupado->comienzo;
+    nodoLibre->paginas = nodoOcupado->paginas;
+    list_add(espacioLibre,nodoLibre);
+    free(nodoOcupado);
+}
+
+bool validarMismoPid(void* nodo)
+{
+	t_nodoOcupado* nodoOcupado = nodo;
+	return nodoOcupado->PID == pidCondicion;
+}
+
+bool validarUbicacionLibre(void* nodo)
+{
+	t_nodoLibre* nodoLibre = nodo;
+	return nodoLibre->comienzo == ubicacionCondicion;
 }
