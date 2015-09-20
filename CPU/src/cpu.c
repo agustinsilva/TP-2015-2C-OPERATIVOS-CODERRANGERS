@@ -52,6 +52,59 @@ void crearHilosCPU (void)
 
 }
 
+int abrirArchivoYValidar(char* path){
+	char **lista;
+	int instrucciones=0;
+//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
+	char instruccion[TAMINSTRUCCION];
+	FILE* entrada;
+
+	if((entrada=fopen(path,"r"))==NULL){
+		log_error(CPULog,"No se pudo abrir el archivo de entrada. \n","ERROR");
+		return -1;
+	}
+
+	printf("Archivo abierto \n");
+
+//	cantidad de instrucciones del archivo
+//	while (!feof(entrada)){
+//	     instrucciones++;
+//	}
+
+
+	while (fgets(instruccion,TAMINSTRUCCION, entrada) != NULL) {
+
+		printf("%s", instruccion);
+		lista = string_split(instruccion," ");
+
+		if (string_equals_ignore_case(lista[0], "iniciar")){
+			puts("La primera instruccion es iniciar\n");
+
+			//SE CONECTA A MEMORIA//
+
+
+			//informar al admin de memoria que se inicio un proceso con N paginas N== lista[1]
+
+			sleep(configuracion->retardo);
+			//instructionPointer++; VER SI VA
+		}
+		else if(string_equals_ignore_case(lista[0], "finalizar"))
+				{
+					puts("La insturccion es finalizar\n");
+					//informar al admin de memoria que se elimine la tabla de paginas asociada, limpie si es necesario la TLB y de aviso a Swap
+					sleep(configuracion->retardo);
+				}
+
+	}
+
+	   fclose(entrada);
+	   puts("Se cerró el archivo\n");
+
+
+	return 0;
+}
+
+
 void escucharYAtender(){
 	t_pcb pcb;
 	//pcb = escucharPlanificador();
@@ -62,15 +115,3 @@ void escucharYAtender(){
 	abrirArchivoYValidar(path);
 }
 
-int abrirArchivoYValidar(char* path){
-	FILE* entrada;
-	if((entrada=fopen(path,"r"))==NULL){
-		log_error(CPULog,"No se pudo abrir el archivo de entrada. \n","ERROR");
-		return -1;
-	}
-	printf("Archivo abierto \n");
-
-	//COMIENZA A LEER CADA LINEA DEL ARCHIVO
-
-	return 0;
-}

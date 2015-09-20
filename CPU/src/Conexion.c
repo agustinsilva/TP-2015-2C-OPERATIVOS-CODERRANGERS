@@ -61,3 +61,6 @@ t_pcb escucharPlanificador(){
 	clean_socket(socketCliente);
 	return pcbRecibido;
 }
+
+
+

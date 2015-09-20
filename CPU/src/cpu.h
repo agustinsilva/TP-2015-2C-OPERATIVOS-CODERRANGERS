@@ -1,9 +1,13 @@
 #ifndef CPU_H_
 #define CPU_H_
+#define TAMINSTRUCCION 80
+#define iniciar 1
+#define finalizar 5
 
 //Inclusiones
 #include <stdio.h>
 #include <stdlib.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include <sys/types.h>
 #include <netdb.h>
@@ -15,6 +19,8 @@
 #include <socket.h>
 #include <commons/log.h>
 #include <pthread.h>
+
+
 //Estructuras
 typedef struct {
 	char* ipPlanificador;
