@@ -111,3 +111,36 @@ bool validarUbicacionLibre(void* nodo)
 	t_nodoLibre* nodoLibre = nodo;
 	return nodoLibre->comienzo == ubicacionCondicion;
 }
+
+void mappear_archivo()
+{
+	archivoMapeado = malloc(sizeof(t_archivoSwap));
+	int tamanio = 0;
+	FILE *archivo = fopen(configuracion->nombre_swap, "r");
+	if (archivo == NULL)
+	{
+		printf("No se pudo abrir el archivo \n");
+	}
+	else
+	{
+		fseek(archivo, 0L, SEEK_END);
+		tamanio = ftell(archivo);
+		fclose(archivo);
+	}
+	archivoMapeado->fd = open(configuracion->nombre_swap, O_RDWR, (mode_t) 0600);
+	if(archivoMapeado->fd == -1){
+		perror("open");
+	}
+	archivoMapeado->memoria = (char*) mmap(NULL, tamanio, PROT_WRITE | PROT_READ,MAP_SHARED, archivoMapeado->fd, 0);
+	archivoMapeado->tamanio = tamanio;
+}
+
+char* buscarPagina(uint32_t PID, uint32_t pagina)
+{
+	char* paginaBuscada = malloc(sizeof(configuracion->tamano_pagina));
+	pidCondicion = PID;
+	t_nodoOcupado* nodo = list_find(espacioOcupado,validarMismoPid);
+	uint32_t ubicacionPagina = nodo->comienzo + pagina;
+	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
+	return paginaBuscada;
+}

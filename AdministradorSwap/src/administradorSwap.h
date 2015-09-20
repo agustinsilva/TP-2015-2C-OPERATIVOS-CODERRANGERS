@@ -9,6 +9,10 @@
 #include <commons/string.h>
 #include <commons/log.h>
 #include <commons/collections/list.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 
 //Estructuras
 typedef struct {
@@ -32,6 +36,12 @@ typedef struct {
 	uint32_t paginas;
 }t_nodoOcupado;
 
+typedef struct{
+	uint32_t fd;
+	char* memoria;
+	uint32_t tamanio;
+}t_archivoSwap;
+
 //Constantes
 
 //Variables globales
@@ -43,6 +53,7 @@ t_list* espacioOcupado;
 uint32_t paginasCondicion;  //cuidado con esta variable A.S.
 uint32_t ubicacionCondicion;
 uint32_t pidCondicion;
+t_archivoSwap* archivoMapeado;
 
 //Firma de funciones
 int conf_es_valida(t_config* fd_configuracion);
