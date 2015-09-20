@@ -1,9 +1,13 @@
 #ifndef CPU_H_
 #define CPU_H_
+#define TAMINSTRUCCION 80
+#define iniciar 1
+#define finalizar 5
 
 //Inclusiones
 #include <stdio.h>
 #include <stdlib.h>
+#include <commons/string.h>
 #include <commons/config.h>
 #include <sys/types.h>
 #include <netdb.h>
@@ -14,6 +18,8 @@
 #include <fcntl.h>
 #include <socket.h>
 #include <commons/log.h>
+#include <pthread.h>
+
 
 //Estructuras
 typedef struct {
@@ -24,6 +30,11 @@ typedef struct {
 	uint32_t cantidadHilos;
 	uint32_t retardo;
 }t_configuracion;
+
+
+typedef struct pcb{
+		char* path;
+}t_pcb;
 
 //Constantes
 #define PAQUETE 1024
@@ -37,5 +48,7 @@ t_log* CPULog;
 int conf_es_valida(t_config* configuracion);
 int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
+t_pcb escucharPlanificador();
+void escucharYAtender();
 void limpiarConfiguracion();
 #endif /* CPU_H_ */

@@ -1,0 +1,2 @@
+iniciar 9
+finalizar 8
