@@ -7,10 +7,12 @@ int main(void) {
 	printf("Inicia el Administrador de Memoria \n");
 	puts("Cargo archivo de configuración de Administrador Memoria\n");
 	MemoriaLog = log_create("MemoriaLog", "AdministradorMemoria", true, LOG_LEVEL_INFO);
+
 	cargarArchivoDeConfiguracion();
 
-	/*conecta con swap*/
+	setUp();
 
+	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
 	if (validationConnection != 0 ){
@@ -45,11 +47,14 @@ int main(void) {
 			}
 
 		}
-		close(servidor);
-		printf("Finaliza Administrador de Memoria\n");
+		clean_socket(servidor);
 	}
+
 	limpiarConfiguracion();
+	limpiarTLB();
+	limpiarMemoriaPrincipal();
 	log_destroy(MemoriaLog);
+	printf("Finaliza Administrador de Memoria\n");
 	return EXIT_SUCCESS;
 }
 
@@ -105,5 +110,38 @@ void* hiloEjecucionCPU(t_HiloCPU* paramsCPU){
 	printf("Recibe respuesta: %s\n", respuesta);
 	free(respuesta);
 	return 0;
+}
+
+void setUp(){
+
+	if(configuracion->tlb_habilitada){
+		TLB = list_create();
+	}
+
+	memoriaPrincipal = list_create();
+
+	int32_t i;
+	for(i=0; i<configuracion->cantidad_marcos; i++){
+		t_MP* entrada = malloc(sizeof(t_MP));
+		entrada->marco=i;
+		entrada->pagina=-1;
+		list_add(memoriaPrincipal,entrada);
+	}
+}
+
+static void mpDestroyer(t_MP* entrada) {
+    free(entrada);
+}
+
+static void TLBDestroyer(t_TLB* entrada) {
+    free(entrada->dirFisica);
+    free(entrada);
+}
+
+void limpiarMemoriaPrincipal(){
+	list_destroy_and_destroy_elements(memoriaPrincipal, (void*)mpDestroyer);
+}
+void limpiarTLB(){
+	list_destroy_and_destroy_elements(TLB, (void*)TLBDestroyer);
 }
 
