@@ -6,12 +6,12 @@
 
 int main(void)
 {
-
+	contadorProceso = 0;
 	int respHilo = 0;
 	int respServidor = 0;
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
-
+	proc_listos = list_create();
 
 	puts("Cargo archivo de configuracion de Planificador");
 	cargarArchivoDeConfiguracion();
