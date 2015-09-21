@@ -55,7 +55,7 @@ void crearHilosCPU (void)
 int abrirArchivoYValidar(char* path){
 	char **lista;
 	int instrucciones=0;
-//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
+	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
 	char instruccion[TAMINSTRUCCION];
 	FILE* entrada;
 
@@ -65,41 +65,38 @@ int abrirArchivoYValidar(char* path){
 	}
 
 	printf("Archivo abierto \n");
-
-//	cantidad de instrucciones del archivo
-//	while (!feof(entrada)){
-//	     instrucciones++;
-//	}
+	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
+	//	cantidad de instrucciones del archivo
+	//	while (!feof(entrada)){
+	//	     instrucciones++;
+	//	}
 
 
 	while (fgets(instruccion,TAMINSTRUCCION, entrada) != NULL) {
-
-		printf("%s", instruccion);
 		lista = string_split(instruccion," ");
 
 		if (string_equals_ignore_case(lista[0], "iniciar")){
-			puts("La primera instruccion es iniciar\n");
+			puts("Instruccion: iniciar\n");
 
 			//SE CONECTA A MEMORIA//
-
-
-			//informar al admin de memoria que se inicio un proceso con N paginas N== lista[1]
+			informarAdminMemoriaComandoIniciar(lista[1]);//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
-		}
-		else if(string_equals_ignore_case(lista[0], "finalizar"))
-				{
-					puts("La insturccion es finalizar\n");
-					//informar al admin de memoria que se elimine la tabla de paginas asociada, limpie si es necesario la TLB y de aviso a Swap
-					sleep(configuracion->retardo);
-				}
+		}else if(string_equals_ignore_case(lista[0], "finalizar")){
+			puts("Instruccion: finalizar\n");
 
+			//SE CONECTA A MEMORIA//
+			informarAdminMemoriaComandoFinalizar();//Informar al AdminMemoria que finalice el proceso
+
+			sleep(configuracion->retardo);
+		}else{
+			printf("Comando no interpretado: %s",lista[0]);
+		}
 	}
 
-	   fclose(entrada);
-	   puts("Se cerró el archivo\n");
-
+	fclose(entrada);
+	puts("Se cerró el archivo\n");
 
 	return 0;
 }

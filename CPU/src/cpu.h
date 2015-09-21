@@ -51,4 +51,6 @@ void* ConectarAPlanificador();
 t_pcb escucharPlanificador();
 void escucharYAtender();
 void limpiarConfiguracion();
+int informarAdminMemoriaComandoIniciar(char* cantidadPaginas);
+int informarAdminMemoriaComandoFinalizar();
 #endif /* CPU_H_ */
