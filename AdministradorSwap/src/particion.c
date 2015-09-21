@@ -48,7 +48,7 @@ uint32_t contarPaginasLibres()
 }
 
 //retorna 0 si es falso y 1 si es verdadero
-short hayEspacio(uint32_t paginas)
+bool hayEspacio(uint32_t paginas)
 {
 	uint32_t paginasLibres = contarPaginasLibres();
 	return paginasLibres >= paginas;
@@ -158,4 +158,17 @@ void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion)
 	char* areaMemoriaAEscribir = archivoMapeado->memoria + posicionEnArchivo;
 	memcpy(areaMemoriaAEscribir, pagina,configuracion->tamano_pagina);
 
+}
+
+bool asignarProceso(t_mensaje* detalle)
+{
+	bool resultado;
+	resultado = hayEspacioSecuencial(detalle->paginas);
+	//faltaria pensar el caso de compactacion
+	if(resultado)
+	{
+		ocuparEspacio(detalle->PID,detalle->paginas);
+	}
+
+	return resultado;
 }
