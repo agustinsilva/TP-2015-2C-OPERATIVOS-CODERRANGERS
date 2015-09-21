@@ -68,6 +68,7 @@ t_config* fd_configuracion;
 t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
+t_list* estadisticasProcesos;
 uint32_t paginasCondicion;  //cuidado con esta variable A.S.
 uint32_t ubicacionCondicion;
 uint32_t pidCondicion;
@@ -97,5 +98,8 @@ void mappear_archivo();
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera);
 bool asignarProceso(t_mensaje* detalle);
+void agregarAEstadistica(uint32_t PID);
+void aumentarEscritura(uint32_t PID);
+void aumentarLectura(uint32_t PID);
 
 #endif /* ADMINSWAP_H_ */

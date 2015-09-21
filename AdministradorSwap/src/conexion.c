@@ -67,6 +67,7 @@ void iniciarServidor()
 				break;
 			case LEER:
 				respuesta = buscarPagina(detalle->PID, detalle->ubicacion);
+				aumentarLectura(detalle->PID);
 				enviarMensaje(socketMemoria, respuesta);
 				break;
 			case ESCRIBIR:

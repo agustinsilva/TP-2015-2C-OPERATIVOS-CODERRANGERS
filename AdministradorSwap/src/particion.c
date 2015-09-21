@@ -12,6 +12,7 @@ void inicializarParticion()
 	crearParticion();
 	espacioLibre = list_create();
 	espacioOcupado = list_create();
+	estadisticasProcesos = list_create();
 	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
 	nodoLibre->comienzo = 0;
 	nodoLibre->paginas = configuracion->cantidad_paginas;
@@ -168,7 +169,31 @@ bool asignarProceso(t_mensaje* detalle)
 	if(resultado)
 	{
 		ocuparEspacio(detalle->PID,detalle->paginas);
+		agregarAEstadistica(detalle->PID);
 	}
 
 	return resultado;
+}
+
+void agregarAEstadistica(uint32_t PID)
+{
+	t_estadistica* nodo = malloc(sizeof(t_estadistica));
+	nodo->PID = PID;
+	nodo->escrituras = 0;
+	nodo->lecturas = 0;
+	list_add(estadisticasProcesos,nodo);
+}
+
+void aumentarEscritura(uint32_t PID)
+{
+	pidCondicion = PID;
+	t_estadistica* nodo = list_find(estadisticasProcesos,validarMismoPid);
+	nodo->escrituras++;
+}
+
+void aumentarLectura(uint32_t PID)
+{
+	pidCondicion = PID;
+	t_estadistica* nodo = list_find(estadisticasProcesos,validarMismoPid);
+	nodo->lecturas++;
 }
