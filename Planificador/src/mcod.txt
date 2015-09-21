@@ -1,0 +1,4 @@
+escribir "Hola" 1
+leer 1
+entrada-salida 5000
+finalizar
