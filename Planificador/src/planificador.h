@@ -15,7 +15,8 @@
 #include <socket.h>
 #include <pthread.h>
 #include <commons/string.h>
-pthread_mutex_t count_mutex;
+#include <commons/collections/list.h>
+
 //Estructuras
 typedef struct {
 	uint32_t puertoEscucha;
@@ -23,6 +24,17 @@ typedef struct {
 	uint32_t quantum;
 }t_configuracion;
 
+typedef struct {
+	uint32_t idProceso;
+	uint32_t estadoProceso; //0-Espera 1-Ejecucion 2-Finalizado
+	uint32_t contadorPuntero;
+	uint32_t cantidadInstrucciones;
+	char* path;
+}t_pcb;
+
+//Variables globales
+int contadorProceso;
+t_list *proc_listos;
 //Constantes
 #define PAQUETE 1024
 //Variables globales
@@ -31,6 +43,8 @@ t_config* fdConfiguracion; //Descriptor de archivo
 
 //Firma de funciones
 void* iniciarServidor();
+void encolar(char* path);
+int contarInstrucciones(char* path);
 void* mostrarConsola();
 void leerComando(int* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);

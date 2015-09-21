@@ -3,7 +3,6 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor()
 {
-	char** lista;
 	fd_set set_maestro,set_temporal;
 	uint32_t fdMaximo,socketProcesado,socketReceptor,nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro

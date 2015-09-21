@@ -7,6 +7,7 @@
  */
 void* mostrarConsola() {
 		int* comando = malloc(sizeof(int));
+		char path[255];
 		while (1) {
 			printf("-------------------- \n");
 			printf("Bienvenido a la consola del Planificador \n");
@@ -24,8 +25,10 @@ void* mostrarConsola() {
 				printf("-------------------- \n");
 				printf("Por favor, ingrese el path del archivo que desea ejecutar:\n");
 				//Metodo que ejecuta el Correr
-				  getchar();
-				  getchar();
+
+				scanf("%s",path);
+
+				encolar(path);
 				break;
 			case 2:
 				printf("-------------------- \n");
@@ -61,4 +64,39 @@ void leerComando(int* comando, char* mensaje) {
 			fflush(stdin);
 		}
 	}
+}
+
+void encolar(char* path) {
+	int cantidadInstrucciones = contarInstrucciones(path);
+
+	t_pcb *pcb = malloc(sizeof(t_pcb));
+
+	pcb->idProceso = contadorProceso;
+	contadorProceso++;
+	pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
+	pcb->contadorPuntero = 0;
+	pcb->cantidadInstrucciones = cantidadInstrucciones;
+	pcb->path = strdup(path);
+
+	list_add(proc_listos,pcb);
+	printf("Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n");
+}
+
+int contarInstrucciones(char* path) {
+	int ch;
+	int cantidad_lineas = 1;
+	char* src = string_new();
+	string_append(&src, "src/");
+	string_append(&src, path);
+	FILE* fp = fopen(src, "r");
+	if (fp == NULL) {
+		perror("Error in opening file");
+	}
+	do {
+		ch = fgetc(fp);
+		if (ch == '\n')
+			cantidad_lineas++;
+	} while (ch != EOF);
+	fclose(fp);
+	return cantidad_lineas;
 }

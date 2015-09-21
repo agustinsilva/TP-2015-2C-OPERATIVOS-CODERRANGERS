@@ -41,3 +41,6 @@
 
 #Carpeta de debug
 Debug/
+
+#Archivos de configuracion
+.txt

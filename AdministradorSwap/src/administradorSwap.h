@@ -42,7 +42,25 @@ typedef struct{
 	uint32_t tamanio;
 }t_archivoSwap;
 
+typedef struct{
+	uint32_t PID;
+	uint32_t lecturas;
+	uint32_t escrituras;
+}t_estadistica;
+
+typedef struct{
+	uint32_t PID;
+	uint32_t paginas;
+	uint32_t ubicacion;
+	uint32_t tamanioContenido;
+	char* contenidoPagina;
+}t_mensaje;
+
 //Constantes
+#define INICIAR 1
+#define FINALIZAR 2
+#define LEER 3
+#define ESCRIBIR 4
 
 //Variables globales
 t_configuracion* configuracion;
@@ -50,6 +68,7 @@ t_config* fd_configuracion;
 t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
+t_list* estadisticasProcesos;
 uint32_t paginasCondicion;  //cuidado con esta variable A.S.
 uint32_t ubicacionCondicion;
 uint32_t pidCondicion;
@@ -65,7 +84,7 @@ void crearParticion();
 void eliminarParticion();
 void inicializarParticion();
 uint32_t contarPaginasLibres();
-short hayEspacio(uint32_t paginas);
+bool hayEspacio(uint32_t paginas);
 bool hayEspacioSecuencial(uint32_t paginas);
 bool validarEspacioLibre(void* nodo);
 void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
@@ -76,4 +95,11 @@ char* buscarPagina(uint32_t PID, uint32_t pagina);
 void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion);
 void iniciarServidor();
 void mappear_archivo();
+uint32_t deserializarEnteroSinSigno(sock_t* socket);
+t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera);
+bool asignarProceso(t_mensaje* detalle);
+void agregarAEstadistica(uint32_t PID);
+void aumentarEscritura(uint32_t PID);
+void aumentarLectura(uint32_t PID);
+
 #endif /* ADMINSWAP_H_ */
