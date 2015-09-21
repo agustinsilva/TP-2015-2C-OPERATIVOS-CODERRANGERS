@@ -20,9 +20,13 @@
 #include <pthread.h>
 
 // Constantes
-#define codigoIniciar 1
-#define codigoFinalizar 2
-#define codigoLeer 3
+#define codigo_iniciar 1
+#define codigo_finalizar 2
+#define codigo_leer 3
+#define codigo_escribir 4
+#define pedido_exitoso 0
+#define pedido_error 1
+#define pedido_no_memoria -1
 
 //Estructuras
 typedef struct{
@@ -62,14 +66,23 @@ t_list* memoriaPrincipal;
 
 
 //Firma de funciones
+
+/* Principales */
 char* recibirMensaje(sock_t* socket);
 int32_t enviarMensaje(sock_t* socket, char* mensaje);
 int32_t conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 void limpiarConfiguracion();
-void* hiloEjecucionCPU(t_HiloCPU* );
+int32_t hiloEjecucionCPU(t_HiloCPU* );
 void setUp();
 void limpiarMemoriaPrincipal();
 void limpiarTLB();
+
+/* de AtencionPedidosCPU */
+int32_t recibirCodigoOperacion(sock_t*);
+void iniciar(sock_t* , sock_t* );
+void finalizar(sock_t* , sock_t* );
+void lectura(sock_t* , sock_t* );
+void escritura(sock_t* , sock_t* );
 
 #endif /* ADMINMEMORIA_H_ */
