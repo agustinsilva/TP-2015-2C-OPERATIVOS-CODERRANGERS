@@ -7,10 +7,12 @@ int main(void) {
 	printf("Inicia el Administrador de Memoria \n");
 	puts("Cargo archivo de configuración de Administrador Memoria\n");
 	MemoriaLog = log_create("MemoriaLog", "AdministradorMemoria", true, LOG_LEVEL_INFO);
+
 	cargarArchivoDeConfiguracion();
 
-	/*conecta con swap*/
+	setUp();
 
+	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
 	if (validationConnection != 0 ){
@@ -45,65 +47,47 @@ int main(void) {
 			}
 
 		}
-		close(servidor);
-		printf("Finaliza Administrador de Memoria\n");
+		clean_socket(servidor);
 	}
+
 	limpiarConfiguracion();
+	limpiarTLB();
+	limpiarMemoriaPrincipal();
 	log_destroy(MemoriaLog);
+	printf("Finaliza Administrador de Memoria\n");
 	return EXIT_SUCCESS;
 }
 
+void setUp(){
 
-char* recibirMensaje(sock_t* socket){
+	if(configuracion->tlb_habilitada){
+		TLB = list_create();
+	}
 
-	/*recibe la cantidad de bytes que va a tener el mensaje*/
-	int32_t longitudMensaje;
+	memoriaPrincipal = list_create();
 
-	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
-	char* mensaje = (char*) malloc(longitudMensaje+1);
-	recv(socket->fd, mensaje, longitudMensaje, 0);
-	mensaje[longitudMensaje]='\0';
-	return mensaje;
+	int32_t i;
+	for(i=0; i<configuracion->cantidad_marcos; i++){
+		t_MP* entrada = malloc(sizeof(t_MP));
+		entrada->marco=i;
+		entrada->pagina=-1;
+		list_add(memoriaPrincipal,entrada);
+	}
 }
 
-int32_t enviarMensaje(sock_t* socket, char* mensaje){
-
-	/*prepara la longitud del archivo a mandar, así el receptor sabe cuánto recibir*/
-	int32_t longitud = string_length(mensaje);
-	int32_t status = send(socket->fd, &longitud, sizeof(int32_t),0);
-
-	/*chequea envío*/
-	if(!status){
-		printf("No se envió la cantidad de bytes a enviar luego\n");
-		return status;
-	}
-	status = send(socket->fd, mensaje, longitud,0);
-	return status;
+static void mpDestroyer(t_MP* entrada) {
+    free(entrada);
 }
 
-void* hiloEjecucionCPU(t_HiloCPU* paramsCPU){
-	printf("Esperando mensaje de Cpu \n");
-	char mensajeCpu[1024];
-	int32_t status;
-	status = recv(paramsCPU->cpuSocket->fd, (void*)mensajeCpu, 1024, 0);
-	printf("Mensaje de cpu : %s \n",mensajeCpu);
-	/* Deberia validar lo que recibio */
-	/* prepara mensaje para enviar */
-	/*char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto ";*/
-	status = enviarMensaje(paramsCPU->swapSocket,mensajeCpu);
+static void TLBDestroyer(t_TLB* entrada) {
+    free(entrada->dirFisica);
+    free(entrada);
+}
 
-	/*chequea envío*/
-	if(!status)	{
-		printf("No se envió el mensaje al swap\n");
-	}
-	else {
-		printf("Se envió a Swap: %s\n", mensajeCpu);
-	}
-	/*recibe la respuesta*/
-	char* respuesta = recibirMensaje(paramsCPU->swapSocket);
-	printf("Recibe respuesta: %s\n", respuesta);
-	free(respuesta);
-	return 0;
+void limpiarMemoriaPrincipal(){
+	list_destroy_and_destroy_elements(memoriaPrincipal, (void*)mpDestroyer);
+}
+void limpiarTLB(){
+	list_destroy_and_destroy_elements(TLB, (void*)TLBDestroyer);
 }
 
