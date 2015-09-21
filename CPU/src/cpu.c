@@ -30,6 +30,12 @@ int main(void) {
  * */
 void crearHilosCPU (void)
 {
+	//TODO avisar al planificador que hilos se crearon
+//	char *mensaje="hilo1";
+//		int status = 0;
+//		if (send(socketCliente->fd, (void*)mensaje, strlen(mensaje), 0)<0){
+//			puts("Send failed");
+//		}
 	int cantidad=0;
 	int rtaHilo = 0;
 	pthread_t hiloCpu; //id de cpu
