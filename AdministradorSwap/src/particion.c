@@ -22,10 +22,12 @@ void inicializarParticion()
 
 void eliminarParticion()
 {
-	if (remove(configuracion->nombre_swap) == 0){
+	if (remove(configuracion->nombre_swap) == 0)
+	{
 		printf("Elimino correctamente la particion \n");
 	}
-	else{
+	else
+	{
 		printf("No se elimino correctamente la particion \n");
 	}
 	munmap(archivoMapeado->memoria,archivoMapeado->tamanio);
@@ -44,7 +46,6 @@ uint32_t contarPaginasLibres()
 		nodo = list_get(espacioLibre,indice);
 		total = total + nodo->paginas;
 	}
-
 	return total;
 }
 
@@ -69,9 +70,10 @@ bool validarEspacioLibre(void* nodo)
 	return resultado;
 }
 
-//Se ejecuta funcion despues de validar
-void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
+//Se ejecuta funcion despues de validar, devuelve posicion pagina inicial
+uint32_t ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
 {
+	uint32_t posicionInicial;
 	t_nodoLibre* nodoLibre;
 	t_nodoOcupado* nodoOcupado = malloc(sizeof(t_nodoOcupado));
 	nodoOcupado->paginas = paginasAOcupar;
@@ -79,6 +81,7 @@ void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
 	paginasCondicion = paginasAOcupar;
 	nodoLibre = list_find(espacioLibre, validarEspacioLibre);
 	nodoOcupado->comienzo = nodoLibre->comienzo;
+	posicionInicial = nodoOcupado->comienzo;
 	if(nodoLibre->paginas > paginasAOcupar)
 	{
 		nodoLibre->comienzo = nodoLibre->comienzo + paginasAOcupar;
@@ -92,16 +95,24 @@ void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
 		free(nodoLibre);
 	}
 	list_add(espacioOcupado,nodoOcupado);
+	return posicionInicial;
 }
 
-void liberarEspacio(uint32_t PID)
-{	t_nodoOcupado* nodoOcupado;
+void liberarProceso(uint32_t PID)
+{
+	uint32_t byteInicial;
+	uint32_t tamanio;
+	t_nodoOcupado* nodoOcupado;
 	pidCondicion = PID;
 	nodoOcupado = list_remove_by_condition(espacioOcupado,validarMismoPid);
-    t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
+    byteInicial = nodoOcupado->comienzo * configuracion->tamano_pagina;
+    tamanio = nodoOcupado->paginas * configuracion->tamano_pagina;
+
+	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
     nodoLibre->comienzo = nodoOcupado->comienzo;
     nodoLibre->paginas = nodoOcupado->paginas;
     list_add(espacioLibre,nodoLibre);
+    log_info(SwapLog,"Se libera proceso con PID %d, byte inicial %d y tamaño %d",PID,byteInicial,tamanio);
     free(nodoOcupado);
 }
 
@@ -134,7 +145,8 @@ void mappear_archivo()
 		fclose(archivo);
 	}
 	archivoMapeado->fd = open(configuracion->nombre_swap, O_RDWR, (mode_t) 0600);
-	if(archivoMapeado->fd == -1){
+	if(archivoMapeado->fd == -1)
+	{
 		perror("open");
 	}
 	archivoMapeado->memoria = (char*) mmap(NULL, tamanio, PROT_WRITE | PROT_READ,MAP_SHARED, archivoMapeado->fd, 0);
@@ -144,8 +156,7 @@ void mappear_archivo()
 char* buscarPagina(uint32_t PID, uint32_t pagina)
 {
 	char* paginaBuscada = malloc(sizeof(configuracion->tamano_pagina));
-	pidCondicion = PID;
-	t_nodoOcupado* nodo = list_find(espacioOcupado,validarMismoPid);
+	t_nodoOcupado* nodo = encontrarNodoPorPID(espacioOcupado,PID);
 	uint32_t ubicacionPagina = nodo->comienzo + (pagina - 1);
 	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
 	return paginaBuscada;
@@ -153,8 +164,7 @@ char* buscarPagina(uint32_t PID, uint32_t pagina)
 
 void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion)
 {
-	pidCondicion = PID;
-	t_nodoOcupado* nodo = list_find(espacioOcupado,validarMismoPid);
+	t_nodoOcupado* nodo = encontrarNodoPorPID(espacioOcupado,PID);
 	uint32_t posicionEnArchivo = (nodo->comienzo + ubicacion)*configuracion->tamano_pagina;
 	char* areaMemoriaAEscribir = archivoMapeado->memoria + posicionEnArchivo;
 	memcpy(areaMemoriaAEscribir, pagina,configuracion->tamano_pagina);
@@ -164,14 +174,18 @@ void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion)
 bool asignarProceso(t_mensaje* detalle)
 {
 	bool resultado;
+	uint32_t posicionInicial,byteInicial,tamanio;
+
 	resultado = hayEspacioSecuencial(detalle->paginas);
 	//faltaria pensar el caso de compactacion
 	if(resultado)
 	{
-		ocuparEspacio(detalle->PID,detalle->paginas);
+		posicionInicial = ocuparEspacio(detalle->PID,detalle->paginas);
 		agregarAEstadistica(detalle->PID);
+		byteInicial = posicionInicial*configuracion->tamano_pagina;
+		tamanio = detalle->paginas*configuracion->cantidad_paginas;
+		log_info(SwapLog,"Se asigna proceso con PID %d, byte inicial %d y tamaño %d",detalle->PID,byteInicial,tamanio);
 	}
-
 	return resultado;
 }
 
@@ -186,14 +200,18 @@ void agregarAEstadistica(uint32_t PID)
 
 void aumentarEscritura(uint32_t PID)
 {
-	pidCondicion = PID;
-	t_estadistica* nodo = list_find(estadisticasProcesos,validarMismoPid);
+	t_estadistica* nodo = encontrarNodoPorPID(estadisticasProcesos,PID);
 	nodo->escrituras++;
 }
 
 void aumentarLectura(uint32_t PID)
 {
-	pidCondicion = PID;
-	t_estadistica* nodo = list_find(estadisticasProcesos,validarMismoPid);
+	t_estadistica* nodo = encontrarNodoPorPID(estadisticasProcesos,PID);
 	nodo->lecturas++;
+}
+
+void* encontrarNodoPorPID(t_list* lista, uint32_t PID)
+{
+	pidCondicion = PID;
+	return list_find(lista,validarMismoPid);
 }

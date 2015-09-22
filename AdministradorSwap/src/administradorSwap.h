@@ -87,9 +87,9 @@ uint32_t contarPaginasLibres();
 bool hayEspacio(uint32_t paginas);
 bool hayEspacioSecuencial(uint32_t paginas);
 bool validarEspacioLibre(void* nodo);
-void ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
+uint32_t ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar);
 bool validarUbicacionLibre(void* nodo);
-void liberarEspacio(uint32_t PID);
+void liberarProceso(uint32_t PID);
 bool validarMismoPid(void* nodo);
 char* buscarPagina(uint32_t PID, uint32_t pagina);
 void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion);
@@ -101,5 +101,7 @@ bool asignarProceso(t_mensaje* detalle);
 void agregarAEstadistica(uint32_t PID);
 void aumentarEscritura(uint32_t PID);
 void aumentarLectura(uint32_t PID);
+
+void* encontrarNodoPorPID(t_list* lista, uint32_t PID);
 
 #endif /* ADMINSWAP_H_ */

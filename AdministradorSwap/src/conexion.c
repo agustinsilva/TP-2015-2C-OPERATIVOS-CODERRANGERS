@@ -63,7 +63,7 @@ void iniciarServidor()
 				}
 				break;
 			case FINALIZAR:
-				liberarEspacio(detalle->PID);
+				liberarProceso(detalle->PID);
 				break;
 			case LEER:
 				respuesta = buscarPagina(detalle->PID, detalle->ubicacion);
