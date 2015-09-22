@@ -52,5 +52,6 @@ t_pcb escucharPlanificador();
 void escucharYAtender();
 void limpiarConfiguracion();
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas);
-int informarAdminMemoriaComandoFinalizar();
+int informarAdminMemoriaComandoFinalizar(char * path);
+void crearHilosCPU (void);
 #endif /* CPU_H_ */

@@ -106,6 +106,28 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas){
  * 				0 Fallo
  * 				1 Exito
  */
-int informarAdminMemoriaComandoFinalizar(){
-	return EXIT_SUCCESS;
-}
+int informarAdminMemoriaComandoFinalizar(char * path){
+	sock_t* socketAAdminMemoria = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
+		int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
+		if (conexionAdminMemoria != 0) {
+			perror("Error al conectar socket");
+			log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. \n","ERROR");
+			//break;
+			exit(EXIT_FAILURE);
+		}
+
+		//TODO serializar estructura y enviar al AdminMemoria
+
+		char* message = string_from_format("%s %s %s","Comando a ejecutar: finalizar del mProc proveniente de: ", path ,"\n");
+		int32_t status;
+		status = send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
+		if(!status)	{
+			printf("No se envió el mensaje al Administrador de Memoria.\n");
+		}
+		else {
+			printf("Se envió el mensaje  correctamente al Admin de Memoria.\n");
+		}
+
+		clean_socket(socketAAdminMemoria);
+		return EXIT_SUCCESS;
+	}

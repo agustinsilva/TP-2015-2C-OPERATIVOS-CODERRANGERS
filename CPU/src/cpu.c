@@ -93,7 +93,7 @@ int abrirArchivoYValidar(char* path){
 			puts("Instruccion: finalizar\n");
 
 			//SE CONECTA A MEMORIA//
-			informarAdminMemoriaComandoFinalizar();//Informar al AdminMemoria que finalice el proceso
+			informarAdminMemoriaComandoFinalizar(path);//Informar al AdminMemoria que finalice el proceso
 
 			sleep(configuracion->retardo);
 		}else{
