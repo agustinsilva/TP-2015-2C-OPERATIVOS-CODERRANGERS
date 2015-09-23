@@ -12,7 +12,6 @@ int main(void)
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
 	proc_listos = list_create();
-
 	puts("Cargo archivo de configuracion de Planificador");
 	cargarArchivoDeConfiguracion();
 	respServidor = pthread_create(&hiloServidor,NULL,iniciarServidor,NULL);

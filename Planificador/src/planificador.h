@@ -32,9 +32,16 @@ typedef struct {
 	char* path;
 }t_pcb;
 
+typedef struct {
+	uint32_t socketHilo;
+	uint32_t estadoHilo; //0-disponible 1-Ejecutando
+	char* path;
+}t_hilosConectados;
+
 //Variables globales
 int contadorProceso;
 t_list *proc_listos;
+t_list *proc_ejecutados;
 //Constantes
 #define PAQUETE 1024
 //Variables globales
@@ -44,6 +51,9 @@ t_config* fdConfiguracion; //Descriptor de archivo
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
+void consumirRecursos(t_list *cpu_listos);
+void generoHiloPlanificador(t_list *cpu_listos);
+void creoCpu(uint32_t socketCpu, t_list *cpu_listos);
 int contarInstrucciones(char* path);
 void* mostrarConsola();
 void leerComando(int* comando, char* mensaje);
@@ -51,6 +61,5 @@ int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
 void limpiarConfiguracion();
-int validarArgumentosCorrer(char* comando,char*comandoEsperado);
 
 #endif /* PLANIFICADOR_H_ */
