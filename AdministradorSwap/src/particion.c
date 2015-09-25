@@ -5,6 +5,8 @@ void crearParticion()
 	char instruccion[1000]={0};
 	sprintf(instruccion, "dd if=/dev/zero of=%s bs=%d count=%d", configuracion->nombre_swap,configuracion->tamano_pagina,configuracion->cantidad_paginas);
 	system(instruccion);
+	sprintf(instruccion, "clear");
+	system(instruccion);
 }
 
 void inicializarParticion()
@@ -17,11 +19,15 @@ void inicializarParticion()
 	nodoLibre->comienzo = 0;
 	nodoLibre->paginas = configuracion->cantidad_paginas;
 	list_add(espacioLibre,nodoLibre);
+
 	mappear_archivo();
 }
 
 void eliminarParticion()
 {
+	munmap(archivoMapeado->memoria,archivoMapeado->tamanio);
+	close(archivoMapeado->fd);
+	free(archivoMapeado);
 	if (remove(configuracion->nombre_swap) == 0)
 	{
 		printf("Elimino correctamente la particion \n");
@@ -30,8 +36,6 @@ void eliminarParticion()
 	{
 		printf("No se elimino correctamente la particion \n");
 	}
-	munmap(archivoMapeado->memoria,archivoMapeado->tamanio);
-	free(archivoMapeado);
 }
 
 uint32_t contarPaginasLibres()
@@ -106,7 +110,6 @@ void liberarProceso(uint32_t PID)
 	nodoOcupado = list_remove_by_condition(espacioOcupado,validarMismoPid);
     byteInicial = nodoOcupado->comienzo * configuracion->tamano_pagina;
     tamanio = nodoOcupado->paginas * configuracion->tamano_pagina;
-
 	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
     nodoLibre->comienzo = nodoOcupado->comienzo;
     nodoLibre->paginas = nodoOcupado->paginas;
@@ -130,7 +133,7 @@ bool validarUbicacionLibre(void* nodo)
 void mappear_archivo()
 {
 	archivoMapeado = malloc(sizeof(t_archivoSwap));
-	archivoMapeado->memoria = malloc(configuracion->tamano_pagina * configuracion->cantidad_paginas);
+	//archivoMapeado->memoria = malloc(configuracion->tamano_pagina * configuracion->cantidad_paginas);
 	int tamanio = 0;
 	FILE *archivo = fopen(configuracion->nombre_swap, "r");
 	if (archivo == NULL)
@@ -154,10 +157,22 @@ void mappear_archivo()
 
 char* buscarPagina(uint32_t PID, uint32_t pagina)
 {
-	char* paginaBuscada = malloc(sizeof(configuracion->tamano_pagina));
+	char* paginaBuscada = malloc(configuracion->tamano_pagina);
 	t_nodoOcupado* nodo = encontrarNodoPorPID(espacioOcupado,PID);
 	uint32_t ubicacionPagina = nodo->comienzo + (pagina - 1);
 	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
+	uint32_t byteInicial = nodo->comienzo * configuracion->tamano_pagina;
+	bool vacio = string_is_empty(paginaBuscada);
+	uint32_t tamanio;
+	if(vacio)
+	{
+		tamanio = 0;
+	}
+	else
+	{
+		tamanio = string_length(paginaBuscada);
+	}
+	log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,paginaBuscada);
 	return paginaBuscada;
 }
 
@@ -167,7 +182,6 @@ void escribirPagina(char* pagina,uint32_t PID,uint32_t ubicacion)
 	uint32_t posicionEnArchivo = (nodo->comienzo + ubicacion)*configuracion->tamano_pagina;
 	char* areaMemoriaAEscribir = archivoMapeado->memoria + posicionEnArchivo;
 	memcpy(areaMemoriaAEscribir, pagina,configuracion->tamano_pagina);
-
 }
 
 bool asignarProceso(t_mensaje* detalle)
@@ -182,7 +196,7 @@ bool asignarProceso(t_mensaje* detalle)
 		posicionInicial = ocuparEspacio(detalle->PID,detalle->paginas);
 		agregarAEstadistica(detalle->PID);
 		byteInicial = posicionInicial*configuracion->tamano_pagina;
-		tamanio = detalle->paginas*configuracion->cantidad_paginas;
+		tamanio = detalle->paginas * configuracion->tamano_pagina;
 		log_info(SwapLog,"Se asigna proceso con PID %d, byte inicial %d y tamaño %d",detalle->PID,byteInicial,tamanio);
 	}
 	else
@@ -229,5 +243,44 @@ void procesarInicio(t_mensaje* detalle,sock_t* socket)
 	if(!status)
 	{
 		printf("No se envió la cantidad de bytes a enviar luego\n");
+	}
+}
+
+void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
+{
+
+	pidCondicion = detalle->PID;
+	bool resultado = list_any_satisfy(espacioOcupado,validarMismoPid);
+	if(resultado == 1)
+	{
+	liberarProceso(detalle->PID);
+	}
+	else
+	{
+		printf("Se intenta eliminar un proceso que no existe en memoria \n");
+	}
+	//Se envia 1 si salio todo bien y 0 en caso contrario.
+	uint32_t status = send(socketMemoria->fd, &resultado, sizeof(bool),0);
+	if(!status)
+	{
+		printf("Irregularidad en el envio\n");
+	}
+
+}
+
+void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
+{
+	pidCondicion = detalle->PID;
+	bool buscar = list_any_satisfy(espacioOcupado,validarMismoPid);
+	if(buscar == 1)
+	{
+	char* respuesta = buscarPagina(detalle->PID, detalle->ubicacion);
+	aumentarLectura(detalle->PID);
+	enviarMensaje(socketMemoria, respuesta);
+	}
+	else
+	{
+		printf("No existe el proceso en memoria \n");
+		enviarMensaje(socketMemoria, "NO EXISTE\0");
 	}
 }

@@ -38,12 +38,11 @@ void iniciarServidor()
 {
 	uint32_t cabecera;
 	t_mensaje* detalle;
-	char* respuesta;
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
 	printf("Escucha conexiones \n");
 	sock_t* socketMemoria = accept_connection(socketServerSwap);
-	printf("Conexión: %d\n", socketMemoria->fd);
+	printf("Administrador de memoria se ha conectado correctamente\n");
 	while(1)
 	{
 		cabecera = deserializarEnteroSinSigno(socketMemoria);
@@ -55,20 +54,20 @@ void iniciarServidor()
 				procesarInicio(detalle,socketMemoria);
 				break;
 			case FINALIZAR:
-				liberarProceso(detalle->PID);
+				procesarFinalizacion(detalle,socketMemoria);
 				break;
 			case LEER:
-				respuesta = buscarPagina(detalle->PID, detalle->ubicacion);
-				aumentarLectura(detalle->PID);
-				enviarMensaje(socketMemoria, respuesta);
+				procesarLectura(detalle,socketMemoria);
 				break;
 			case ESCRIBIR:
+				//Escribir falta implementar!
 				break;
 			case ANORMAL:
 			printf("Finalizacion anormal de administrador de memoria\n");
 			printf("Se finaliza el administrador de swap\n");
 			clean_socket(socketServerSwap);
 			clean_socket(socketMemoria);
+			free(detalle);
 			liberarRecursos();
 			exit(1);
 			break;
@@ -76,6 +75,7 @@ void iniciarServidor()
 				// Por si acaso
 				break;
 		}
+		free(detalle);
 	}
 	clean_socket(socketServerSwap);
 	clean_socket(socketMemoria);

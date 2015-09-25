@@ -109,5 +109,6 @@ void aumentarLectura(uint32_t PID);
 void procesarInicio(t_mensaje* detalle,sock_t* socket);
 void* encontrarNodoPorPID(t_list* lista, uint32_t PID);
 void liberarRecursos();
-
+void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria);
+void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria);
 #endif /* ADMINSWAP_H_ */

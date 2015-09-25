@@ -22,5 +22,8 @@ void liberarRecursos()
 	eliminarParticion();
 	limpiarConfiguracion();
 	log_destroy(SwapLog);
+	list_destroy(espacioLibre);
+	list_destroy(espacioOcupado);
+	list_destroy(estadisticasProcesos);
 }
 
