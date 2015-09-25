@@ -90,19 +90,41 @@ int32_t recibirCodigoOperacion(sock_t* cpu){
 }
 
 void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
-	/* recibir de CPU id de proceso + cantidad de páginas */
-	/* crear tabla de páginas */
+	int32_t idmProc;
+	int32_t cantPaginas;
+	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
+	int32_t recibidoPags = recv(cpuSocket->fd, &cantPaginas, sizeof(int32_t), 0);
+	if(recibidoProc!=sizeof(int32_t) || recibidoPags!=sizeof(int32_t)){
+		printf("No se recibió correctamente la información de la CPU\n");
+		return;
+	}
+
+	int32_t confirmacion = crearTablaDePaginas(idmProc,cantPaginas);
+
 	/* otorgar espacio*/
-	/* enviar swap id proceso + cantidad de páginas */
-	/* enviar CPU confirmación */
+
+	enviarEnteros(swapSocket, idmProc);
+	enviarEnteros(swapSocket, cantPaginas);
+
+	enviarEnteros(cpuSocket, confirmacion);
+
 }
 
 void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
-	/* recibir de CPU id de proceso */
-	/* destruir tabla de páginas */
+	int32_t idmProc;
+	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
+	if(recibidoProc!=sizeof(int32_t)){
+		printf("No se recibió correctamente la información de la CPU\n");
+		return;
+	}
+
+	int32_t confirmacion = eliminarTablaDePaginas(idmProc);
+
 	/* liberar espacio*/
-	/* enviar swap id proceso */
-	/* enviar CPU confirmación */
+
+	enviarEnteros(swapSocket, idmProc);
+
+	enviarEnteros(cpuSocket, confirmacion);
 }
 
 
@@ -112,5 +134,13 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 
 void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
+}
+
+void enviarEnteros(sock_t* socket, int32_t entero){
+	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
+	if(enviado!=sizeof(int32_t)){
+		printf("No se envió correctamente la información entera\n");
+		return;
+	}
 }
 

@@ -56,13 +56,25 @@ typedef struct{
 	int32_t	pagina;
 } t_MP;
 
+typedef struct{
+	int32_t	idProc;
+	int32_t	frame;
+	int32_t	nroPag;
+	int32_t	offset;
+	bool present;
+	bool modified;
+	bool accessed;
+	bool write;
+	bool read;
+} t_TP;
 
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
 t_log* MemoriaLog;
-t_list* TLB;
-t_list* memoriaPrincipal;
+t_list* TLB; /* de t_TLB */
+t_list* memoriaPrincipal; /* de t_MP */
+t_list* tablasDePaginas; /* de t_TP */
 
 
 //Firma de funciones
@@ -84,5 +96,16 @@ void iniciar(sock_t* , sock_t* );
 void finalizar(sock_t* , sock_t* );
 void lectura(sock_t* , sock_t* );
 void escritura(sock_t* , sock_t* );
+void enviarEnteros(sock_t* , int32_t );
+
+/* de GestionMemoria */
+int32_t crearTablaDePaginas(int32_t , int32_t );
+int32_t eliminarTablaDePaginas(int32_t );
+void procesoDestroyer(t_TP* );
+int32_t getPagina();
+int32_t getFrame();
+bool hayEspacio();
+
+bool entraContiguo();
 
 #endif /* ADMINMEMORIA_H_ */
