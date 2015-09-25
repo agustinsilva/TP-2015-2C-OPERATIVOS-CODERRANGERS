@@ -13,9 +13,14 @@ int main(void) {
 	iniciarServidor();
 	printf("Finaliza Administrador de Swap\n");
 
+	liberarRecursos();
+	return EXIT_SUCCESS;
+}
+
+void liberarRecursos()
+{
 	eliminarParticion();
 	limpiarConfiguracion();
 	log_destroy(SwapLog);
-	return EXIT_SUCCESS;
 }
 

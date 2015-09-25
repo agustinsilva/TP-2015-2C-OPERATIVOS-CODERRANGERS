@@ -31,7 +31,6 @@ void eliminarParticion()
 		printf("No se elimino correctamente la particion \n");
 	}
 	munmap(archivoMapeado->memoria,archivoMapeado->tamanio);
-	free(archivoMapeado->memoria);
 	free(archivoMapeado);
 }
 
@@ -186,6 +185,10 @@ bool asignarProceso(t_mensaje* detalle)
 		tamanio = detalle->paginas*configuracion->cantidad_paginas;
 		log_info(SwapLog,"Se asigna proceso con PID %d, byte inicial %d y tamaño %d",detalle->PID,byteInicial,tamanio);
 	}
+	else
+	{
+		log_info(SwapLog,"Proceso rechazado por falta de espacio PID:%d",detalle->PID);
+	}
 	return resultado;
 }
 
@@ -214,4 +217,17 @@ void* encontrarNodoPorPID(t_list* lista, uint32_t PID)
 {
 	pidCondicion = PID;
 	return list_find(lista,validarMismoPid);
+}
+
+void procesarInicio(t_mensaje* detalle,sock_t* socket)
+{
+	uint32_t status;
+	bool resultado;
+	resultado = asignarProceso(detalle);
+	status = send(socket->fd, &resultado, sizeof(bool),0);
+	/*chequea envío*/
+	if(!status)
+	{
+		printf("No se envió la cantidad de bytes a enviar luego\n");
+	}
 }

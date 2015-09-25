@@ -4,6 +4,7 @@
 //Inclusiones
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <commons/config.h>
 #include <socket.h>
 #include <commons/string.h>
@@ -61,6 +62,10 @@ typedef struct{
 #define FINALIZAR 2
 #define LEER 3
 #define ESCRIBIR 4
+#define ANORMAL 5
+
+#define FALSO 0
+#define VERDADERO 1
 
 //Variables globales
 t_configuracion* configuracion;
@@ -101,7 +106,8 @@ bool asignarProceso(t_mensaje* detalle);
 void agregarAEstadistica(uint32_t PID);
 void aumentarEscritura(uint32_t PID);
 void aumentarLectura(uint32_t PID);
-
+void procesarInicio(t_mensaje* detalle,sock_t* socket);
 void* encontrarNodoPorPID(t_list* lista, uint32_t PID);
+void liberarRecursos();
 
 #endif /* ADMINSWAP_H_ */

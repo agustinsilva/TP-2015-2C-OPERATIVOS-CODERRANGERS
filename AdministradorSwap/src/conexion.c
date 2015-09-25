@@ -37,9 +37,7 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 void iniciarServidor()
 {
 	uint32_t cabecera;
-	uint32_t status;
 	t_mensaje* detalle;
-	bool resultado;
 	char* respuesta;
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
@@ -54,13 +52,7 @@ void iniciarServidor()
 		switch (cabecera)
 		{
 			case INICIAR:
-				resultado = asignarProceso(detalle);
-				status = send(socketMemoria->fd, &resultado, sizeof(bool),0);
-				/*chequea envío*/
-				if(!status)
-				{
-					printf("No se envió la cantidad de bytes a enviar luego\n");
-				}
+				procesarInicio(detalle,socketMemoria);
 				break;
 			case FINALIZAR:
 				liberarProceso(detalle->PID);
@@ -72,6 +64,14 @@ void iniciarServidor()
 				break;
 			case ESCRIBIR:
 				break;
+			case ANORMAL:
+			printf("Finalizacion anormal de administrador de memoria\n");
+			printf("Se finaliza el administrador de swap\n");
+			clean_socket(socketServerSwap);
+			clean_socket(socketMemoria);
+			liberarRecursos();
+			exit(1);
+			break;
 			default:
 				// Por si acaso
 				break;
@@ -85,8 +85,13 @@ void iniciarServidor()
 uint32_t deserializarEnteroSinSigno(sock_t* socket)
 {
 	uint32_t enteroSinSigno;
-	recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	if(status == -1 || status == 0)
+	{
+	enteroSinSigno = ANORMAL;
+	}
 	return enteroSinSigno;
+
 }
 
 t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
@@ -95,6 +100,7 @@ t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
 	switch (cabecera)
 	{
 		case INICIAR:
+			printf("Se inicio un proceso\n");
 			detalle = malloc(sizeof(uint32_t)*2);
 			detalle->PID = deserializarEnteroSinSigno(socket);
 			detalle->paginas = deserializarEnteroSinSigno(socket);
