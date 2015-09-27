@@ -1,8 +1,5 @@
 #ifndef CPU_H_
 #define CPU_H_
-#define TAMINSTRUCCION 80
-#define iniciar 1
-#define finalizar 5
 
 //Inclusiones
 #include <stdio.h>
@@ -31,13 +28,33 @@ typedef struct {
 	uint32_t retardo;
 }t_configuracion;
 
+typedef struct {
+  unsigned long int ID_CPU;
+  int ESTADO;
+}t_estructuraCPU;
 
-typedef struct pcb{
-		char* path;
+typedef struct {
+	uint32_t idProceso;
+	uint32_t estadoProceso; //0-Espera 1-Ejecucion 2-Finalizado
+	uint32_t contadorPuntero;
+	uint32_t cantidadInstrucciones;
+	char* path;
 }t_pcb;
+
+typedef struct {
+ int length;
+ char *data;
+} t_stream;
 
 //Constantes
 #define PAQUETE 1024
+#define TAMINSTRUCCION 80
+#define INICIAR 1
+#define RECIBIR_PCB 2
+#define LEER 3
+#define ESCRIBIR 4
+#define ANORMAL 5
+#define NUEVO_HILO 1
 
 //Variables globales
 t_configuracion* configuracion;
@@ -54,4 +71,7 @@ void limpiarConfiguracion();
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas);
 int informarAdminMemoriaComandoFinalizar(char * path);
 void crearHilosCPU (void);
+uint32_t deserializarEnteroSinSigno(sock_t* socket);
+t_pcb deserializarDetalle(sock_t* socket, uint32_t cabecera);
+t_pcb pcb_deserializar(t_stream stream);
 #endif /* CPU_H_ */
