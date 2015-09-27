@@ -20,12 +20,6 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 
 	if(hayEspacio()){
 
-		if(!entraContiguo()) {
-
-			/* comprimir */
-
-		}
-
 		/* generar entrada en tabla de paginas */
 		int32_t i;
 		for(i=0; i<cantPaginas; i++){
@@ -68,10 +62,6 @@ int32_t eliminarTablaDePaginas(int32_t idmProc){
 
 
 bool hayEspacio(){
-	return true;
-}
-
-bool entraContiguo(){
 	return true;
 }
 

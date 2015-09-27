@@ -97,6 +97,7 @@ void finalizar(sock_t* , sock_t* );
 void lectura(sock_t* , sock_t* );
 void escritura(sock_t* , sock_t* );
 void enviarEnteros(sock_t* , int32_t );
+void enviarStrings(sock_t* , char* , int32_t );
 
 /* de GestionMemoria */
 int32_t crearTablaDePaginas(int32_t , int32_t );
@@ -105,7 +106,5 @@ void procesoDestroyer(t_TP* );
 int32_t getPagina();
 int32_t getFrame();
 bool hayEspacio();
-
-bool entraContiguo();
 
 #endif /* ADMINMEMORIA_H_ */
