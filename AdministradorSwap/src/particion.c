@@ -271,16 +271,39 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 {
 	pidCondicion = detalle->PID;
+	uint32_t status;
 	bool buscar = list_any_satisfy(espacioOcupado,validarMismoPid);
 	if(buscar == 1)
 	{
-	char* respuesta = buscarPagina(detalle->PID, detalle->ubicacion);
+	char* pagina = buscarPagina(detalle->PID, detalle->ubicacion);
+	uint32_t tamanio,offset;
+	char* mensaje;
 	aumentarLectura(detalle->PID);
-	enviarMensaje(socketMemoria, respuesta);
+	//serializo mensaje, esto se puede mejorar.
+	offset = 0;
+	uint32_t tamanioPagina = string_length(pagina) + 1;
+	tamanio = sizeof(bool) + sizeof(uint32_t) + tamanioPagina;
+	mensaje = malloc(tamanio);
+	memcpy(mensaje + offset, &buscar, sizeof(bool));
+	offset = offset + sizeof(bool);
+	memcpy(mensaje + offset, &tamanioPagina, sizeof(tamanioPagina));
+	offset = offset + sizeof(tamanioPagina);
+	if(tamanioPagina > 0)
+	{
+	memcpy(mensaje + offset, pagina, tamanioPagina);
+	}
+	enviarMensaje(socketMemoria,mensaje);
+	free(mensaje);
+	free(pagina);
 	}
 	else
 	{
 		printf("No existe el proceso en memoria \n");
-		enviarMensaje(socketMemoria, "NO EXISTE\0");
+		status = send(socketMemoria->fd, &buscar, sizeof(bool),0);
+		/*chequea envío*/
+		if(!status)
+		{
+			printf("No se envió la cantidad de bytes a enviar luego\n");
+		}
 	}
 }

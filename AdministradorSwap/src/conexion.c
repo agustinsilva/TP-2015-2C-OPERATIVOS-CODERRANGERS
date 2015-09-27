@@ -46,8 +46,10 @@ void iniciarServidor()
 	while(1)
 	{
 		cabecera = deserializarEnteroSinSigno(socketMemoria);
+		if(cabecera != ANORMAL)
+		{
 		detalle = deserializarDetalle(socketMemoria, cabecera);
-
+		}
 		switch (cabecera)
 		{
 			case INICIAR:
@@ -67,7 +69,6 @@ void iniciarServidor()
 			printf("Se finaliza el administrador de swap\n");
 			clean_socket(socketServerSwap);
 			clean_socket(socketMemoria);
-			free(detalle);
 			liberarRecursos();
 			exit(1);
 			break;
@@ -97,20 +98,18 @@ uint32_t deserializarEnteroSinSigno(sock_t* socket)
 t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
 {
 	t_mensaje* detalle;
+	detalle = malloc(sizeof(t_mensaje));
 	switch (cabecera)
 	{
 		case INICIAR:
 			printf("Se inicio un proceso\n");
-			detalle = malloc(sizeof(uint32_t)*2);
 			detalle->PID = deserializarEnteroSinSigno(socket);
 			detalle->paginas = deserializarEnteroSinSigno(socket);
 			break;
 		case FINALIZAR:
-			detalle = malloc(sizeof(uint32_t));
 			detalle->PID = deserializarEnteroSinSigno(socket);
 			break;
 		case LEER:
-			detalle = malloc(sizeof(uint32_t)*2);
 			detalle->PID = deserializarEnteroSinSigno(socket);
 			detalle->ubicacion = deserializarEnteroSinSigno(socket);
 			break;

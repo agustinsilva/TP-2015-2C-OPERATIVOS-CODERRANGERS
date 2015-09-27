@@ -111,4 +111,7 @@ void* encontrarNodoPorPID(t_list* lista, uint32_t PID);
 void liberarRecursos();
 void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria);
 void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria);
+void limpiarNodosLibres(void* nodo);
+void limpiarNodosOcupados(void* nodo);
+void limpiarEstadisticas(void* nodo);
 #endif /* ADMINSWAP_H_ */
