@@ -111,6 +111,15 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 		enviarEnteros(swapSocket, codigo_iniciar);
 		enviarEnteros(swapSocket, idmProc);
 		enviarEnteros(swapSocket, cantPaginas);
+
+		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito \n  PID: %d, Cantidad de Páginas: %d \n", idmProc, cantPaginas);
+	} else {
+
+		if(confirmacion == pedido_no_memoria){
+			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: No hay memoria disponible\n");
+		} else {
+			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: Error de comunicación \n");
+		}
 	}
 
 
@@ -149,11 +158,13 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 		return;
 	}
 
+	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d\n", idmProc, nroPagina);
+
 	/* buscar en TLB
-	 * Si esta    -> devolver contenido
-	 * Si no esta -> busca tabla de paginas -> busqueda en memoria principal
-	 *                                         Si esta en MP    -> devolver contenido
-	 *                                         Si no esta en MP -> pedir a Swap:
+	 * Si esta    -> devolver contenido (logear hit con pag y frame resultante)
+	 * Si no esta (logear miss y resultado alg. reemplazo)-> busca tabla de paginas -> busqueda en memoria principal
+	 *                                         											Si esta en MP    -> devolver contenido
+	 *                                        											Si no esta en MP -> pedir a Swap:
 	 */
 
 	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
@@ -161,6 +172,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
+	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d\n", idmProc);
 
 	/* actualizar memoria principal con frame/pagina y copiar contenido */
 
