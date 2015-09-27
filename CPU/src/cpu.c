@@ -97,9 +97,9 @@ int abrirArchivoYValidar(char* path){
  *		Queda a la espera de recibir instrucciones del Planificador
  */
 void escucharYAtender(){
-	t_pcb pcb;
+	t_pcb* pcb;
 	pcb = escucharPlanificador();
-	char* path = pcb.path;
+	char* path = pcb->path;
 	printf("El path recibido es: %s \n",path);
 	abrirArchivoYValidar(path);
 }

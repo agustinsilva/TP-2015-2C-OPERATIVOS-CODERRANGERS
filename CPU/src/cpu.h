@@ -65,7 +65,7 @@ t_log* CPULog;
 int conf_es_valida(t_config* configuracion);
 int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
-t_pcb escucharPlanificador();
+t_pcb* escucharPlanificador();
 void escucharYAtender();
 void limpiarConfiguracion();
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas);
@@ -73,5 +73,5 @@ int informarAdminMemoriaComandoFinalizar(char * path);
 void crearHilosCPU (void);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 t_pcb deserializarDetalle(sock_t* socket, uint32_t cabecera);
-t_pcb pcb_deserializar(t_stream stream);
+t_pcb* pcb_deserializar(t_stream* stream);
 #endif /* CPU_H_ */

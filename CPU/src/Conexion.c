@@ -37,11 +37,11 @@ void* ConectarAPlanificador()
  *
  * @return estructura deserializada que comparten Planificador y CPU
  */
-t_pcb escucharPlanificador(){
+t_pcb* escucharPlanificador(){
 	char message[1024];
 	int32_t status = 0;
-	t_pcb pcbRecibido;
-	t_stream stream;
+	t_pcb *pcbRecibido;
+	t_stream* stream;
 
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
@@ -56,11 +56,13 @@ t_pcb escucharPlanificador(){
 	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
 
 	//Recibe mensaje de Planificador: PCB
-	//status = recv(socketClientePlanificador->fd,(void*)stream,sizeof(t_stream),0);
+	status = recv(socketClientePlanificador->fd,(void*)stream,sizeof(t_stream),0);
 
-	/*if(status >=0 ){
+	if(status >=0 ){
 		pcbRecibido = pcb_deserializar(stream);
-	}*/
+	}else{
+		log_error(CPULog,"Error al recibir PCB.","ERROR");
+	}
 
 	clean_socket(socketClientePlanificador);
 	return pcbRecibido;
@@ -151,31 +153,31 @@ uint32_t deserializarEnteroSinSigno(sock_t* socket)
 	return enteroSinSigno;
 }
 
-/*t_pcb pcb_deserializar(t_stream stream){
+t_pcb *pcb_deserializar(t_stream* stream){
 	t_pcb *self = malloc (sizeof(t_pcb));
 	int offset = 0, tmp_size = 0;
 
-	memcpy (&self->idProceso, stream.data,tmp_size = sizeof(uint32_t));
+	memcpy (&self->idProceso, stream->data,tmp_size = sizeof(uint32_t));
 
 	offset = tmp_size;
-	for (tmp_size = 1; (stream.data + offset) [tmp_size-1] != '\0'; tmp_size++);
-	self->estadoProceso =malloc (tmp_size);
-	memcpy(&self->estadoProceso, stream.data + offset, tmp_size);
+	for (tmp_size = 1; (stream->data + offset) [tmp_size-1] != '\0'; tmp_size++);
+	self->estadoProceso =malloc(tmp_size);
+	memcpy(&self->estadoProceso, stream->data + offset, tmp_size);
 
 	offset += tmp_size;
-	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->contadorPuntero= malloc (tmp_size);
-	memcpy(&self->contadorPuntero, stream.data + offset, tmp_size);
+	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->contadorPuntero= malloc(tmp_size);
+	memcpy(&self->contadorPuntero, stream->data + offset, tmp_size);
 
 	offset += tmp_size;
-	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->cantidadInstrucciones= malloc (tmp_size);
-	memcpy(&self->cantidadInstrucciones, stream.data + offset, tmp_size);
+	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->cantidadInstrucciones= malloc(tmp_size);
+	memcpy(&self->cantidadInstrucciones, stream->data + offset, tmp_size);
 
 	offset += tmp_size;
-	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->path= malloc (tmp_size);
-	memcpy(self->path, stream.data + offset, tmp_size);
+	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->path= malloc(tmp_size);
+	memcpy(self->path, stream->data + offset, tmp_size);
 
 	return self;
-}*/
+}
