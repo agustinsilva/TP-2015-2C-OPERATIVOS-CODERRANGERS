@@ -68,6 +68,12 @@ typedef struct{
 	bool read;
 } t_TP;
 
+typedef struct{
+	bool encontro;
+	int32_t longitud;
+	char* contenido;
+}t_LecturaSwap;
+
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
@@ -96,6 +102,7 @@ void iniciar(sock_t* , sock_t* );
 void finalizar(sock_t* , sock_t* );
 void lectura(sock_t* , sock_t* );
 void escritura(sock_t* , sock_t* );
+t_LecturaSwap* pedirPagina(sock_t* , int32_t , int32_t );
 void enviarEnteros(sock_t* , int32_t );
 void enviarStrings(sock_t* , char* , int32_t );
 
