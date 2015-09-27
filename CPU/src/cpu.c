@@ -2,15 +2,8 @@
 
 #include "cpu.h"
 
-struct estructuraCPU {
-  unsigned long int ID_CPU;
-  int ESTADO;
-};
-
-//struct estructuraCPU CPU[configuracion->cantidadHilos];
-
-int main(void) {
-
+int main(void)
+{
 	puts("Comienzo de cpu");
 	puts("Cargo archivo de configuracion de CPU");
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
@@ -30,12 +23,7 @@ int main(void) {
  * */
 void crearHilosCPU (void)
 {
-	//TODO avisar al planificador que hilos se crearon
-//	char *mensaje="hilo1";
-//		int status = 0;
-//		if (send(socketCliente->fd, (void*)mensaje, strlen(mensaje), 0)<0){
-//			puts("Send failed");
-//		}
+
 	int cantidad=0;
 	int rtaHilo = 0;
 	pthread_t hiloCpu; //id de cpu
@@ -72,11 +60,6 @@ int abrirArchivoYValidar(char* path){
 
 	printf("Archivo abierto \n");
 	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
-	//	cantidad de instrucciones del archivo
-	//	while (!feof(entrada)){
-	//	     instrucciones++;
-	//	}
-
 
 	while (fgets(instruccion,TAMINSTRUCCION, entrada) != NULL) {
 		lista = string_split(instruccion," ");
@@ -85,7 +68,8 @@ int abrirArchivoYValidar(char* path){
 			puts("Instruccion: iniciar\n");
 
 			//SE CONECTA A MEMORIA//
-			informarAdminMemoriaComandoIniciar(lista[1]);//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
+			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
+			informarAdminMemoriaComandoIniciar(lista[1]);
 
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
@@ -93,7 +77,8 @@ int abrirArchivoYValidar(char* path){
 			puts("Instruccion: finalizar\n");
 
 			//SE CONECTA A MEMORIA//
-			informarAdminMemoriaComandoFinalizar(path);//Informar al AdminMemoria que finalice el proceso
+			//Informar al AdminMemoria que finalice el proceso
+			informarAdminMemoriaComandoFinalizar(path);
 
 			sleep(configuracion->retardo);
 		}else{
@@ -107,12 +92,13 @@ int abrirArchivoYValidar(char* path){
 	return 0;
 }
 
-
+/** Funcion que:
+ * 		Informa al Planificador la creacion de un hilo
+ *		Queda a la espera de recibir instrucciones del Planificador
+ */
 void escucharYAtender(){
 	t_pcb pcb;
-	//pcb = escucharPlanificador();
-
-	pcb.path = "src/prueba.txt"; //PARA PROBAR
+	pcb = escucharPlanificador();
 	char* path = pcb.path;
 	printf("El path recibido es: %s \n",path);
 	abrirArchivoYValidar(path);

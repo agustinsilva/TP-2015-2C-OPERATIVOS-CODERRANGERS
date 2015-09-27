@@ -38,29 +38,31 @@ void* ConectarAPlanificador()
  * @return estructura deserializada que comparten Planificador y CPU
  */
 t_pcb escucharPlanificador(){
-	//momentaneamente
+	char message[1024];
+	int32_t status = 0;
 	t_pcb pcbRecibido;
+	t_stream stream;
 
-	sock_t* socketCliente = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
-	int32_t conexionPlanificador = connect_to_server(socketCliente);
+	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
+	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0) {
 		perror("Error al conectar socket");
 		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
 		printf("NO se creo la conexion con planificador.\n");
 	}
 	printf("Se creo la conexion con planificador.\n");
-	char message[1024];
-	int status = 0;
 
-	status = recv(socketCliente->fd, (void*)message, PAQUETE, 0); //Recibe mensaje de Planificador: PCB
-	if(status >=0 ){
-		//TODO Deserializar PCB
-		pcbRecibido.path = "src/Prueba.txt";
-		//return pcbRecibido;
-		printf("Mensaje de Planificador: %s \n",message);
-	}
+	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
+	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
 
-	clean_socket(socketCliente);
+	//Recibe mensaje de Planificador: PCB
+	//status = recv(socketClientePlanificador->fd,(void*)stream,sizeof(t_stream),0);
+
+	/*if(status >=0 ){
+		pcbRecibido = pcb_deserializar(stream);
+	}*/
+
+	clean_socket(socketClientePlanificador);
 	return pcbRecibido;
 }
 
@@ -82,17 +84,14 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas){
 		exit(EXIT_FAILURE);
 	}
 
-	//TODO serializar estructura y enviar al AdminMemoria
+	//Envia aviso al Adm de Memoria: comando Iniciar.
+	//enviarCodigoOperacion()
 
-	char* message = string_from_format("%s %s %s","Comando a ejecutar: iniciar", cantidadPaginas ," páginas.\n");
-	int32_t status;
-	status = send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
-	if(!status)	{
-		printf("No se envió el mensaje al Administrador de Memoria.\n");
-	}
-	else {
-		printf("Se envió el mensaje  correctamente al Admin de Memoria.\n");
-	}
+	//char* message = string_from_format("%s %s %s", INICIAR, cantidadPaginas ," páginas.\n");
+	//int32_t status = send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
+
+
+	//TODO 	recibir la rta de memoria
 
 	clean_socket(socketAAdminMemoria);
 	return EXIT_SUCCESS;
@@ -131,3 +130,52 @@ int informarAdminMemoriaComandoFinalizar(char * path){
 		clean_socket(socketAAdminMemoria);
 		return EXIT_SUCCESS;
 	}
+
+void enviarCodigoOperacion(sock_t* socket, int32_t entero){
+	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
+	if(enviado!=sizeof(int32_t)){
+		printf("No se envió correctamente la información entera\n");
+		log_error(CPULog,"Error al enviar codigo de operacion. \n","ERROR");
+		return;
+	}
+}
+
+uint32_t deserializarEnteroSinSigno(sock_t* socket)
+{
+	uint32_t enteroSinSigno;
+	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	if(status == -1 || status == 0)
+	{
+	enteroSinSigno = ANORMAL;
+	}
+	return enteroSinSigno;
+}
+
+/*t_pcb pcb_deserializar(t_stream stream){
+	t_pcb *self = malloc (sizeof(t_pcb));
+	int offset = 0, tmp_size = 0;
+
+	memcpy (&self->idProceso, stream.data,tmp_size = sizeof(uint32_t));
+
+	offset = tmp_size;
+	for (tmp_size = 1; (stream.data + offset) [tmp_size-1] != '\0'; tmp_size++);
+	self->estadoProceso =malloc (tmp_size);
+	memcpy(&self->estadoProceso, stream.data + offset, tmp_size);
+
+	offset += tmp_size;
+	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->contadorPuntero= malloc (tmp_size);
+	memcpy(&self->contadorPuntero, stream.data + offset, tmp_size);
+
+	offset += tmp_size;
+	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->cantidadInstrucciones= malloc (tmp_size);
+	memcpy(&self->cantidadInstrucciones, stream.data + offset, tmp_size);
+
+	offset += tmp_size;
+	for (tmp_size = 1; (stream.data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
+	self->path= malloc (tmp_size);
+	memcpy(self->path, stream.data + offset, tmp_size);
+
+	return self;
+}*/
