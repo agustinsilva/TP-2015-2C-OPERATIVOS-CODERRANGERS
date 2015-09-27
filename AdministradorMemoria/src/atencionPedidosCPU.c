@@ -94,6 +94,7 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t cantPaginas;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
 	int32_t recibidoPags = recv(cpuSocket->fd, &cantPaginas, sizeof(int32_t), 0);
+
 	if(recibidoProc!=sizeof(int32_t) || recibidoPags!=sizeof(int32_t)){
 		printf("No se recibió correctamente la información de la CPU\n");
 		enviarEnteros(cpuSocket, pedido_error);
@@ -101,14 +102,17 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 	}
 
 	int32_t confirmacion = crearTablaDePaginas(idmProc,cantPaginas);
-
-	/* otorgar espacio*/
-
-	enviarEnteros(swapSocket, codigo_iniciar);
-	enviarEnteros(swapSocket, idmProc);
-	enviarEnteros(swapSocket, cantPaginas);
-
 	enviarEnteros(cpuSocket, confirmacion);
+
+	if(confirmacion==pedido_exitoso){
+
+		/* otorgar espacio*/
+
+		enviarEnteros(swapSocket, codigo_iniciar);
+		enviarEnteros(swapSocket, idmProc);
+		enviarEnteros(swapSocket, cantPaginas);
+	}
+
 
 }
 
@@ -122,13 +126,16 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
 	}
 
 	int32_t confirmacion = eliminarTablaDePaginas(idmProc);
-
-	/* liberar espacio*/
-
-	enviarEnteros(swapSocket, codigo_finalizar);
-	enviarEnteros(swapSocket, idmProc);
-
 	enviarEnteros(cpuSocket, confirmacion);
+
+	if(confirmacion==pedido_exitoso){
+
+		/* liberar espacio*/
+
+		enviarEnteros(swapSocket, codigo_finalizar);
+		enviarEnteros(swapSocket, idmProc);
+	}
+
 }
 
 
@@ -149,44 +156,21 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 	 *                                         Si no esta en MP -> pedir a Swap:
 	 */
 
-	enviarEnteros(swapSocket, codigo_leer);
-	enviarEnteros(swapSocket, idmProc);
-	enviarEnteros(swapSocket, nroPagina);
-
-	bool encontro;
-	int32_t recibidoEncontro = recv(swapSocket->fd, &encontro, sizeof(bool), 0);
-	if(recibidoEncontro!=sizeof(bool)){
-		printf("No se recibió correctamente la confirmación del Swap\n");
+	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
+	if(pedido==NULL || pedido->encontro==false){
+		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
-	if(encontro==false){
-		enviarEnteros(cpuSocket,pedido_error);
-	} else{
 
-		int32_t cantARecibir;
-		int32_t recibidoCantidad = recv(swapSocket->fd, &cantARecibir, sizeof(int32_t), 0);
-		if(recibidoCantidad!=sizeof(int32_t)){
-			printf("No se recibió correctamente el contenido de la página de Swap\n");
-			enviarEnteros(cpuSocket,pedido_error);
-			return;
-		}
+	/* actualizar memoria principal con frame/pagina y copiar contenido */
 
-		char* contenido = malloc(cantARecibir);
-		int32_t recibidoContenido = recv(swapSocket->fd, contenido, sizeof(int32_t), 0);
-		if(recibidoContenido!=cantARecibir){
-			printf("No se recibió correctamente el contenido de la página de Swap\n");
-			enviarEnteros(cpuSocket,pedido_error);
-			return;
-		}
-		contenido[cantARecibir-1] = '\0';
+	enviarEnteros(cpuSocket, pedido_exitoso);
+	enviarEnteros(cpuSocket, pedido->longitud);
+	enviarStrings(cpuSocket, pedido->contenido, pedido->longitud);
 
-		/* actualizar memoria principal con frame/pagina y copiar contenido */
+	free(pedido->contenido);
+	free(pedido);
 
-		enviarEnteros(cpuSocket, cantARecibir);
-		enviarStrings(cpuSocket,contenido,cantARecibir);
-
-		free(contenido);
-	}
 	printf("Fin operación leer %d\n", nroPagina);
 }
 
@@ -207,5 +191,41 @@ void enviarStrings(sock_t* socket, char* string, int32_t longitud){
 	if(enviado!=longitud){
 		printf("No se envió correctamente el string\n");
 		return;
+	}
+}
+
+t_LecturaSwap* pedirPagina(sock_t* swapSocket, int32_t idmProc, int32_t nroPagina){
+
+	t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
+
+	enviarEnteros(swapSocket, codigo_leer);
+	enviarEnteros(swapSocket, idmProc);
+	enviarEnteros(swapSocket, nroPagina);
+
+	int32_t recibidoEncontro = recv(swapSocket->fd, &(pedido->encontro), sizeof(bool), 0);
+	if(recibidoEncontro!=sizeof(bool)){
+		printf("No se recibió correctamente la confirmación del Swap\n");
+		return NULL;
+	}
+	if(pedido->encontro==false){
+		return pedido;
+
+	} else{
+
+		int32_t recibidoCantidad = recv(swapSocket->fd, &(pedido->longitud), sizeof(int32_t), 0);
+		if(recibidoCantidad!=sizeof(int32_t)){
+			printf("No se recibió correctamente el contenido de la página de Swap\n");
+			return NULL;
+		}
+
+		pedido->contenido = malloc(pedido->longitud);
+		int32_t recibidoContenido = recv(swapSocket->fd, pedido->contenido, pedido->longitud, 0);
+		if(recibidoContenido!=pedido->longitud){
+			printf("No se recibió correctamente el contenido de la página de Swap\n");
+			return NULL;
+		}
+
+		pedido->contenido[pedido->longitud-1] = '\0';
+		return pedido;
 	}
 }
