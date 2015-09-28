@@ -29,8 +29,9 @@ typedef struct {
 	uint32_t estadoProceso; //0-Espera 1-Ejecucion 2-Finalizado
 	uint32_t contadorPuntero;
 	uint32_t cantidadInstrucciones;
+	uint32_t tamaniopath;
 	char* path;
-}t_pcb;
+}__attribute__((packed)) t_pcb;
 
 typedef struct {
 	uint32_t socketHilo;
@@ -44,14 +45,20 @@ t_list *proc_listos;
 t_list *proc_ejecutados;
 //Constantes
 #define PAQUETE 1024
+#define AGREGARHILOCPU 1
+#define ENVIARPCB 2
+#define ERROR 5
 //Variables globales
 t_configuracion* configuracion; //Puntero a configuracion
 t_config* fdConfiguracion; //Descriptor de archivo
+
+
 
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos(t_list *cpu_listos);
+char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
 void generoHiloPlanificador(t_list *cpu_listos);
 void creoCpu(uint32_t socketCpu, t_list *cpu_listos);
 int contarInstrucciones(char* path);
@@ -60,6 +67,7 @@ void leerComando(int* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
+uint32_t deserializarEnteroSinSigno(uint32_t socket);
 void limpiarConfiguracion();
 
 #endif /* PLANIFICADOR_H_ */
