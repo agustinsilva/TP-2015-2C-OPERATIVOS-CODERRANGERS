@@ -2,8 +2,6 @@
 
 #include "planificador.h"
 
-
-
 int main(void)
 {
 	contadorProceso = 0;
@@ -11,6 +9,9 @@ int main(void)
 	int respServidor = 0;
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
+
+	sem_init(&sincroproc, 0, 0);
+	sem_init(&sincrocpu, 0, 0);
 	proc_listos = list_create();
 	puts("Cargo archivo de configuracion de Planificador");
 	cargarArchivoDeConfiguracion();
