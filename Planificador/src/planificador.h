@@ -31,7 +31,7 @@ typedef struct {
 	uint32_t cantidadInstrucciones;
 	uint32_t tamaniopath;
 	char* path;
-}__attribute__((packed)) t_pcb;
+}t_pcb;
 
 typedef struct {
 	uint32_t socketHilo;

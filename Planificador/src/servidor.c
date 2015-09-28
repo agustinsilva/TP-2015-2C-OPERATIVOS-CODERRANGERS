@@ -121,35 +121,31 @@ void consumirRecursos(t_list *cpu_listos){
 		//Mandar por socket al cpu el proc para ejecutar
 		t_pcb *pcb = list_get(proc_ejecutado, 0);
 		t_hilosConectados *cpu = list_get(cpu_ocupado, 0);
-		uint32_t *totalPaquete;
-		char* mensaje;
+		uint32_t *totalPaquete = malloc(sizeof(uint32_t));
+
 		char* pcbSerializado = serializarPCB(pcb,totalPaquete);
 
-		memcpy(mensaje,pcbSerializado,totalPaquete);
-		send(cpu->socketHilo, mensaje, totalPaquete, 0);
-
+		char* mensaje = malloc(*totalPaquete);
+		memcpy(mensaje,pcbSerializado,*totalPaquete);
+		int sendhola = send(cpu->socketHilo, mensaje, *totalPaquete, 0);
+		printf("%d",sendhola);
 		free(mensaje);
 		free(pcbSerializado);
+		free(totalPaquete);
 
 		//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
 	}
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete){
-	uint32_t codigo = 4;
 	uint32_t tamanioenteros,tamaniopath,path;
-	tamanioenteros = 5 * sizeof(uint32_t); //codigo+4 int de pcb
+	tamanioenteros = 4 * sizeof(uint32_t); //codigo+4 int de pcb
 	tamaniopath = sizeof(uint32_t);
 	path = strlen(pcb->path);
-	totalPaquete = tamanioenteros+tamaniopath+path;
-
-	char *paqueteSerializado = malloc(totalPaquete);
+	*totalPaquete = tamanioenteros+tamaniopath+path;
+	char *paqueteSerializado = malloc(*totalPaquete);
 	int offset = 0;
 	int medidaAMandar;
-
-	medidaAMandar = sizeof(codigo);
-	memcpy(paqueteSerializado + offset, &codigo, medidaAMandar); //mando el codigo 2 para informar q es un pcb
-	offset += medidaAMandar;
 
 	medidaAMandar = sizeof(pcb->idProceso);
 	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
@@ -172,7 +168,7 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete){
 	offset += medidaAMandar;
 
 	medidaAMandar = path;
-	memcpy(paqueteSerializado + offset, &(pcb->path), medidaAMandar);
+	memcpy(paqueteSerializado + offset, pcb->path, medidaAMandar);
 	offset += medidaAMandar;
 
 	return paqueteSerializado;

@@ -40,8 +40,8 @@ void* ConectarAPlanificador()
 t_pcb* escucharPlanificador(){
 	char message[1024];
 	int32_t status = 0;
-	t_pcb *pcbRecibido;
-	t_stream* stream;
+	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
+	t_stream* stream = malloc(sizeof(t_stream));
 
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
@@ -56,8 +56,19 @@ t_pcb* escucharPlanificador(){
 	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
 
 	//Recibe mensaje de Planificador: PCB
-	status = recv(socketClientePlanificador->fd,(void*)stream,sizeof(t_stream),0);
+	uint32_t tamanioChar;
+	status = recv(socketClientePlanificador->fd,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
 
+	status = recv(socketClientePlanificador->fd,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
+
+	status = recv(socketClientePlanificador->fd,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);
+	status = recv(socketClientePlanificador->fd,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
+	status = recv(socketClientePlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
+	char *buffer = malloc(tamanioChar);
+	status = recv(socketClientePlanificador->fd,pcbRecibido->path,tamanioChar,0);
+
+
+	printf("%s",stream->data);
 	if(status >=0 ){
 		pcbRecibido = pcb_deserializar(stream);
 	}else{
