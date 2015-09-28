@@ -50,9 +50,12 @@ int abrirArchivoYValidar(char* path, uint32_t pid){
 
 	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
 	char instruccion[TAMINSTRUCCION];
-	FILE* entrada;
+	char* src = string_new();
+	string_append(&src, "src/");
+	string_append(&src, path);
+	FILE* entrada = fopen(src, "r");
 
-	if((entrada=fopen(path,"r"))==NULL){
+	if(entrada==NULL){
 		log_error(CPULog,"No se pudo abrir el archivo de entrada. \n","ERROR");
 		return -1;
 	}
