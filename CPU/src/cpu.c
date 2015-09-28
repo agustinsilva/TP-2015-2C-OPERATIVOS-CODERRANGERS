@@ -46,9 +46,9 @@ void crearHilosCPU (void)
 
 }
 
-int abrirArchivoYValidar(char* path){
+int abrirArchivoYValidar(char* path, uint32_t pid){
 	char **lista;
-	int instrucciones=0;
+
 	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
 	char instruccion[TAMINSTRUCCION];
 	FILE* entrada;
@@ -61,6 +61,16 @@ int abrirArchivoYValidar(char* path){
 	printf("Archivo abierto \n");
 	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
 
+	//Conectar con Admin de Memoria
+	sock_t* clientSocketAdmin = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
+	int32_t conexionAdminMemoria = connect_to_server(clientSocketAdmin);
+	if (conexionAdminMemoria != 0) {
+		perror("Error al conectar socket");
+		log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. \n","ERROR");
+		exit(EXIT_FAILURE);
+	}
+	socketAdminMemoria = clientSocketAdmin;
+
 	while (fgets(instruccion,TAMINSTRUCCION, entrada) != NULL) {
 		lista = string_split(instruccion," ");
 
@@ -69,7 +79,7 @@ int abrirArchivoYValidar(char* path){
 
 			//SE CONECTA A MEMORIA//
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
-			informarAdminMemoriaComandoIniciar(lista[1]);
+			informarAdminMemoriaComandoIniciar(lista[1],pid);
 
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
@@ -78,7 +88,15 @@ int abrirArchivoYValidar(char* path){
 
 			//SE CONECTA A MEMORIA//
 			//Informar al AdminMemoria que finalice el proceso
-			informarAdminMemoriaComandoFinalizar(path);
+			informarAdminMemoriaComandoFinalizar(pid);
+
+			sleep(configuracion->retardo);
+		}else if(string_equals_ignore_case(lista[0], "leer")){
+			puts("Instruccion: leer\n");
+
+			//SE CONECTA A MEMORIA//
+			//lista[1] contiene el nro de pagina
+			informarAdminMemoriaComandoLeer(pid,lista[1]);
 
 			sleep(configuracion->retardo);
 		}else{
@@ -88,7 +106,7 @@ int abrirArchivoYValidar(char* path){
 
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
-
+	clean_socket(socketAdminMemoria);
 	return 0;
 }
 
@@ -99,8 +117,7 @@ int abrirArchivoYValidar(char* path){
 void escucharYAtender(){
 	t_pcb* pcb;
 	pcb = escucharPlanificador();
-	char* path = pcb->path;
-	printf("El path recibido es: %s \n",path);
-	abrirArchivoYValidar(path);
+	printf("El path recibido es: %s \n",pcb->path);
+	abrirArchivoYValidar(pcb->path,pcb->idProceso);
 }
 

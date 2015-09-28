@@ -50,16 +50,19 @@ typedef struct {
 #define PAQUETE 1024
 #define TAMINSTRUCCION 80
 #define INICIAR 1
+#define FINALIZAR 2
 #define RECIBIR_PCB 2
 #define LEER 3
 #define ESCRIBIR 4
 #define ANORMAL 5
 #define NUEVO_HILO 1
+#define PEDIDO_ERROR 1
 
 //Variables globales
 t_configuracion* configuracion;
 t_config * fd_configuracion;
 t_log* CPULog;
+sock_t* socketAdminMemoria;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
@@ -68,10 +71,11 @@ void* ConectarAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender();
 void limpiarConfiguracion();
-int informarAdminMemoriaComandoIniciar(char* cantidadPaginas);
-int informarAdminMemoriaComandoFinalizar(char * path);
+int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid);
+int informarAdminMemoriaComandoFinalizar(uint32_t pid);
 void crearHilosCPU (void);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 t_pcb deserializarDetalle(sock_t* socket, uint32_t cabecera);
 t_pcb* pcb_deserializar(t_stream* stream);
+void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 #endif /* CPU_H_ */

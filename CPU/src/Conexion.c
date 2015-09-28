@@ -76,26 +76,44 @@ t_pcb* escucharPlanificador(){
  * 				1 Fallo: otro motivo
  * 				0 Exitoso
  */
-int informarAdminMemoriaComandoIniciar(char* cantidadPaginas){
-	sock_t* socketAAdminMemoria = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
-	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
-	if (conexionAdminMemoria != 0) {
-		perror("Error al conectar socket");
-		log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. \n","ERROR");
-		//break;
-		exit(EXIT_FAILURE);
-	}
+int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid){
+	int32_t status;
+	int32_t entero;
 
 	//Envia aviso al Adm de Memoria: comando Iniciar.
-	//enviarCodigoOperacion()
 
-	//char* message = string_from_format("%s %s %s", INICIAR, cantidadPaginas ," páginas.\n");
-	//int32_t status = send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
+	int32_t cabecera = INICIAR;
+	int32_t paginas = (int32_t)cantidadPaginas;
 
+	char* message = malloc(1024);
+	uint32_t offset=0;
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(paginas);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &pid, sizeof(pid));
+	offset = offset + sizeof(pid);
+	memcpy(message + offset, &paginas, sizeof(paginas));
+	offset = offset + sizeof(paginas);
+	status = send(socketAdminMemoria->fd,message,tamanio,0);
+	free(message);
 
-	//TODO 	recibir la rta de memoria
+	if(!status)	{
+		printf("No se envió el mensaje finalizar al Administrador de Memoria.\n");
+	}
+	else {
+		printf("Se envió el mensaje finalizar correctamente al Admin de Memoria.\n");
+	}
 
-	clean_socket(socketAAdminMemoria);
+	//Recibe respuesta
+	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+
+	if(status==PEDIDO_ERROR){
+
+	}else{
+
+	}
+
+	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;
 }
 
@@ -107,31 +125,69 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas){
  * 				0 Fallo
  * 				1 Exito
  */
-int informarAdminMemoriaComandoFinalizar(char * path){
-	sock_t* socketAAdminMemoria = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
-		int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);
-		if (conexionAdminMemoria != 0) {
-			perror("Error al conectar socket");
-			log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. \n","ERROR");
-			//break;
-			exit(EXIT_FAILURE);
-		}
+int informarAdminMemoriaComandoFinalizar(uint32_t pid){
+	int32_t status;
+	int32_t entero;
 
-		//TODO serializar estructura y enviar al AdminMemoria
+	//Envia aviso al Adm de Memoria: comando Finalizar.
+	int32_t cabecera = FINALIZAR;
 
-		char* message = string_from_format("%s %s %s","Comando a ejecutar: finalizar del mProc proveniente de: ", path ,"\n");
-		int32_t status;
-		status = send(socketAAdminMemoria->fd, (void*)message, strlen(message) + 1, 0);
-		if(!status)	{
-			printf("No se envió el mensaje al Administrador de Memoria.\n");
-		}
-		else {
-			printf("Se envió el mensaje  correctamente al Admin de Memoria.\n");
-		}
+	char* message = malloc(1024);
+	uint32_t offset=0;
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &pid, sizeof(pid));
+	offset = offset + sizeof(pid);
+	status = send(socketAdminMemoria->fd,message,tamanio,0);
+	free(message);
 
-		clean_socket(socketAAdminMemoria);
-		return EXIT_SUCCESS;
+	if(!status)	{
+		printf("No se envió el mensaje finalizar al Administrador de Memoria.\n");
 	}
+	else {
+		printf("Se envió el mensaje finalizar correctamente al Admin de Memoria.\n");
+	}
+
+	//Recibe respuesta
+	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+
+	clean_socket(socketAdminMemoria);
+	return EXIT_SUCCESS;
+}
+
+int informarAdminMemoriaComandoLeer(uint32_t pid, uint32_t numeroPagina){
+	int32_t status;
+	int32_t entero;
+
+	//Envia aviso al Adm de Memoria: comando Finalizar.
+	int32_t cabecera = FINALIZAR;
+
+	char* message = malloc(1024);
+	uint32_t offset=0;
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &pid, sizeof(pid));
+	offset = offset + sizeof(pid);
+	memcpy(message + offset, &numeroPagina, sizeof(numeroPagina));
+	offset = offset + sizeof(numeroPagina);
+	status = send(socketAdminMemoria->fd,message,tamanio,0);
+	free(message);
+
+	if(!status)	{
+		printf("No se envió el mensaje leer Administrador de Memoria.\n");
+	}
+	else {
+		printf("Se envió el mensaje leer correctamente al Admin de Memoria.\n");
+	}
+
+	//Recibe respuesta
+	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+
+	clean_socket(socketAdminMemoria);
+	return EXIT_SUCCESS;
+}
 
 void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
