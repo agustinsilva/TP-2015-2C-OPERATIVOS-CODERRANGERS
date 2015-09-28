@@ -73,6 +73,7 @@ void escucharYAtender();
 void limpiarConfiguracion();
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid);
 int informarAdminMemoriaComandoFinalizar(uint32_t pid);
+int informarAdminMemoriaComandoLeer(uint32_t pid, char* numeroPagina);
 void crearHilosCPU (void);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 t_pcb deserializarDetalle(sock_t* socket, uint32_t cabecera);

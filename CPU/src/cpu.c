@@ -24,7 +24,6 @@ int main(void)
 void crearHilosCPU (void)
 {
 
-	int cantidad=0;
 	int rtaHilo = 0;
 	pthread_t hiloCpu; //id de cpu
 

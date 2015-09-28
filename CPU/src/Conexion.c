@@ -64,7 +64,7 @@ t_pcb* escucharPlanificador(){
 		log_error(CPULog,"Error al recibir PCB.","ERROR");
 	}
 
-	clean_socket(socketClientePlanificador);
+	clean_socket(socketClientePlanificador); //CREO QUE NO VA ACA, ESTO VA CUANDO SE ENVIA EL COMANDO FINALIZAR. (DIEGO 27/9)
 	return pcbRecibido;
 }
 
@@ -156,7 +156,7 @@ int informarAdminMemoriaComandoFinalizar(uint32_t pid){
 	return EXIT_SUCCESS;
 }
 
-int informarAdminMemoriaComandoLeer(uint32_t pid, uint32_t numeroPagina){
+int informarAdminMemoriaComandoLeer(uint32_t pid, char* numeroPagina){
 	int32_t status;
 	int32_t entero;
 
