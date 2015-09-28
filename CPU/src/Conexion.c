@@ -58,24 +58,19 @@ t_pcb* escucharPlanificador(){
 	//Recibe mensaje de Planificador: PCB
 	uint32_t tamanioChar;
 	status = recv(socketClientePlanificador->fd,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
-
+	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketClientePlanificador->fd,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
-
+	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketClientePlanificador->fd,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);
+	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketClientePlanificador->fd,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
+	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketClientePlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
-	char *buffer = malloc(tamanioChar);
+	pcbRecibido->path = malloc(tamanioChar);
 	status = recv(socketClientePlanificador->fd,pcbRecibido->path,tamanioChar,0);
+	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 
-
-	printf("%s",stream->data);
-	if(status >=0 ){
-		pcbRecibido = pcb_deserializar(stream);
-	}else{
-		log_error(CPULog,"Error al recibir PCB.","ERROR");
-	}
-
-	clean_socket(socketClientePlanificador); //CREO QUE NO VA ACA, ESTO VA CUANDO SE ENVIA EL COMANDO FINALIZAR. (DIEGO 27/9)
+	//clean_socket(socketClientePlanificador); //CREO QUE NO VA ACA, ESTO VA CUANDO SE ENVIA EL COMANDO FINALIZAR. (DIEGO 27/9)
 	return pcbRecibido;
 }
 
@@ -209,7 +204,7 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	}
 }
 
-uint32_t deserializarEnteroSinSigno(sock_t* socket)
+uint32_t deserializarEnteroSinSigno(sock_t* socket) // NO SE ESTA USANDO CHICOS !!! LO DEJO POR SI LO QUIEREN USAR PA ALGO
 {
 	uint32_t enteroSinSigno;
 	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
