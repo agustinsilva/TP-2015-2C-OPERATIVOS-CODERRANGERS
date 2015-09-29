@@ -41,6 +41,12 @@ typedef struct {
 	char* path;
 }t_hilosConectados;
 
+struct arg_struct {
+	t_list *cpu_listos;
+	t_list *cpu_ocupados;
+}args;
+
+
 //Variables globales
 int contadorProceso;
 t_list *proc_listos;
@@ -53,6 +59,7 @@ t_log* planificadorLog;
 #define PAQUETE 1024
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
+#define LOGEARFINALIZACIONCPU 3
 #define ENVIARPCB 2
 #define ERROR 5
 //Variables globales
@@ -64,10 +71,11 @@ t_config* fdConfiguracion; //Descriptor de archivo
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
-void consumirRecursos(t_list *cpu_listos);
-void logearResultadoCpu();
+void consumirRecursos(struct arg_struct *args);
+void logearResultadoCpu(uint32_t socketCpu);
+void logearFinalizacionCpu(uint32_t socketCpu);
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
-void generoHiloPlanificador(t_list *cpu_listos);
+void generoHiloPlanificador(struct arg_struct *args);
 void creoCpu(uint32_t socketCpu, t_list *cpu_listos);
 int contarInstrucciones(char* path);
 void* mostrarConsola();
