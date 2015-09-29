@@ -41,17 +41,13 @@ typedef struct {
 	char* path;
 }t_pcb;
 
-typedef struct {
- int length;
- char *data;
-} t_stream;
-
 //Constantes
 #define PAQUETE 1024
 #define TAMINSTRUCCION 80
 #define INICIAR 1
 #define FINALIZAR 2
 #define RESPUESTA_PLANIFICADOR 2
+#define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define LEER 3
 #define ESCRIBIR 4
 #define ANORMAL 5
@@ -76,6 +72,6 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 int informarAdminMemoriaComandoFinalizar(int32_t pid);
 int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
 void crearHilosCPU (void);
-t_pcb deserializarDetalle(sock_t* socket, int32_t cabecera);
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
+uint32_t deserializarEnteroSinSigno(sock_t* socket);
 #endif /* CPU_H_ */

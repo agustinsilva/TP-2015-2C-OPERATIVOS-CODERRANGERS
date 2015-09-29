@@ -71,23 +71,23 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		lista = string_split(instruccion," ");
 
 		if (string_equals_ignore_case(lista[0], "iniciar")){
-			log_info(CPULog," [PID:%s] Instruccion: iniciar\n","INFO",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: iniciar\n",string_itoa(pid));
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 			informarAdminMemoriaComandoIniciar(lista[1],pid);
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
 		}else if(string_equals_ignore_case(lista[0], "finalizar")){
-			log_info(CPULog," [PID:%s] Instruccion: finalizar\n","INFO",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: finalizar\n",string_itoa(pid));
 			//Informar al AdminMemoria que finalice el proceso
 			informarAdminMemoriaComandoFinalizar(pid);
 			sleep(configuracion->retardo);
 		}else if(string_equals_ignore_case(lista[0], "leer")){
-			log_info(CPULog," [PID:%s] Instruccion: leer\n","INFO",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: leer\n",string_itoa(pid));
 			//lista[1] contiene el nro de pagina
 			informarAdminMemoriaComandoLeer(pid,lista[1]);
 			sleep(configuracion->retardo);
 		}else{
-			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado\n","WARN",string_itoa(pid));
+			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado\n",string_itoa(pid));
 		}
 	}
 

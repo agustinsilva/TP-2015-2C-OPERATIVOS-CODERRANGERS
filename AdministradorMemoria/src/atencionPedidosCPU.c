@@ -76,15 +76,11 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU){
 		case codigo_escribir: escritura(paramsCPU->cpuSocket, paramsCPU->swapSocket);
 			break;
 		}
-
-
 		codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
 		if(codigoOperacion==-1){
 			printf("No se recibió correctamente el código de operación\n");
 			return EXIT_FAILURE;
 		}
-
-
 	}
 	return 0;
 }
@@ -174,7 +170,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
 *	}
 */
 
-//	enviarEnteros(cpuSocket, confirmacionSwap);
+	enviarEnteros(cpuSocket, confirmacionSwap);
 	printf("Fin operación finalizar \n");
 }
 

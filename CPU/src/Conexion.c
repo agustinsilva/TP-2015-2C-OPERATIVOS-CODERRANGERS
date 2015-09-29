@@ -41,10 +41,7 @@ t_pcb* escucharPlanificador(){
 	char message[1024];
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
-	t_stream* stream = malloc(sizeof(t_stream));
-
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
-
 	socketPlanificador = socketClientePlanificador;
 
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
@@ -181,18 +178,21 @@ int informarAdminMemoriaComandoFinalizar(int32_t pid){
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
 
 	//mProc X finalizado
-	cabecera = RESPUESTA_PLANIFICADOR;
+	cabecera = RESPUESTA_PLANIFICADOR_FIN_EJECUCION;
 	char* mensaje = string_new();
 	offset = 0;
 	string_append(&mensaje, "mProc ");
 	string_append(&mensaje, string_itoa(pid));
 	string_append(&mensaje, " - Finalizado.");
-	tamanio = sizeof(cabecera) + sizeof(mensaje);
+	uint32_t longitudMensaje = strlen(mensaje);
+	tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 	message = malloc(tamanio);
-	memcpy(message, &cabecera, sizeof(cabecera));
+	memcpy(message, &cabecera, sizeof(cabecera)); //Codigo
 	offset = sizeof(cabecera);
-	memcpy(message + offset, &mensaje, sizeof(mensaje));
-	offset = offset + sizeof(mensaje);
+	memcpy(message + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+	offset = offset + sizeof(uint32_t);
+	memcpy(message + offset, mensaje, longitudMensaje); //Mensaje
+	offset = offset + longitudMensaje;
 	status = send(socketPlanificador->fd,message,tamanio,0);
 	free(message);
 
@@ -225,21 +225,31 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	}
 
 	//Recibe respuesta
-	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+	//status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+	uint32_t codOperacion = deserializarEnteroSinSigno(socketAdminMemoria);
+	uint32_t longitud = deserializarEnteroSinSigno(socketAdminMemoria);
+	char* contenido;
+	status = recv(socketAdminMemoria->fd,&contenido,longitud,0);
 
 	//mProc 10 - Pagina 2 leida: contenido
 	cabecera = RESPUESTA_PLANIFICADOR;
 	char* mensaje = string_new();
-	message = malloc(1024);
 	offset = 0;
 	string_append(&mensaje, "mProc ");
-	string_append(&mensaje, (char*)pid);
-	string_append(&mensaje, " - Pagina.");
-	tamanio = sizeof(cabecera) + sizeof(mensaje);
-	memcpy(message, &cabecera, sizeof(cabecera));
+	string_append(&mensaje, string_itoa(pid));
+	string_append(&mensaje, " - Pagina ");
+	string_append(&mensaje,numeroPagina);
+	string_append(&mensaje," leida: ");
+	string_append(&mensaje,contenido);
+	uint32_t longitudMensaje = strlen(mensaje);
+	tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+	message = malloc(tamanio);
+	memcpy(message, &cabecera, sizeof(cabecera)); //Codigo
 	offset = sizeof(cabecera);
-	memcpy(message + offset, &mensaje, sizeof(mensaje));
-	offset = offset + sizeof(mensaje);
+	memcpy(message + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+	offset = offset + sizeof(uint32_t);
+	memcpy(message + offset, mensaje, longitudMensaje); //Mensaje
+	offset = offset + longitudMensaje;
 	status = send(socketPlanificador->fd,message,tamanio,0);
 	free(message);
 
@@ -254,4 +264,16 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 		return;
 	}
 }
+
+uint32_t deserializarEnteroSinSigno(sock_t* socket)
+{
+	uint32_t enteroSinSigno;
+	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	if(status == -1 || status == 0)
+	{
+		enteroSinSigno = ANORMAL;
+	}
+	return enteroSinSigno;
+}
+
 
