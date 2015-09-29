@@ -98,42 +98,50 @@ uint32_t deserializarEnteroSinSigno(uint32_t socket)
 }
 
 
-void generoHiloPlanificador(t_list *cpu_listos){
+void generoHiloPlanificador(t_list *cpu_listos) {
 	pthread_t hiloPlanificador;
 	int respPlanificador = 0;
+	int hiloCreado = 0;
 
-	respPlanificador = pthread_create(&hiloPlanificador,NULL,consumirRecursos, cpu_listos);
-
-	if(respPlanificador)
-	{
-		fprintf(stderr,"Error- Iniciar servidor codigo de retorno %d\n",respPlanificador);
+	if (!hiloCreado) {
+		hiloCreado = 1;
+		respPlanificador = pthread_create(&hiloPlanificador, NULL, consumirRecursos, cpu_listos);
+	}
+	if (respPlanificador) {
+		fprintf(stderr, "Error- Iniciar servidor codigo de retorno %d\n", respPlanificador);
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
 }
 
-void consumirRecursos(t_list *cpu_listos){
+void consumirRecursos(t_list *cpu_listos) {
 	//mientras halla cpu listos, mandar a ejecutar pcb
+	while (1) {
+		sem_wait(&sincrocpu);
+		sem_wait(&sincroproc);
+		while (list_size(cpu_listos) > 0 && list_size(proc_listos) > 0) {
+			t_list *cpu_ocupado = list_take_and_remove(cpu_listos, 1);
+			t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
+			//Mandar por socket al cpu el proc para ejecutar
+			t_pcb *pcb = list_get(proc_ejecutado, 0);
+			t_hilosConectados *cpu = list_get(cpu_ocupado, 0);
+			pcb->estadoProceso = 1; //Lo ponemos en estado de ejecucion
+			uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 
-	while (list_size(cpu_listos)>0 && list_size(proc_listos)>0){
-		t_list *cpu_ocupado = list_take_and_remove(cpu_listos, 1);
-		t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
-		//Mandar por socket al cpu el proc para ejecutar
-		t_pcb *pcb = list_get(proc_ejecutado, 0);
-		t_hilosConectados *cpu = list_get(cpu_ocupado, 0);
-		uint32_t *totalPaquete = malloc(sizeof(uint32_t));
+			char* pcbSerializado = serializarPCB(pcb, totalPaquete);
 
-		char* pcbSerializado = serializarPCB(pcb,totalPaquete);
-
-		char* mensaje = malloc(*totalPaquete);
-		memcpy(mensaje,pcbSerializado,*totalPaquete);
-		int sendhola = send(cpu->socketHilo, mensaje, *totalPaquete, 0);
-		printf("%d",sendhola);
-		free(mensaje);
-		free(pcbSerializado);
-		free(totalPaquete);
-
-		//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
+			char* mensaje = malloc(*totalPaquete);
+			memcpy(mensaje, pcbSerializado, *totalPaquete);
+			int sendByte = send(cpu->socketHilo, mensaje, *totalPaquete, 0);
+			if(sendByte < 0){
+				printf("No se envio la data");
+			}
+			printf("Se envio Pcb a Cpu %d \n", cpu->socketHilo);
+			free(mensaje);
+			free(pcbSerializado);
+			free(totalPaquete);
+			//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
+		}
 	}
 }
 
@@ -180,6 +188,7 @@ void creoCpu(uint32_t socketCpu, t_list *cpu_listos){
 	hilosConectados->estadoHilo = 0; //0-disponible 1-Ejecutando
 	hilosConectados->path = NULL;
 	list_add(cpu_listos,hilosConectados);
+	sem_post(&sincrocpu);
 	printf("Se creo hilo disponible para asignar\n");
 }
 

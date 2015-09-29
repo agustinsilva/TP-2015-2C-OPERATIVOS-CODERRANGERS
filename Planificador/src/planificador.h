@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <socket.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <commons/string.h>
 #include <commons/collections/list.h>
 
@@ -43,6 +44,8 @@ typedef struct {
 int contadorProceso;
 t_list *proc_listos;
 t_list *proc_ejecutados;
+sem_t sincroproc;
+sem_t sincrocpu;
 //Constantes
 #define PAQUETE 1024
 #define AGREGARHILOCPU 1

@@ -101,21 +101,31 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 		return;
 	}
 
-	int32_t confirmacion = crearTablaDePaginas(idmProc,cantPaginas);
-	enviarEnteros(cpuSocket, confirmacion);
+	enviarEnteros(swapSocket, codigo_iniciar);
+	enviarEnteros(swapSocket, idmProc);
+	enviarEnteros(swapSocket, cantPaginas);
 
-	if(confirmacion==pedido_exitoso){
+	int32_t confirmacionSwap;
+	int32_t recibidoSwap = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t),0);
+	if(recibidoSwap!=sizeof(int32_t)){
+			printf("No se recibió correctamente la confirmación del Swap\n");
+			enviarEnteros(cpuSocket, pedido_error);
+			return;
+	}
 
-		/* otorgar espacio*/
+	if(confirmacionSwap==pedido_exitoso){
+		crearTablaDePaginas(idmProc,cantPaginas);
+	}
+	enviarEnteros(cpuSocket, confirmacionSwap);
 
-		enviarEnteros(swapSocket, codigo_iniciar);
-		enviarEnteros(swapSocket, idmProc);
-		enviarEnteros(swapSocket, cantPaginas);
+	/* otorgar espacio*/
 
+
+	if(confirmacionSwap==pedido_exitoso){
 		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito \n  PID: %d, Cantidad de Páginas: %d \n", idmProc, cantPaginas);
 	} else {
 
-		if(confirmacion == pedido_no_memoria){
+		if(confirmacionSwap == pedido_error){
 			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: No hay memoria disponible\n");
 		} else {
 			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: Error de comunicación \n");

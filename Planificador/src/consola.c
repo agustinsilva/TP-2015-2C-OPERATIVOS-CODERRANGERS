@@ -25,9 +25,7 @@ void* mostrarConsola() {
 				printf("-------------------- \n");
 				printf("Por favor, ingrese el path del archivo que desea ejecutar:\n");
 				//Metodo que ejecuta el Correr
-
 				scanf("%s",path);
-
 				encolar(path);
 				break;
 			case 2:
@@ -79,6 +77,7 @@ void encolar(char* path) {
 	pcb->path = strdup(path);
 
 	list_add(proc_listos,pcb);
+	sem_post(&sincroproc);
 	printf("Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n");
 }
 
