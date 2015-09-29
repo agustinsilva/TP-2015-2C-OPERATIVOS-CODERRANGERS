@@ -172,7 +172,13 @@ char* buscarPagina(uint32_t PID, uint32_t pagina)
 	{
 		tamanio = string_length(paginaBuscada);
 	}
+	if(tamanio != 0)
+	{
 	log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,paginaBuscada);
+	}else
+	{
+		log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,"pagina vacia\0");
+	}
 	return paginaBuscada;
 }
 
@@ -235,10 +241,11 @@ void* encontrarNodoPorPID(t_list* lista, uint32_t PID)
 
 void procesarInicio(t_mensaje* detalle,sock_t* socket)
 {
-	uint32_t status;
+	int32_t status;
 	bool resultado;
 	resultado = asignarProceso(detalle);
-	status = send(socket->fd, &resultado, sizeof(bool),0);
+	int32_t mensaje = resultado;
+	status = send(socket->fd, &mensaje, sizeof(mensaje),0);
 	/*chequea envío*/
 	if(!status)
 	{
@@ -260,7 +267,8 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 		printf("Se intenta eliminar un proceso que no existe en memoria \n");
 	}
 	//Se envia 1 si salio todo bien y 0 en caso contrario.
-	uint32_t status = send(socketMemoria->fd, &resultado, sizeof(bool),0);
+	int32_t mensaje = resultado;
+	int32_t status = send(socketMemoria->fd, &mensaje, sizeof(mensaje),0);
 	if(!status)
 	{
 		printf("Irregularidad en el envio\n");
@@ -271,21 +279,23 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 {
 	pidCondicion = detalle->PID;
-	uint32_t status;
+	int32_t status;
+	int32_t resultado;
 	bool buscar = list_any_satisfy(espacioOcupado,validarMismoPid);
+	resultado = buscar;
 	if(buscar == 1)
 	{
 	char* pagina = buscarPagina(detalle->PID, detalle->ubicacion);
-	uint32_t tamanio,offset;
+	int32_t tamanio,offset;
 	char* mensaje;
 	aumentarLectura(detalle->PID);
 	//serializo mensaje, esto se puede mejorar.
 	offset = 0;
-	uint32_t tamanioPagina = string_length(pagina) + 1;
-	tamanio = sizeof(bool) + sizeof(uint32_t) + tamanioPagina;
+	int32_t tamanioPagina = string_length(pagina) + 1;
+	tamanio = sizeof(resultado) + sizeof(int32_t) + tamanioPagina;
 	mensaje = malloc(tamanio);
-	memcpy(mensaje + offset, &buscar, sizeof(bool));
-	offset = offset + sizeof(bool);
+	memcpy(mensaje + offset, &resultado, sizeof(resultado));
+	offset = offset + sizeof(resultado);
 	memcpy(mensaje + offset, &tamanioPagina, sizeof(tamanioPagina));
 	offset = offset + sizeof(tamanioPagina);
 	if(tamanioPagina > 0)
@@ -299,7 +309,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 	else
 	{
 		printf("No existe el proceso en memoria \n");
-		status = send(socketMemoria->fd, &buscar, sizeof(bool),0);
+		status = send(socketMemoria->fd, &resultado, sizeof(resultado),0);
 		/*chequea envío*/
 		if(!status)
 		{
