@@ -29,7 +29,7 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 			tabla->write = false;
 
 			tabla->idProc = idmProc;
-			tabla->frame = getFrame();
+	/*		tabla->frame = getFrame(); */
 			tabla->nroPag = getPagina();
 
 			list_add(tablasDePaginas,tabla);
@@ -59,10 +59,26 @@ bool hayEspacio(){
 }
 
 int32_t getFrame(){
-	return rand() % 100;
+	return  rand() % 1000;
 }
 
 int32_t getPagina(){
-	return rand() % 100;
+	int32_t pagina =  rand() % 1000;
+
+	bool porNroPagina(void * entrada) {
+		t_TP* tabla=(t_TP*) entrada;
+		return tabla->nroPag==pagina;
+	}
+	t_TP* encontrado = list_find(tablasDePaginas,porNroPagina);
+	while(encontrado!=NULL){
+		pagina =  rand() % 1000;
+
+		bool porNroPagina(void * entrada) {
+			t_TP* tabla=(t_TP*) entrada;
+			return tabla->nroPag==pagina;
+		}
+		encontrado = list_find(tablasDePaginas,porNroPagina);
+	}
+	return pagina;
 }
 

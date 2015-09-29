@@ -144,17 +144,21 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
 		return;
 	}
 
-	int32_t confirmacion = eliminarTablaDePaginas(idmProc);
-	enviarEnteros(cpuSocket, confirmacion);
+	enviarEnteros(swapSocket, codigo_finalizar);
+	enviarEnteros(swapSocket, idmProc);
 
-	if(confirmacion==pedido_exitoso){
-
-		/* liberar espacio*/
-
-		enviarEnteros(swapSocket, codigo_finalizar);
-		enviarEnteros(swapSocket, idmProc);
+	int32_t confirmacionSwap;
+	int32_t recibidoSwap = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t),0);
+	if(recibidoSwap!=sizeof(int32_t)){
+			printf("No se recibió correctamente la confirmación del Swap\n");
+			enviarEnteros(cpuSocket, pedido_error);
+			return;
 	}
-
+	if(confirmacionSwap==pedido_exitoso){
+		eliminarTablaDePaginas(idmProc);
+		/* liberar espacio*/
+	}
+	enviarEnteros(cpuSocket, confirmacionSwap);
 }
 
 
