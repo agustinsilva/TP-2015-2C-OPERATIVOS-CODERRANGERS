@@ -91,6 +91,7 @@ int32_t recibirCodigoOperacion(sock_t* cpu){
 }
 
 void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
+	printf("Se recibió el pedido de Iniciar Proceso\n");
 	int32_t idmProc;
 	int32_t cantPaginas;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
@@ -100,6 +101,8 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 		printf("No se recibió correctamente la información de la CPU\n");
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
+	} else {
+		printf("Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
 	}
 
 	enviarEnteros(swapSocket, codigo_iniciar);
@@ -114,13 +117,13 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket){
 			return;
 	}
 
-	if(confirmacionSwap==pedido_exitoso){
-		crearTablaDePaginas(idmProc,cantPaginas);
-	}
+	/* No para este checkpoint
+	 *
+	 * if(confirmacionSwap==pedido_exitoso){
+	 *	crearTablaDePaginas(idmProc,cantPaginas);
+	 *  }
+	 */
 	enviarEnteros(cpuSocket, confirmacionSwap);
-
-	/* otorgar espacio*/
-
 
 	if(confirmacionSwap==pedido_exitoso){
 		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito \n  PID: %d, Cantidad de Páginas: %d \n", idmProc, cantPaginas);
@@ -141,7 +144,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
 	if(recibidoProc!=sizeof(int32_t)){
 		printf("No se recibió correctamente la información de la CPU\n");
-		enviarEnteros(cpuSocket, pedido_error);
+//		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
 
@@ -152,14 +155,18 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t recibidoSwap = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t),0);
 	if(recibidoSwap!=sizeof(int32_t)){
 			printf("No se recibió correctamente la confirmación del Swap\n");
-			enviarEnteros(cpuSocket, pedido_error);
+//			enviarEnteros(cpuSocket, pedido_error);
 			return;
 	}
-	if(confirmacionSwap==pedido_exitoso){
-		eliminarTablaDePaginas(idmProc);
-		/* liberar espacio*/
-	}
-	enviarEnteros(cpuSocket, confirmacionSwap);
+/*
+*	if(confirmacionSwap==pedido_exitoso){
+*		eliminarTablaDePaginas(idmProc);
+*		//liberar espacio
+*	}
+*/
+
+//	enviarEnteros(cpuSocket, confirmacionSwap);
+	printf("Fin operación finalizar \n");
 }
 
 
@@ -175,28 +182,34 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 
 	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d\n", idmProc, nroPagina);
 
-	/* buscar en TLB
-	 * Si esta    -> devolver contenido (logear hit con pag y frame resultante)
-	 * Si no esta (logear miss y resultado alg. reemplazo)-> busca tabla de paginas -> busqueda en memoria principal
-	 *                                         											Si esta en MP    -> devolver contenido
-	 *                                        											Si no esta en MP -> pedir a Swap:
-	 */
+	if(configuracion->tlb_habilitada==1){
+		/*
+		 * buscar en TLB:
+		 * Si esta    -> devolver contenido (logear hit con pag y frame resultante)
+		 * Si no esta (logear miss y resultado alg. reemplazo)-> busca tabla de paginas -> busqueda en memoria principal
+		 *                                         											Si esta en MP    -> devolver contenido
+		 *                                        											Si no esta en MP -> pedir a Swap:
+		 */
+	} else{
+		/* busqueda en memoria principal
+				 * Si esta en MP    -> devolver contenido
+				 * Si no esta en MP -> pedir a Swap:
+				 */
 
-	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
-	if(pedido==NULL || pedido->encontro==false){
-		enviarEnteros(cpuSocket, pedido_error);
-		return;
+		t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
+		if(pedido==NULL || pedido->encontro==false){
+			enviarEnteros(cpuSocket, pedido_error);
+			return;
+		}
+		log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d\n", idmProc);
+
+		/* actualizar memoria principal con frame/pagina y copiar contenido */
+
+		enviarContenidoPagina(cpuSocket, pedido);
+
+		free(pedido->contenido);
+		free(pedido);
 	}
-	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d\n", idmProc);
-
-	/* actualizar memoria principal con frame/pagina y copiar contenido */
-
-	enviarEnteros(cpuSocket, pedido_exitoso);
-	enviarEnteros(cpuSocket, pedido->longitud);
-	enviarStrings(cpuSocket, pedido->contenido, pedido->longitud);
-
-	free(pedido->contenido);
-	free(pedido);
 
 	printf("Fin operación leer %d\n", nroPagina);
 }
@@ -217,6 +230,7 @@ void enviarStrings(sock_t* socket, char* string, int32_t longitud){
 	int32_t enviado = send(socket->fd, string, longitud, 0);
 	if(enviado!=longitud){
 		printf("No se envió correctamente el string\n");
+		free(string);
 		return;
 	}
 }
@@ -255,4 +269,10 @@ t_LecturaSwap* pedirPagina(sock_t* swapSocket, int32_t idmProc, int32_t nroPagin
 		pedido->contenido[pedido->longitud-1] = '\0';
 		return pedido;
 	}
+}
+
+void enviarContenidoPagina(sock_t* socket, t_LecturaSwap* pedido){
+	enviarEnteros(socket, pedido_exitoso);
+	enviarEnteros(socket, pedido->longitud);
+	enviarStrings(socket, pedido->contenido, pedido->longitud);
 }

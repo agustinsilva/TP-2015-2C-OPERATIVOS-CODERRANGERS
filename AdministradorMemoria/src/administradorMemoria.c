@@ -71,16 +71,18 @@ void setUp(){
 		t_MP* entrada = malloc(sizeof(t_MP));
 		entrada->marco=i;
 		entrada->pagina=-1;
+		entrada->contenido = malloc(configuracion->tamanio_marco);
+
 		list_add(memoriaPrincipal,entrada);
 	}
 }
 
 static void mpDestroyer(t_MP* entrada) {
+	free(entrada->contenido);
     free(entrada);
 }
 
 static void TLBDestroyer(t_TLB* entrada) {
-    free(entrada->dirFisica);
     free(entrada);
 }
 

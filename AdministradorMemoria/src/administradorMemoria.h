@@ -47,13 +47,14 @@ typedef struct{
 } t_HiloCPU;
 
 typedef struct{
-	int32_t	dirLogica;
-	char*	dirFisica;
+	int32_t	marco;
+	int32_t	pagina;
 } t_TLB;
 
 typedef struct{
 	int32_t	marco;
 	int32_t	pagina;
+	char* contenido;
 } t_MP;
 
 typedef struct{
@@ -64,8 +65,6 @@ typedef struct{
 	bool present;
 	bool modified;
 	bool accessed;
-	bool write;
-	bool read;
 } t_TP;
 
 typedef struct{
@@ -105,6 +104,7 @@ void escritura(sock_t* , sock_t* );
 t_LecturaSwap* pedirPagina(sock_t* , int32_t , int32_t );
 void enviarEnteros(sock_t* , int32_t );
 void enviarStrings(sock_t* , char* , int32_t );
+void enviarContenidoPagina(sock_t* , t_LecturaSwap* );
 
 /* de GestionMemoria */
 int32_t crearTablaDePaginas(int32_t , int32_t );

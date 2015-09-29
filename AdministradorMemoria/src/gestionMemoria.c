@@ -25,12 +25,12 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 			tabla->accessed = false;
 			tabla->modified = false;
 			tabla->present = false;
-			tabla->read = true;
-			tabla->write = false;
 
 			tabla->idProc = idmProc;
-	/*		tabla->frame = getFrame(); */
+			tabla->frame = getFrame();
 			tabla->nroPag = getPagina();
+
+	/* qué onda, aparecen cargadas en memoria o tengo que esperar al fallo y pedirlas a swap siempre? */
 
 			list_add(tablasDePaginas,tabla);
 		}
@@ -59,25 +59,34 @@ bool hayEspacio(){
 }
 
 int32_t getFrame(){
-	return  rand() % 1000;
+	int32_t marcoLibre=-1;
+
+	void buscarMarcoLibre(t_MP* entrada){
+		if(entrada->pagina==-1){
+			marcoLibre=entrada->marco;
+			return;
+		}
+	}
+	list_iterate(memoriaPrincipal, (void*)buscarMarcoLibre);
+	return marcoLibre;
 }
 
-int32_t getPagina(){
+int32_t getPagina(t_list* tablasDePaginas, int32_t idMProc){
 	int32_t pagina =  rand() % 1000;
 
-	bool porNroPagina(void * entrada) {
+	bool porProcesoYNroPagina(void * entrada) {
 		t_TP* tabla=(t_TP*) entrada;
-		return tabla->nroPag==pagina;
+		return tabla->nroPag==pagina && tabla->idProc==idMProc;
 	}
-	t_TP* encontrado = list_find(tablasDePaginas,porNroPagina);
+	t_TP* encontrado = list_find(tablasDePaginas,porProcesoYNroPagina);
 	while(encontrado!=NULL){
 		pagina =  rand() % 1000;
 
-		bool porNroPagina(void * entrada) {
+		bool porProcesoYNroPagina(void * entrada) {
 			t_TP* tabla=(t_TP*) entrada;
-			return tabla->nroPag==pagina;
+			return tabla->nroPag==pagina && tabla->idProc==idMProc;
 		}
-		encontrado = list_find(tablasDePaginas,porNroPagina);
+		encontrado = list_find(tablasDePaginas,porProcesoYNroPagina);
 	}
 	return pagina;
 }
