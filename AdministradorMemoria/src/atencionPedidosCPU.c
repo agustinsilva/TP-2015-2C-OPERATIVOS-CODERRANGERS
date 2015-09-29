@@ -35,36 +35,37 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje){
 }
 
 int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU){
-	printf("Esperando mensaje de Cpu \n");
-	char mensajeCpu[1024];
-	int32_t status;
-	status = recv(paramsCPU->cpuSocket->fd, (void*)mensajeCpu, 1024, 0);
-	printf("Mensaje de cpu : %s \n",mensajeCpu);
-	/* Deberia validar lo que recibio */
-	/* prepara mensaje para enviar */
-	/*char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto ";*/
-	status = enviarMensaje(paramsCPU->swapSocket,mensajeCpu);
+	printf("Esperando pedidos de Cpu \n");
 
-	/*chequea envío*/
-	if(!status)	{
-		printf("No se envió el mensaje al swap\n");
-	}
-	else {
-		printf("Se envió a Swap: %s\n", mensajeCpu);
-	}
-	/*recibe la respuesta*/
-	char* respuesta = recibirMensaje(paramsCPU->swapSocket);
-	printf("Recibe respuesta: %s\n", respuesta);
-	free(respuesta);
+//	char mensajeCpu[1024];
+//	int32_t status;
+//	status = recv(paramsCPU->cpuSocket->fd, (void*)mensajeCpu, 1024, 0);
+//	printf("Mensaje de cpu : %s \n",mensajeCpu);
+//	/* Deberia validar lo que recibio */
+//	/* prepara mensaje para enviar */
+//	/*char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto ";*/
+//	status = enviarMensaje(paramsCPU->swapSocket,mensajeCpu);
+//
+//	/*chequea envío*/
+//	if(!status)	{
+//		printf("No se envió el mensaje al swap\n");
+//	}
+//	else {
+//		printf("Se envió a Swap: %s\n", mensajeCpu);
+//	}
+//	/*recibe la respuesta*/
+//	char* respuesta = recibirMensaje(paramsCPU->swapSocket);
+//	printf("Recibe respuesta: %s\n", respuesta);
+//	free(respuesta);
 
 	int32_t codigoOperacion;
-	do{
-		codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
-		if(codigoOperacion==-1){
-			printf("No se recibió correctamente el código de operación\n");
-			return EXIT_FAILURE;
-		}
 
+	codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
+	if(codigoOperacion==-1){
+		printf("No se recibió correctamente el código de operación\n");
+		return EXIT_FAILURE;
+	}
+	while(codigoOperacion!=0){
 		switch(codigoOperacion){
 		case codigo_iniciar: iniciar(paramsCPU->cpuSocket, paramsCPU->swapSocket);
 			break;
@@ -75,7 +76,7 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU){
 		case codigo_escribir: escritura(paramsCPU->cpuSocket, paramsCPU->swapSocket);
 			break;
 		}
-	} while(codigoOperacion!=0);
+	}
 	return 0;
 }
 
