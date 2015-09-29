@@ -56,7 +56,7 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		return -1;
 	}
 	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
-
+	log_info(CPULog," [PID:%s] PROBANDO PID\n","INFO",string_itoa(pid));
 	//Conectar con Admin de Memoria
 	sock_t* clientSocketAdmin = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(clientSocketAdmin);
@@ -71,23 +71,23 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		lista = string_split(instruccion," ");
 
 		if (string_equals_ignore_case(lista[0], "iniciar")){
-			log_info(CPULog," [PID:%i] Instruccion: iniciar\n","INFO",pid);
+			log_info(CPULog," [PID:%s] Instruccion: iniciar\n","INFO",string_itoa(pid));
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 			informarAdminMemoriaComandoIniciar(lista[1],pid);
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
 		}else if(string_equals_ignore_case(lista[0], "finalizar")){
-			log_info(CPULog," [PID:%d] Instruccion: finalizar\n","INFO",pid);
+			log_info(CPULog," [PID:%s] Instruccion: finalizar\n","INFO",string_itoa(pid));
 			//Informar al AdminMemoria que finalice el proceso
 			informarAdminMemoriaComandoFinalizar(pid);
 			sleep(configuracion->retardo);
 		}else if(string_equals_ignore_case(lista[0], "leer")){
-			log_info(CPULog," [PID:%i] Instruccion: leer\n","INFO",pid);
+			log_info(CPULog," [PID:%s] Instruccion: leer\n","INFO",string_itoa(pid));
 			//lista[1] contiene el nro de pagina
 			informarAdminMemoriaComandoLeer(pid,lista[1]);
 			sleep(configuracion->retardo);
 		}else{
-			log_warning(CPULog," [PID:%i] Instruccion: comando no interpretado\n","WARN",pid);
+			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado\n","WARN",string_itoa(pid));
 		}
 	}
 
