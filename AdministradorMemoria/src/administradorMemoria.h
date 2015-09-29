@@ -24,8 +24,8 @@
 #define codigo_finalizar 2
 #define codigo_leer 3
 #define codigo_escribir 4
-#define pedido_exitoso 0
-#define pedido_error 1
+#define pedido_exitoso 1
+#define pedido_error 0
 #define pedido_no_memoria -1
 
 //Estructuras

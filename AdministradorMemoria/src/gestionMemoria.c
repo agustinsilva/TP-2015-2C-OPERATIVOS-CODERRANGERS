@@ -18,8 +18,6 @@ void procesoDestroyer(t_TP* entrada) {
 
 int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 
-	if(hayEspacio()){
-
 		/* generar entrada en tabla de paginas */
 		int32_t i;
 		for(i=0; i<cantPaginas; i++){
@@ -38,11 +36,6 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 		}
 
 		return pedido_exitoso;
-
-	} else {
-
-		return pedido_no_memoria;
-	}
 }
 
 int32_t eliminarTablaDePaginas(int32_t idmProc){
