@@ -4,8 +4,9 @@
 void* iniciarServidor() {
 	t_list *cpu_listos;
 	t_list *cpu_ocupados;
-	cpu_listos = list_create();
-	cpu_ocupados = list_create();
+	struct arg_struct *args = malloc(sizeof(struct arg_struct));
+	args->cpu_listos = list_create();
+	args->cpu_ocupados = list_create();
 	fd_set set_maestro, set_temporal, socketsHilos;
 	uint32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
@@ -49,11 +50,14 @@ void* iniciarServidor() {
 					switch (cabecera)
 							{
 								case AGREGARHILOCPU:
-									creoCpu(socketProcesado, cpu_listos);
-									generoHiloPlanificador(cpu_listos);
+									creoCpu(socketProcesado, args->cpu_listos);
+									generoHiloPlanificador((void *)args);
 									break;
 								case LOGEARRESULTADOCPU:
 									logearResultadoCpu(socketProcesado);
+									break;
+								case LOGEARFINALIZACIONCPU:
+									logearFinalizacionCpu(socketProcesado);
 									break;
 //								case ERROR:
 //								printf("Finalizacion anormal de Planificador\n");
@@ -87,14 +91,14 @@ uint32_t deserializarEnteroSinSigno(uint32_t socket)
 
 }
 
-void generoHiloPlanificador(t_list *cpu_listos) {
+void generoHiloPlanificador(struct arg_struct *args) {
 	pthread_t hiloPlanificador;
 	int respPlanificador = 0;
 	int hiloCreado = 0;
 
 	if (!hiloCreado) {
 		hiloCreado = 1;
-		respPlanificador = pthread_create(&hiloPlanificador, NULL, consumirRecursos, cpu_listos);
+		respPlanificador = pthread_create(&hiloPlanificador, NULL, consumirRecursos, (void *)args);
 	}
 	if (respPlanificador) {
 		fprintf(stderr, "Error- Iniciar servidor codigo de retorno %d\n", respPlanificador);
@@ -103,13 +107,13 @@ void generoHiloPlanificador(t_list *cpu_listos) {
 	}
 }
 
-void consumirRecursos(t_list *cpu_listos) {
+void consumirRecursos(struct arg_struct *args) {
 	//mientras halla cpu listos, mandar a ejecutar pcb
 	while (1) {
 		sem_wait(&sincrocpu);
 		sem_wait(&sincroproc);
-		while (list_size(cpu_listos) > 0 && list_size(proc_listos) > 0) {
-			t_list *cpu_ocupado = list_take_and_remove(cpu_listos, 1);
+		while (list_size(args->cpu_listos) > 0 && list_size(proc_listos) > 0) {
+			t_list *cpu_ocupado = list_take_and_remove(args->cpu_listos, 1);
 			t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
 			//Mandar por socket al cpu el proc para ejecutar
 			t_pcb *pcb = list_get(proc_ejecutado, 0);
@@ -130,6 +134,7 @@ void consumirRecursos(t_list *cpu_listos) {
 			free(pcbSerializado);
 			free(totalPaquete);
 			//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
+
 		}
 	}
 }
@@ -144,6 +149,21 @@ void logearResultadoCpu(uint32_t socketCpu){
 	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
 	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
 	free(mensajeCpu);
+}
+
+void logearFinalizacionCpu(uint32_t socketCpu){
+	uint32_t tamanioChar;
+	uint32_t status;
+	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	char* mensajeCpu = malloc(tamanioChar);
+	status = recv(socketCpu,mensajeCpu,tamanioChar,0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
+	free(mensajeCpu);
+
+	//Vuelvo a poner el cpu como disponible
+
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete){
