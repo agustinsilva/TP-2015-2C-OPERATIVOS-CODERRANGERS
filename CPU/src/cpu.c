@@ -56,7 +56,7 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		return -1;
 	}
 	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
-	log_info(CPULog," [PID:%s] PROBANDO PID\n","INFO",string_itoa(pid));
+
 	//Conectar con Admin de Memoria
 	sock_t* clientSocketAdmin = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(clientSocketAdmin);
