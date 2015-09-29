@@ -17,8 +17,7 @@ void* iniciarServidor() {
 	listen(socketReceptor, 10);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
 	FD_SET(socketReceptor, &set_maestro);	//Agrega receptor al set maestro
 	fdMaximo = socketReceptor;	//Hacer seguimiento de descriptor maximo
-	uint32_t cabecera ;
-	char paquete[PAQUETE];
+	uint32_t cabecera;
 	printf("Esperando conexiones\n");
 	for (;;) {
 		set_temporal = set_maestro;
@@ -43,26 +42,18 @@ void* iniciarServidor() {
 						{
 							fdMaximo = nuevoFd;
 						}
-						printf("Se recibio nueva conexion Cpu %d \n",nuevoFd);
-
 					}
 				} else //Aca se ejecuta el socket procesado
 				{
-//					status = recv(socketProcesado, (void*) paquete, PAQUETE, 0);
-//					if (status > 0) {
-//						printf("%s", paquete);
-//					}
-//					if(strcmp(paquete,"1") == 0){
-//						//Agrego cpu que se conecto y la mando a ejecutar
-//						creoCpu(socketProcesado, cpu_listos);
-//						generoHiloPlanificador(cpu_listos);
-//					}
 					cabecera = deserializarEnteroSinSigno(socketProcesado);
 					switch (cabecera)
 							{
 								case AGREGARHILOCPU:
 									creoCpu(socketProcesado, cpu_listos);
 									generoHiloPlanificador(cpu_listos);
+									break;
+								case LOGEARRESULTADOCPU:
+									logearResultadoCpu(socketProcesado);
 									break;
 //								case ERROR:
 //								printf("Finalizacion anormal de Planificador\n");
@@ -73,8 +64,7 @@ void* iniciarServidor() {
 //									break;
 							}
 					if (cabecera <= 0) {
-						printf("Se desconecto socket cpu %d \n",
-								socketProcesado);
+						log_info(planificadorLog,"Se desconecto cpu con sockedId: %d", socketProcesado);
 						close(socketProcesado);
 						FD_CLR(socketProcesado, &set_maestro);
 					}
@@ -96,7 +86,6 @@ uint32_t deserializarEnteroSinSigno(uint32_t socket)
 	return enteroSinSigno;
 
 }
-
 
 void generoHiloPlanificador(t_list *cpu_listos) {
 	pthread_t hiloPlanificador;
@@ -134,15 +123,27 @@ void consumirRecursos(t_list *cpu_listos) {
 			memcpy(mensaje, pcbSerializado, *totalPaquete);
 			int sendByte = send(cpu->socketHilo, mensaje, *totalPaquete, 0);
 			if(sendByte < 0){
-				printf("No se envio la data");
+				log_error(planificadorLog,"Error al enviar el proc/pcb al cpu","ERROR");
 			}
-			printf("Se envio Pcb a Cpu %d \n", cpu->socketHilo);
+			log_info(planificadorLog,"Se envio a ejecutar el programa: %s con PID: %d",pcb->path,pcb->idProceso);
 			free(mensaje);
 			free(pcbSerializado);
 			free(totalPaquete);
 			//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
 		}
 	}
+}
+
+void logearResultadoCpu(uint32_t socketCpu){
+	uint32_t tamanioChar;
+	uint32_t status;
+	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	char* mensajeCpu = malloc(tamanioChar);
+	status = recv(socketCpu,mensajeCpu,tamanioChar,0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
+	free(mensajeCpu);
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete){
@@ -189,6 +190,7 @@ void creoCpu(uint32_t socketCpu, t_list *cpu_listos){
 	hilosConectados->path = NULL;
 	list_add(cpu_listos,hilosConectados);
 	sem_post(&sincrocpu);
+	log_info(planificadorLog,"Se conecto Cpu con sockedId: %d", socketCpu);
 	printf("Se creo hilo disponible para asignar\n");
 }
 
@@ -206,12 +208,10 @@ uint32_t crearSocketReceptor()
 	hints.ai_flags = AI_PASSIVE;
 	getaddrinfo(NULL, puertoEscuchaString, &hints, &serverInfo);
 	free(puertoEscuchaString);
-
 	socketReceptor = socket(serverInfo->ai_family, serverInfo->ai_socktype,
 				serverInfo->ai_protocol);
 	int setOpcion = 1;
-	if (setsockopt(socketReceptor, SOL_SOCKET, SO_REUSEADDR, &setOpcion, sizeof(int))
-				== -1)
+	if (setsockopt(socketReceptor, SOL_SOCKET, SO_REUSEADDR, &setOpcion, sizeof(int)) == -1)
 		{
 			perror("setsockopt");
 			exit(1);

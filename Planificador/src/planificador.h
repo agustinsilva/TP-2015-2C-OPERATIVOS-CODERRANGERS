@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <socket.h>
+#include <commons/log.h>
 #include <pthread.h>
 #include <semaphore.h>
 #include <commons/string.h>
@@ -46,9 +47,12 @@ t_list *proc_listos;
 t_list *proc_ejecutados;
 sem_t sincroproc;
 sem_t sincrocpu;
+t_log* planificadorLog;
+
 //Constantes
 #define PAQUETE 1024
 #define AGREGARHILOCPU 1
+#define LOGEARRESULTADOCPU 2
 #define ENVIARPCB 2
 #define ERROR 5
 //Variables globales
@@ -61,6 +65,7 @@ t_config* fdConfiguracion; //Descriptor de archivo
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos(t_list *cpu_listos);
+void logearResultadoCpu();
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
 void generoHiloPlanificador(t_list *cpu_listos);
 void creoCpu(uint32_t socketCpu, t_list *cpu_listos);

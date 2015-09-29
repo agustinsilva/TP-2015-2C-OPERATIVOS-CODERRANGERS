@@ -1,0 +1,20 @@
+[INFO] 11:57:52:445 Planificador/(29530:29536): Se conecto Cpu con sockedId: 5
+[INFO] 11:57:52:463 Planificador/(29530:29579): Se envio a ejecutar el programa: mcod.txt con PID: (null)
+[INFO] 12:04:22:601 Planificador/(29751:29752): Se conecto Cpu con sockedId: 5
+[INFO] 12:04:22:624 Planificador/(29751:29752): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 12:04:22:624 Planificador/(29751:29756): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[ERROR] 12:04:26:667 Planificador/(29751:29752): Error al recibir mensaje CPU
+[INFO] 12:04:26:667 Planificador/(29751:29752): Mensaje de cpu: (null)
+[INFO] 12:04:26:667 Planificador/(29751:29752): Se desconecto cpu con sockedId: 5
+[INFO] 12:06:45:980 Planificador/(29822:29828): Se conecto Cpu con sockedId: 5
+[INFO] 12:06:46:22 Planificador/(29822:29867): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 12:07:14:718 Planificador/(29822:29828): Mensaje de cpu: mProc 0 - Iniciado.
+[ERROR] 12:07:20:315 Planificador/(29822:29828): Error al recibir mensaje CPU
+[INFO] 12:07:27:323 Planificador/(29822:29828): Mensaje de cpu: (null)
+[INFO] 12:07:28:919 Planificador/(29822:29828): Se desconecto cpu con sockedId: 5
+[INFO] 12:08:00:79 Planificador/(29919:29920): Se conecto Cpu con sockedId: 5
+[INFO] 12:08:05:706 Planificador/(29919:29924): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 12:08:05:723 Planificador/(29919:29920): Mensaje de cpu: mProc 0 - Iniciado.
+[ERROR] 12:08:09:767 Planificador/(29919:29920): Error al recibir mensaje CPU
+[INFO] 12:08:09:767 Planificador/(29919:29920): Mensaje de cpu: (null)
+[INFO] 12:08:09:767 Planificador/(29919:29920): Se desconecto cpu con sockedId: 5

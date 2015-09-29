@@ -132,16 +132,18 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Iniciado.");
-		uint32_t tamanio = sizeof(cabecera) + sizeof(mensaje);
+		uint32_t longitudMensaje = strlen(mensaje);
+		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 		message = malloc(tamanio);
-		memcpy(message, &cabecera, sizeof(cabecera));
+		memcpy(message, &cabecera, sizeof(cabecera)); //Codigo
 		offset = sizeof(cabecera);
-		memcpy(message + offset, &mensaje, sizeof(mensaje));
-		offset = offset + sizeof(mensaje);
+		memcpy(message + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+		offset = offset + sizeof(uint32_t);
+		memcpy(message + offset, mensaje, longitudMensaje); //Mensaje
+		offset = offset + longitudMensaje;
 		status = send(socketPlanificador->fd,message,tamanio,0);
 		free(message);
 	}
-
 	return EXIT_SUCCESS;
 }
 
