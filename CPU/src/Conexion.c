@@ -44,6 +44,9 @@ t_pcb* escucharPlanificador(){
 	t_stream* stream = malloc(sizeof(t_stream));
 
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
+
+	socketPlanificador = socketClientePlanificador;
+
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0) {
 		perror("Error al conectar socket");
@@ -82,18 +85,16 @@ t_pcb* escucharPlanificador(){
  * 				1 Fallo: otro motivo
  * 				0 Exitoso
  */
-int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid){
+int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 	int32_t status;
 	int32_t entero;
-
 	//Envia aviso al Adm de Memoria: comando Iniciar.
 
 	int32_t cabecera = INICIAR;
-	int32_t paginas = (int32_t)cantidadPaginas;
-
-	char* message = malloc(1024);
+	int32_t paginas = atoi(cantidadPaginas);
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(paginas);
+	char* message = malloc(tamanio);
 	memcpy(message, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
 	memcpy(message + offset, &pid, sizeof(pid));
@@ -113,10 +114,33 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid){
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
 
-	if(status==PEDIDO_ERROR){
-
-	}else{
-
+	cabecera = RESPUESTA_PLANIFICADOR;
+	char* mensaje = string_new();
+	offset = 0;
+	if(status==PEDIDO_ERROR){//mProc X - Fallo
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje, " - Fallo.");
+		uint32_t tamanio = sizeof(cabecera) + sizeof(mensaje);
+		message = malloc(tamanio);
+		memcpy(message, &cabecera, sizeof(cabecera));
+		offset = sizeof(cabecera);
+		memcpy(message + offset, &mensaje, sizeof(mensaje));
+		offset = offset + sizeof(mensaje);
+		status = send(socketPlanificador->fd,message,tamanio,0);
+		free(message);
+	}else{//mProc X - Iniciado
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje, " - Iniciado.");
+		uint32_t tamanio = sizeof(cabecera) + sizeof(mensaje);
+		message = malloc(tamanio);
+		memcpy(message, &cabecera, sizeof(cabecera));
+		offset = sizeof(cabecera);
+		memcpy(message + offset, &mensaje, sizeof(mensaje));
+		offset = offset + sizeof(mensaje);
+		status = send(socketPlanificador->fd,message,tamanio,0);
+		free(message);
 	}
 
 	clean_socket(socketAdminMemoria);
@@ -131,16 +155,14 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, uint32_t pid){
  * 				0 Fallo
  * 				1 Exito
  */
-int informarAdminMemoriaComandoFinalizar(uint32_t pid){
+int informarAdminMemoriaComandoFinalizar(int32_t pid){
 	int32_t status;
 	int32_t entero;
-
 	//Envia aviso al Adm de Memoria: comando Finalizar.
 	int32_t cabecera = FINALIZAR;
-
-	char* message = malloc(1024);
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid);
+	char* message = malloc(tamanio);
 	memcpy(message, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
 	memcpy(message + offset, &pid, sizeof(pid));
@@ -158,20 +180,35 @@ int informarAdminMemoriaComandoFinalizar(uint32_t pid){
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
 
+	//mProc X finalizado
+	cabecera = RESPUESTA_PLANIFICADOR;
+	char* mensaje = string_new();
+	offset = 0;
+	string_append(&mensaje, "mProc ");
+	string_append(&mensaje, string_itoa(pid));
+	string_append(&mensaje, " - Finalizado.");
+	tamanio = sizeof(cabecera) + sizeof(mensaje);
+	message = malloc(tamanio);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &mensaje, sizeof(mensaje));
+	offset = offset + sizeof(mensaje);
+	status = send(socketPlanificador->fd,message,tamanio,0);
+	free(message);
+
 	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;
 }
 
-int informarAdminMemoriaComandoLeer(uint32_t pid, char* numeroPagina){
+int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	int32_t status;
 	int32_t entero;
-
+	int32_t numeroPagina = atoi(pagina);
 	//Envia aviso al Adm de Memoria: comando Finalizar.
 	int32_t cabecera = FINALIZAR;
-
-	char* message = malloc(1024);
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina);
+	char* message = malloc(tamanio);
 	memcpy(message, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
 	memcpy(message + offset, &pid, sizeof(pid));
@@ -190,6 +227,22 @@ int informarAdminMemoriaComandoLeer(uint32_t pid, char* numeroPagina){
 
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+
+	//mProc 10 - Pagina 2 leida: contenido
+	cabecera = RESPUESTA_PLANIFICADOR;
+	char* mensaje = string_new();
+	message = malloc(1024);
+	offset = 0;
+	string_append(&mensaje, "mProc ");
+	string_append(&mensaje, (char*)pid);
+	string_append(&mensaje, " - Pagina.");
+	tamanio = sizeof(cabecera) + sizeof(mensaje);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &mensaje, sizeof(mensaje));
+	offset = offset + sizeof(mensaje);
+	status = send(socketPlanificador->fd,message,tamanio,0);
+	free(message);
 
 	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;

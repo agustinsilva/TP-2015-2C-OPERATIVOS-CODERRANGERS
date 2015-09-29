@@ -1,4 +1,2 @@
-iniciar
-leer 1
-leer 6
+iniciar 2
 finalizar
