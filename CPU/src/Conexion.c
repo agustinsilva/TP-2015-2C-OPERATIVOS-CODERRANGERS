@@ -73,7 +73,6 @@ t_pcb* escucharPlanificador(){
 	status = recv(socketClientePlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 
-	//clean_socket(socketClientePlanificador); //CREO QUE NO VA ACA, ESTO VA CUANDO SE ENVIA EL COMANDO FINALIZAR. (DIEGO 27/9)
 	return pcbRecibido;
 }
 
@@ -105,10 +104,10 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 	free(message);
 
 	if(!status)	{
-		printf("No se envió el mensaje finalizar al Administrador de Memoria.\n");
+		printf("No se envió el mensaje iniciar al Administrador de Memoria.\n");
 	}
 	else {
-		printf("Se envió el mensaje finalizar correctamente al Admin de Memoria.\n");
+		printf("Se envió el mensaje iniciar correctamente al Admin de Memoria.\n");
 	}
 
 	//Recibe respuesta
@@ -143,7 +142,6 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 		free(message);
 	}
 
-	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;
 }
 
@@ -196,7 +194,6 @@ int informarAdminMemoriaComandoFinalizar(int32_t pid){
 	status = send(socketPlanificador->fd,message,tamanio,0);
 	free(message);
 
-	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;
 }
 
@@ -244,7 +241,6 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	status = send(socketPlanificador->fd,message,tamanio,0);
 	free(message);
 
-	clean_socket(socketAdminMemoria);
 	return EXIT_SUCCESS;
 }
 
@@ -257,42 +253,3 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	}
 }
 
-uint32_t deserializarEnteroSinSigno(sock_t* socket) // NO SE ESTA USANDO CHICOS !!! LO DEJO POR SI LO QUIEREN USAR PA ALGO
-{
-	uint32_t enteroSinSigno;
-	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
-	if(status == -1 || status == 0)
-	{
-	enteroSinSigno = ANORMAL;
-	}
-	return enteroSinSigno;
-}
-
-t_pcb *pcb_deserializar(t_stream* stream){
-	t_pcb *self = malloc (sizeof(t_pcb));
-	int offset = 0, tmp_size = 0;
-
-	memcpy (&self->idProceso, stream->data,tmp_size = sizeof(uint32_t));
-
-	offset = tmp_size;
-	for (tmp_size = 1; (stream->data + offset) [tmp_size-1] != '\0'; tmp_size++);
-	self->estadoProceso =malloc(tmp_size);
-	memcpy(&self->estadoProceso, stream->data + offset, tmp_size);
-
-	offset += tmp_size;
-	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->contadorPuntero= malloc(tmp_size);
-	memcpy(&self->contadorPuntero, stream->data + offset, tmp_size);
-
-	offset += tmp_size;
-	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->cantidadInstrucciones= malloc(tmp_size);
-	memcpy(&self->cantidadInstrucciones, stream->data + offset, tmp_size);
-
-	offset += tmp_size;
-	for (tmp_size = 1; (stream->data + offset ) [tmp_size-1] != '\0' ; tmp_size++);
-	self->path= malloc(tmp_size);
-	memcpy(self->path, stream->data + offset, tmp_size);
-
-	return self;
-}

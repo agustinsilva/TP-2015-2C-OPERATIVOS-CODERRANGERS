@@ -8,7 +8,6 @@ int main(void)
 	puts("Cargo archivo de configuracion de CPU");
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
-	//ConectarAPlanificador();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 
 	puts("Fin de cpu \n");
@@ -23,10 +22,8 @@ int main(void)
  * */
 void crearHilosCPU (void)
 {
-
 	int rtaHilo = 0;
 	pthread_t hiloCpu; //id de cpu
-
 	rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
 	if(rtaHilo)
 	{
@@ -45,9 +42,8 @@ void crearHilosCPU (void)
 
 }
 
-int abrirArchivoYValidar(char* path, uint32_t pid){
+int abrirArchivoYValidar(char* path, int32_t pid){
 	char **lista;
-
 	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
 	char instruccion[TAMINSTRUCCION];
 	char* src = string_new();
@@ -59,8 +55,6 @@ int abrirArchivoYValidar(char* path, uint32_t pid){
 		log_error(CPULog,"No se pudo abrir el archivo de entrada. \n","ERROR");
 		return -1;
 	}
-
-	printf("Archivo abierto \n");
 	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
 
 	//Conectar con Admin de Memoria
@@ -77,38 +71,30 @@ int abrirArchivoYValidar(char* path, uint32_t pid){
 		lista = string_split(instruccion," ");
 
 		if (string_equals_ignore_case(lista[0], "iniciar")){
-			puts("Instruccion: iniciar\n");
-
-			//SE CONECTA A MEMORIA//
+			log_info(CPULog," [PID:%i] Instruccion: iniciar\n","INFO",pid);
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 			informarAdminMemoriaComandoIniciar(lista[1],pid);
-
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
 		}else if(string_equals_ignore_case(lista[0], "finalizar")){
-			puts("Instruccion: finalizar\n");
-
-			//SE CONECTA A MEMORIA//
+			log_info(CPULog," [PID:%d] Instruccion: finalizar\n","INFO",pid);
 			//Informar al AdminMemoria que finalice el proceso
 			informarAdminMemoriaComandoFinalizar(pid);
-
 			sleep(configuracion->retardo);
 		}else if(string_equals_ignore_case(lista[0], "leer")){
-			puts("Instruccion: leer\n");
-
-			//SE CONECTA A MEMORIA//
+			log_info(CPULog," [PID:%i] Instruccion: leer\n","INFO",pid);
 			//lista[1] contiene el nro de pagina
 			informarAdminMemoriaComandoLeer(pid,lista[1]);
-
 			sleep(configuracion->retardo);
 		}else{
-			printf("Comando no interpretado: %s",lista[0]);
+			log_warning(CPULog," [PID:%i] Instruccion: comando no interpretado\n","WARN",pid);
 		}
 	}
 
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
 	clean_socket(socketAdminMemoria);
+	clean_socket(socketPlanificador);
 	return 0;
 }
 

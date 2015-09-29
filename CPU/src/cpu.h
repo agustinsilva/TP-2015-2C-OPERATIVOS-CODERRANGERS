@@ -76,8 +76,6 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 int informarAdminMemoriaComandoFinalizar(int32_t pid);
 int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
 void crearHilosCPU (void);
-uint32_t deserializarEnteroSinSigno(sock_t* socket);
 t_pcb deserializarDetalle(sock_t* socket, int32_t cabecera);
-t_pcb* pcb_deserializar(t_stream* stream);
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 #endif /* CPU_H_ */
