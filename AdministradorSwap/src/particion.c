@@ -292,7 +292,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 	//serializo mensaje, esto se puede mejorar.
 	offset = 0;
 	int32_t tamanioPagina = string_length(pagina) + 1;
-	tamanio = sizeof(resultado) + sizeof(int32_t) + tamanioPagina;
+	tamanio = sizeof(resultado) + sizeof(tamanioPagina) + tamanioPagina;
 	mensaje = malloc(tamanio);
 	memcpy(mensaje + offset, &resultado, sizeof(resultado));
 	offset = offset + sizeof(resultado);
