@@ -117,7 +117,8 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Fallo.");
-		uint32_t tamanio = sizeof(cabecera) + sizeof(mensaje);
+		uint32_t longitudMensaje = strlen(mensaje);
+		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 		message = malloc(tamanio);
 		memcpy(message, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
@@ -185,26 +186,25 @@ int informarAdminMemoriaComandoFinalizar(int32_t pid){
 	string_append(&mensaje, string_itoa(pid));
 	string_append(&mensaje, " - Finalizado.");
 	uint32_t longitudMensaje = strlen(mensaje);
-	tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-	message = malloc(tamanio);
-	memcpy(message, &cabecera, sizeof(cabecera)); //Codigo
+	uint32_t tamanio2 = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+	char* message2 = malloc(tamanio2);
+	memcpy(message2, &cabecera, sizeof(cabecera)); //Codigo
 	offset = sizeof(cabecera);
-	memcpy(message + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+	memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
 	offset = offset + sizeof(uint32_t);
-	memcpy(message + offset, mensaje, longitudMensaje); //Mensaje
+	memcpy(message2 + offset, mensaje, longitudMensaje); //Mensaje
 	offset = offset + longitudMensaje;
-	status = send(socketPlanificador->fd,message,tamanio,0);
-	free(message);
+	status = send(socketPlanificador->fd,message2,tamanio2,0);
+	free(message2);
 
 	return EXIT_SUCCESS;
 }
 
 int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	int32_t status;
-	int32_t entero;
 	int32_t numeroPagina = atoi(pagina);
 	//Envia aviso al Adm de Memoria: comando Finalizar.
-	int32_t cabecera = FINALIZAR;
+	int32_t cabecera = LEER;
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina);
 	char* message = malloc(tamanio);
@@ -226,10 +226,13 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 
 	//Recibe respuesta
 	//status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
-	uint32_t codOperacion = deserializarEnteroSinSigno(socketAdminMemoria);
-	uint32_t longitud = deserializarEnteroSinSigno(socketAdminMemoria);
+	//uint32_t codOperacion = deserializarEnteroSinSigno(socketAdminMemoria);
+	//uint32_t longitud = deserializarEnteroSinSigno(socketAdminMemoria);
 	char* contenido;
-	status = recv(socketAdminMemoria->fd,&contenido,longitud,0);
+	//status = recv(socketAdminMemoria->fd,&contenido,longitud,0);
+
+	/*A MODO DE PRUEBA HASTA Q ADMIN DE MEM NOS ENVIE BIEN EL MSJ*/
+	contenido = "hola soy contenido";
 
 	//mProc 10 - Pagina 2 leida: contenido
 	cabecera = RESPUESTA_PLANIFICADOR;
@@ -238,7 +241,7 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	string_append(&mensaje, "mProc ");
 	string_append(&mensaje, string_itoa(pid));
 	string_append(&mensaje, " - Pagina ");
-	string_append(&mensaje,numeroPagina);
+	string_append(&mensaje, pagina);
 	string_append(&mensaje," leida: ");
 	string_append(&mensaje,contenido);
 	uint32_t longitudMensaje = strlen(mensaje);
