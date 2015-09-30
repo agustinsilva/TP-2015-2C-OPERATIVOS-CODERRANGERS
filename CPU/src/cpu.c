@@ -94,7 +94,7 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
 	clean_socket(socketAdminMemoria);
-	clean_socket(socketPlanificador);
+	//clean_socket(socketPlanificador);
 	return 0;
 }
 
