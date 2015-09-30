@@ -249,10 +249,11 @@ t_LecturaSwap* pedirPagina(sock_t* swapSocket, int32_t idmProc, int32_t nroPagin
 	enviarEnteros(swapSocket, nroPagina);
 
 	int32_t recibidoEncontro = recv(swapSocket->fd, &(pedido->encontro), sizeof(int32_t), 0);
-	if(recibidoEncontro!=sizeof(int32_t)){
-		printf("No se recibió correctamente la confirmación del Swap\n");
-		return NULL;
-	}
+/*	if(recibidoEncontro!=sizeof(int32_t)){
+*		printf("No se recibió correctamente la confirmación del Swap\n");
+*		return NULL;
+*	}
+*/
 	if(pedido->encontro==false){
 		return pedido;
 
