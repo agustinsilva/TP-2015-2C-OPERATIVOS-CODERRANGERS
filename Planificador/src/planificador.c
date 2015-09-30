@@ -13,6 +13,7 @@ int main(void)
 	sem_init(&sincroproc, 0, 0);
 	sem_init(&sincrocpu, 0, 0);
 	proc_listos = list_create();
+	proc_ejecutados = list_create();
 	puts("Cargo archivo de configuracion de Planificador");
 	planificadorLog = log_create("PlanificadorLog", "Planificador", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();

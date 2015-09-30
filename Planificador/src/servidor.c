@@ -2,8 +2,6 @@
 
 //falta optimizar con shared library sockets
 void* iniciarServidor() {
-	t_list *cpu_listos;
-	t_list *cpu_ocupados;
 	struct arg_struct *args = malloc(sizeof(struct arg_struct));
 	args->cpu_listos = list_create();
 	args->cpu_ocupados = list_create();
@@ -19,6 +17,8 @@ void* iniciarServidor() {
 	FD_SET(socketReceptor, &set_maestro);	//Agrega receptor al set maestro
 	fdMaximo = socketReceptor;	//Hacer seguimiento de descriptor maximo
 	uint32_t cabecera;
+	uint32_t *hiloCreado = malloc(sizeof(uint32_t));
+	*hiloCreado = 0;
 	printf("Esperando conexiones\n");
 	for (;;) {
 		set_temporal = set_maestro;
@@ -51,13 +51,13 @@ void* iniciarServidor() {
 							{
 								case AGREGARHILOCPU:
 									creoCpu(socketProcesado, args->cpu_listos);
-									generoHiloPlanificador((void *)args);
+									generoHiloPlanificador(hiloCreado, (void *)args);
 									break;
 								case LOGEARRESULTADOCPU:
 									logearResultadoCpu(socketProcesado);
 									break;
 								case LOGEARFINALIZACIONCPU:
-									logearFinalizacionCpu(socketProcesado);
+									logearFinalizacionCpu(socketProcesado, (void *)args);
 									break;
 //								case ERROR:
 //								printf("Finalizacion anormal de Planificador\n");
@@ -68,7 +68,7 @@ void* iniciarServidor() {
 //									break;
 							}
 					if (cabecera <= 0) {
-						log_info(planificadorLog,"Se desconecto cpu con sockedId: %d", socketProcesado);
+						log_info(planificadorLog,"Se desconecto cpu con socketId: %d", socketProcesado);
 						close(socketProcesado);
 						FD_CLR(socketProcesado, &set_maestro);
 					}
@@ -91,13 +91,12 @@ uint32_t deserializarEnteroSinSigno(uint32_t socket)
 
 }
 
-void generoHiloPlanificador(struct arg_struct *args) {
+void generoHiloPlanificador(uint32_t *hilo, struct arg_struct *args) {
 	pthread_t hiloPlanificador;
 	int respPlanificador = 0;
-	int hiloCreado = 0;
 
-	if (!hiloCreado) {
-		hiloCreado = 1;
+	if (!*hilo) {
+		*hilo = 1;
 		respPlanificador = pthread_create(&hiloPlanificador, NULL, consumirRecursos, (void *)args);
 	}
 	if (respPlanificador) {
@@ -116,6 +115,7 @@ void consumirRecursos(struct arg_struct *args) {
 			t_list *cpu_ocupado = list_take_and_remove(args->cpu_listos, 1);
 			t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
 			//Mandar por socket al cpu el proc para ejecutar
+
 			t_pcb *pcb = list_get(proc_ejecutado, 0);
 			t_hilosConectados *cpu = list_get(cpu_ocupado, 0);
 			pcb->estadoProceso = 1; //Lo ponemos en estado de ejecucion
@@ -129,12 +129,14 @@ void consumirRecursos(struct arg_struct *args) {
 			if(sendByte < 0){
 				log_error(planificadorLog,"Error al enviar el proc/pcb al cpu","ERROR");
 			}
+			//Asignar los cpu y proc usados en la lista de ocupados y ejecutados.
+			list_add(proc_ejecutados ,pcb);
+			list_add(args->cpu_ocupados ,cpu);
+
 			log_info(planificadorLog,"Se envio a ejecutar el programa: %s con PID: %d",pcb->path,pcb->idProceso);
 			free(mensaje);
 			free(pcbSerializado);
 			free(totalPaquete);
-			//Asignar los cpu y proc usados en una lista de ocupados y ejecutados.
-
 		}
 	}
 }
@@ -151,7 +153,7 @@ void logearResultadoCpu(uint32_t socketCpu){
 	free(mensajeCpu);
 }
 
-void logearFinalizacionCpu(uint32_t socketCpu){
+void logearFinalizacionCpu(uint32_t socketCpu, struct arg_struct *args){
 	uint32_t tamanioChar;
 	uint32_t status;
 	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
@@ -161,10 +163,18 @@ void logearFinalizacionCpu(uint32_t socketCpu){
 	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
 	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
 	free(mensajeCpu);
-
+	int _cpuBySocket(t_hilosConectados *hilosConectados) {
+		if(hilosConectados->socketHilo == socketCpu)
+			return 1;
+		else
+			return 0;
+	}
 	//Vuelvo a poner el cpu como disponible
-
+	t_list *cpuOcupado = list_find(args->cpu_ocupados,  (void*) _cpuBySocket);
+	list_remove_by_condition(args->cpu_ocupados, (void*) _cpuBySocket);
+	list_add(args->cpu_listos,cpuOcupado);
 }
+
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete){
 	uint32_t tamanioenteros,tamaniopath,path;
@@ -209,9 +219,8 @@ void creoCpu(uint32_t socketCpu, t_list *cpu_listos){
 	hilosConectados->estadoHilo = 0; //0-disponible 1-Ejecutando
 	hilosConectados->path = NULL;
 	list_add(cpu_listos,hilosConectados);
-	sem_post(&sincrocpu);
+	sem_post(&sincrocpu); // Aumento semaforo cpu
 	log_info(planificadorLog,"Se conecto Cpu con sockedId: %d", socketCpu);
-	printf("Se creo hilo disponible para asignar\n");
 }
 
 uint32_t crearSocketReceptor()

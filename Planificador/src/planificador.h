@@ -46,8 +46,9 @@ struct arg_struct {
 	t_list *cpu_ocupados;
 }args;
 
-
 //Variables globales
+t_configuracion* configuracion; //Puntero a configuracion
+t_config* fdConfiguracion; //Descriptor de archivo
 int contadorProceso;
 t_list *proc_listos;
 t_list *proc_ejecutados;
@@ -62,20 +63,15 @@ t_log* planificadorLog;
 #define LOGEARFINALIZACIONCPU 3
 #define ENVIARPCB 2
 #define ERROR 5
-//Variables globales
-t_configuracion* configuracion; //Puntero a configuracion
-t_config* fdConfiguracion; //Descriptor de archivo
-
-
 
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos(struct arg_struct *args);
 void logearResultadoCpu(uint32_t socketCpu);
-void logearFinalizacionCpu(uint32_t socketCpu);
+void logearFinalizacionCpu(uint32_t socketCpu,struct arg_struct *args);
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
-void generoHiloPlanificador(struct arg_struct *args);
+void generoHiloPlanificador(uint32_t *hiloCreado, struct arg_struct *args);
 void creoCpu(uint32_t socketCpu, t_list *cpu_listos);
 int contarInstrucciones(char* path);
 void* mostrarConsola();
