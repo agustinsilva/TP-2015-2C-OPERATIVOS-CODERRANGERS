@@ -245,7 +245,7 @@ void procesarInicio(t_mensaje* detalle,sock_t* socket)
 	bool resultado;
 	resultado = asignarProceso(detalle);
 	int32_t mensaje = resultado;
-	status = send(socket->fd, &mensaje, sizeof(mensaje),0);
+	status = send(socket->fd, &mensaje, sizeof(int32_t),0);
 	/*chequea envío*/
 	if(!status)
 	{
@@ -268,7 +268,7 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 	}
 	//Se envia 1 si salio todo bien y 0 en caso contrario.
 	int32_t mensaje = resultado;
-	int32_t status = send(socketMemoria->fd, &mensaje, sizeof(mensaje),0);
+	int32_t status = send(socketMemoria->fd, &mensaje, sizeof(int32_t),0);
 	if(!status)
 	{
 		printf("Irregularidad en el envio\n");
@@ -292,12 +292,12 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 	//serializo mensaje, esto se puede mejorar.
 	offset = 0;
 	int32_t tamanioPagina = string_length(pagina) + 1;
-	tamanio = sizeof(resultado) + sizeof(tamanioPagina) + tamanioPagina;
+	tamanio = sizeof(int32_t) + sizeof(int32_t) + tamanioPagina;
 	mensaje = malloc(tamanio);
-	memcpy(mensaje + offset, &resultado, sizeof(resultado));
-	offset = offset + sizeof(resultado);
-	memcpy(mensaje + offset, &tamanioPagina, sizeof(tamanioPagina));
-	offset = offset + sizeof(tamanioPagina);
+	memcpy(mensaje + offset, &resultado, sizeof(int32_t));
+	offset = offset + sizeof(int32_t);
+	memcpy(mensaje + offset, &tamanioPagina, sizeof(int32_t));
+	offset = offset + sizeof(int32_t);
 	if(tamanioPagina > 0)
 	{
 	memcpy(mensaje + offset, pagina, tamanioPagina);
@@ -309,7 +309,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 	else
 	{
 		printf("No existe el proceso en memoria \n");
-		status = send(socketMemoria->fd, &resultado, sizeof(resultado),0);
+		status = send(socketMemoria->fd, &resultado, sizeof(int32_t),0);
 		/*chequea envío*/
 		if(!status)
 		{
