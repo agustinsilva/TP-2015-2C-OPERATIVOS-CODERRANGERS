@@ -68,7 +68,7 @@ typedef struct{
 } t_TP;
 
 typedef struct{
-	bool encontro;
+	int32_t encontro;
 	int32_t longitud;
 	char* contenido;
 }t_LecturaSwap;
