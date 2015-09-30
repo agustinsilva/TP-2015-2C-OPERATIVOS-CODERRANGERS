@@ -4,11 +4,12 @@
 
 int main(void)
 {
-	puts("Comienzo de cpu");
-	puts("Cargo archivo de configuracion de CPU");
-	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
-	cargarArchivoDeConfiguracion();
-	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
+
+		puts("Comienzo de cpu");
+		puts("Cargo archivo de configuracion de CPU");
+		CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
+		cargarArchivoDeConfiguracion();
+		crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 
 	puts("Fin de cpu \n");
 	limpiarConfiguracion();
@@ -103,9 +104,11 @@ int abrirArchivoYValidar(char* path, int32_t pid){
  *		Queda a la espera de recibir instrucciones del Planificador
  */
 void escucharYAtender(){
-	t_pcb* pcb;
-	pcb = escucharPlanificador();
-	printf("El path recibido es: %s \n",pcb->path);
-	abrirArchivoYValidar(pcb->path,pcb->idProceso);
+	while(1){
+		t_pcb* pcb;
+		pcb = escucharPlanificador();
+		printf("El path recibido es: %s \n",pcb->path);
+		abrirArchivoYValidar(pcb->path,pcb->idProceso);
+	}
 }
 
