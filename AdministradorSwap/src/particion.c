@@ -159,7 +159,7 @@ char* buscarPagina(uint32_t PID, uint32_t pagina)
 {
 	char* paginaBuscada = malloc(configuracion->tamano_pagina);
 	t_nodoOcupado* nodo = encontrarNodoPorPID(espacioOcupado,PID);
-	uint32_t ubicacionPagina = nodo->comienzo + (pagina - 1);
+	uint32_t ubicacionPagina = nodo->comienzo + pagina;
 	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
 	uint32_t byteInicial = nodo->comienzo * configuracion->tamano_pagina;
 	bool vacio = string_is_empty(paginaBuscada);
