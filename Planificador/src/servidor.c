@@ -94,12 +94,13 @@ uint32_t deserializarEnteroSinSigno(uint32_t socket)
 void generoHiloPlanificador(uint32_t *hilo, struct arg_struct *args) {
 	pthread_t hiloPlanificador;
 	int respPlanificador = 0;
-
-	if (!*hilo) {
+	if (!*hilo)
+	{
 		*hilo = 1;
 		respPlanificador = pthread_create(&hiloPlanificador, NULL, consumirRecursos, (void *)args);
 	}
-	if (respPlanificador) {
+	if (respPlanificador)
+	{
 		fprintf(stderr, "Error- Iniciar servidor codigo de retorno %d\n", respPlanificador);
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);

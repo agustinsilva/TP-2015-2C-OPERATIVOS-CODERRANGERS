@@ -41,33 +41,23 @@ t_pcb* escucharPlanificador(){
 	char message[1024];
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
-	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
-	socketPlanificador = socketClientePlanificador;
-
-	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
-	if (conexionPlanificador != 0) {
-		perror("Error al conectar socket");
-		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
-		printf("NO se creo la conexion con planificador.\n");
-	}
-	printf("Se creo la conexion con planificador.\n");
 
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
-	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
+	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
 
 	//Recibe mensaje de Planificador: PCB
 	uint32_t tamanioChar;
-	status = recv(socketClientePlanificador->fd,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
+	status = recv(socketPlanificador->fd,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
-	status = recv(socketClientePlanificador->fd,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
+	status = recv(socketPlanificador->fd,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
-	status = recv(socketClientePlanificador->fd,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);
+	status = recv(socketPlanificador->fd,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
-	status = recv(socketClientePlanificador->fd,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
+	status = recv(socketPlanificador->fd,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
-	status = recv(socketClientePlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
+	status = recv(socketPlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
 	pcbRecibido->path = malloc(tamanioChar);
-	status = recv(socketClientePlanificador->fd,pcbRecibido->path,tamanioChar,0);
+	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 
 	return pcbRecibido;

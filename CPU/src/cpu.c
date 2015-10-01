@@ -4,13 +4,11 @@
 
 int main(void)
 {
-
-		puts("Comienzo de cpu");
-		puts("Cargo archivo de configuracion de CPU");
-		CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
-		cargarArchivoDeConfiguracion();
-		crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
-
+	puts("Comienzo de cpu");
+	puts("Cargo archivo de configuracion de CPU");
+	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
+	cargarArchivoDeConfiguracion();
+	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
 	limpiarConfiguracion();
 	log_destroy(CPULog);
@@ -21,10 +19,11 @@ int main(void)
  * CREA EL NUMERO DE HILOS QUE DICE EL ARCHIVO DE CONFIG
  * 		para checkpoint 2 creamos solo 1 hilo
  * */
-void crearHilosCPU (void)
+void crearHilosCPU()
 {
 	int rtaHilo = 0;
 	pthread_t hiloCpu; //id de cpu
+
 	rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
 	if(rtaHilo)
 	{
@@ -40,8 +39,8 @@ void crearHilosCPU (void)
 	//      printf("Se creo el hilo del CPU ID %i/n",CPU[cantidad].ID_CPU);
 	//      cantidad++;
 	//    }
-
 }
+
 
 int abrirArchivoYValidar(char* path, int32_t pid){
 	char **lista;
@@ -94,8 +93,6 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
-	clean_socket(socketAdminMemoria);
-	//clean_socket(socketPlanificador);
 	return 0;
 }
 
@@ -103,8 +100,21 @@ int abrirArchivoYValidar(char* path, int32_t pid){
  * 		Informa al Planificador la creacion de un hilo
  *		Queda a la espera de recibir instrucciones del Planificador
  */
-void escucharYAtender(){
-	while(1){
+void escucharYAtender()
+{
+	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
+	socketPlanificador = socketClientePlanificador;
+
+	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
+	if (conexionPlanificador != 0)
+	{
+		perror("Error al conectar socket");
+		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
+		printf("NO se creo la conexion con planificador.\n");
+	}
+	printf("Se creo la conexion con planificador.\n");
+	while(1)
+	{
 		t_pcb* pcb;
 		pcb = escucharPlanificador();
 		printf("El path recibido es: %s \n",pcb->path);
