@@ -27,10 +27,8 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas){
 			tabla->present = false;
 
 			tabla->idProc = idmProc;
-			tabla->frame = getFrame();
+			/*los frames no se asignan aun*/
 			tabla->nroPag = getPagina();
-
-	/* qué onda, aparecen cargadas en memoria o tengo que esperar al fallo y pedirlas a swap siempre? */
 
 			list_add(tablasDePaginas,tabla);
 		}
