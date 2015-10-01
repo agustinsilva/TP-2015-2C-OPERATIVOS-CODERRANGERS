@@ -1,4 +1,4 @@
-/***********CPU************/
+/***********CPcbU************/
 
 #include "cpu.h"
 
@@ -113,12 +113,13 @@ void escucharYAtender()
 		printf("NO se creo la conexion con planificador.\n");
 	}
 	printf("Se creo la conexion con planificador.\n");
+	t_pcb* pcb;
 	while(1)
 	{
-		t_pcb* pcb;
 		pcb = escucharPlanificador();
 		printf("El path recibido es: %s \n",pcb->path);
 		abrirArchivoYValidar(pcb->path,pcb->idProceso);
+		free(pcb);
 	}
 }
 

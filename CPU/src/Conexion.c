@@ -56,10 +56,13 @@ t_pcb* escucharPlanificador(){
 	status = recv(socketPlanificador->fd,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketPlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
-	pcbRecibido->path = malloc(tamanioChar);
+	pcbRecibido->path = malloc(tamanioChar + 1);
 	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 
+	//memcpy(pcbRecibido->path[tamanioChar+1],'\0',1);
+	//pcbRecibido->path[tamanioChar+1] = '\0';
+	//printf("path: %s",pcbRecibido->path);
 	return pcbRecibido;
 }
 
