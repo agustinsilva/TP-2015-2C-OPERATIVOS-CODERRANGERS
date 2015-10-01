@@ -302,7 +302,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 	{
 	memcpy(mensaje + offset, pagina, tamanioPagina);
 	}
-	enviarMensaje(socketMemoria,mensaje);
+	send(socketMemoria->fd,mensaje,tamanio,0);
 	free(mensaje);
 	free(pagina);
 	}
