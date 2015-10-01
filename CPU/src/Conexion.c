@@ -39,6 +39,7 @@ void* ConectarAPlanificador()
  */
 t_pcb* escucharPlanificador(){
 	char message[1024];
+	char pathIntermedio[512];
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
 
