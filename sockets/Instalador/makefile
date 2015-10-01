@@ -1,7 +1,7 @@
 all: compilar
 
 compilar:
-	 gcc -shared -o "libSockets.so" ../sockets/socket.c ../sockets/socket.h
+	 gcc -shared -fPIC -o "libSockets.so" ../sockets/socket.c ../sockets/socket.h
 
 install: compilar
 	cp -u libSockets.so /usr/lib
