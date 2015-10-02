@@ -143,25 +143,25 @@ void consumirRecursos(struct arg_struct *args) {
 }
 
 void logearResultadoCpu(uint32_t socketCpu){
-	uint32_t tamanioChar;
-	uint32_t status;
-	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
-	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
-	char* mensajeCpu = malloc(tamanioChar);
-	status = recv(socketCpu,mensajeCpu,tamanioChar,0);
-	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
 	free(mensajeCpu);
 }
 
+char* recibirMensaje(uint32_t socket){
+	/*recibe la cantidad de bytes que va a tener el mensaje*/
+	int32_t longitudMensaje;
+	/*recibe el mensaje sabiendo cuánto va a ocupar*/
+	recv(socket, &longitudMensaje, sizeof(int32_t), 0);
+	char* mensaje = (char*) malloc(longitudMensaje+1);
+	recv(socket, mensaje, longitudMensaje, 0);
+	mensaje[longitudMensaje]='\0';
+	return mensaje;
+}
+
+
 void logearFinalizacionCpu(uint32_t socketCpu, struct arg_struct *args){
-	uint32_t tamanioChar;
-	uint32_t status;
-	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
-	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
-	char* mensajeCpu = malloc(tamanioChar);
-	status = recv(socketCpu,mensajeCpu,tamanioChar,0);
-	if (status <= 0) log_error(planificadorLog,"Error al recibir mensaje CPU","ERROR");
+	char* mensajeCpu=recibirMensaje(socketCpu);
 	log_info(planificadorLog,"Mensaje de cpu: %s",mensajeCpu);
 	free(mensajeCpu);
 	int _cpuBySocket(t_hilosConectados *hilosConectados) {

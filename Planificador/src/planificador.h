@@ -81,5 +81,5 @@ int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
 uint32_t deserializarEnteroSinSigno(uint32_t socket);
 void limpiarConfiguracion();
-
+char* recibirMensaje(uint32_t socket);
 #endif /* PLANIFICADOR_H_ */

@@ -182,3 +182,141 @@
 [INFO] 20:31:27:145 Planificador/(5836:5837): Mensaje de cpu: mProc 0 - Finalizado. 0 - PaY
 [INFO] 20:31:29:152 Planificador/(5836:5837): Se conecto Cpu con sockedId: 6
 [INFO] 20:31:37:423 Planificador/(5836:5841): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 22:37:21:196 Planificador/(10750:10751): Se conecto Cpu con sockedId: 5
+[INFO] 22:37:34:280 Planificador/(10750:10756): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 22:37:34:283 Planificador/(10750:10751): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 22:37:36:285 Planificador/(10750:10751): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: hola soy contenidoje de c1
+[INFO] 22:37:38:293 Planificador/(10750:10751): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 22:42:06:556 Planificador/(10993:10994): Se conecto Cpu con sockedId: 5
+[INFO] 22:42:17:718 Planificador/(10993:10998): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 22:42:17:726 Planificador/(10993:10994): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 22:42:19:730 Planificador/(10993:10994): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: hola soy contenidoje de c1
+[INFO] 22:42:21:740 Planificador/(10993:10994): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 22:42:23:751 Planificador/(10993:10994): Se conecto Cpu con sockedId: 5
+[INFO] 22:42:33:78 Planificador/(10993:10998): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 22:42:33:121 Planificador/(10993:10994): Mensaje de cpu: mProc 1 - Iniciado.:‰
+[INFO] 22:42:35:135 Planificador/(10993:10994): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: hola soy contenido
+[INFO] 22:42:37:152 Planificador/(10993:10994): Mensaje de cpu: mProc 1 - Finalizado.
+[INFO] 22:42:39:160 Planificador/(10993:10994): Se conecto Cpu con sockedId: 5
+[INFO] 22:44:08:947 Planificador/(11014:11015): Se conecto Cpu con sockedId: 5
+[INFO] 22:44:14:239 Planificador/(11014:11019): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 22:44:14:244 Planificador/(11014:11015): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 22:44:16:258 Planificador/(11014:11015): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: hola soy contenidoje de c1
+[INFO] 22:44:18:277 Planificador/(11014:11015): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 22:44:20:282 Planificador/(11014:11015): Se conecto Cpu con sockedId: 5
+[INFO] 22:44:32:314 Planificador/(11014:11015): Se desconecto cpu con socketId: 5
+[INFO] 22:58:16:17 Planificador/(11352:11353): Se conecto Cpu con sockedId: 5
+[INFO] 22:58:20:345 Planificador/(11352:11357): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 22:58:35:425 Planificador/(11352:11353): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 22:58:37:440 Planificador/(11352:11353): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: hola soy contenidoje de c1
+[INFO] 23:02:35:124 Planificador/(11352:11353): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 23:02:37:133 Planificador/(11352:11353): Se conecto Cpu con sockedId: 5
+[INFO] 23:04:05:599 Planificador/(11352:11353): Se desconecto cpu con socketId: 5
+[INFO] 23:30:15:762 Planificador/(12589:12590): Se conecto Cpu con sockedId: 5
+[INFO] 23:30:24:849 Planificador/(12589:12631): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 23:30:24:853 Planificador/(12589:12590): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 23:31:01:220 Planificador/(12589:12590): Se desconecto cpu con socketId: 5
+[INFO] 23:36:50:345 Planificador/(12969:12970): Se conecto Cpu con sockedId: 5
+[INFO] 23:36:58:320 Planificador/(12969:13010): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 23:36:58:394 Planificador/(12969:12970): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 23:37:26:692 Planificador/(12969:12970): Se desconecto cpu con socketId: 5
+[INFO] 23:42:24:231 Planificador/(13323:13324): Se conecto Cpu con sockedId: 5
+[INFO] 23:42:29:116 Planificador/(13323:13383): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 23:42:29:157 Planificador/(13323:13324): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 23:43:06:276 Planificador/(13323:13324): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: txt 
+(
+[INFO] 23:43:12:999 Planificador/(13323:13324): Se desconecto cpu con socketId: 5
+[INFO] 23:49:26:175 Planificador/(13690:13691): Se conecto Cpu con sockedId: 5
+[INFO] 23:49:31:451 Planificador/(13690:13730): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 23:49:31:603 Planificador/(13690:13691): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 23:52:27:447 Planificador/(13690:13691): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: txt 
+(
+[INFO] 23:53:15:968 Planificador/(13690:13691): Se desconecto cpu con socketId: 5
+[INFO] 23:59:28:338 Planificador/(14172:14173): Se conecto Cpu con sockedId: 5
+[INFO] 23:59:48:959 Planificador/(14172:14215): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 23:59:48:999 Planificador/(14172:14173): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:00:22:193 Planificador/(14172:14173): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: n=
+[INFO] 00:00:24:244 Planificador/(14172:14173): Mensaje de cpu: mProc 0 - Finalizado.eida: n=
+[INFO] 00:00:26:247 Planificador/(14172:14173): Se conecto Cpu con sockedId: 5
+[INFO] 00:00:54:361 Planificador/(14172:14215): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 00:00:54:405 Planificador/(14172:14173): Mensaje de cpu: mProc 1 - Iniciado.:‰
+[INFO] 00:01:04:712 Planificador/(14172:14173): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: 
+[INFO] 00:01:06:761 Planificador/(14172:14173): Mensaje de cpu: mProc 1 - Finalizado.eida: 
+[INFO] 00:01:08:762 Planificador/(14172:14173): Se conecto Cpu con sockedId: 5
+[INFO] 00:09:13:89 Planificador/(14607:14608): Se conecto Cpu con sockedId: 5
+[INFO] 00:09:18:116 Planificador/(14607:14613): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:09:18:145 Planificador/(14607:14608): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:09:20:191 Planificador/(14607:14608): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: A=
+[INFO] 00:09:22:392 Planificador/(14607:14608): Mensaje de cpu: mProc 0 - Finalizado.eida: A=
+[INFO] 00:09:24:392 Planificador/(14607:14608): Se conecto Cpu con sockedId: 5
+[INFO] 00:09:34:25 Planificador/(14607:14613): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 00:09:34:27 Planificador/(14607:14608): Mensaje de cpu: (null)
+[INFO] 00:09:36:34 Planificador/(14607:14608): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: C
+[INFO] 00:09:38:47 Planificador/(14607:14608): Se desconecto cpu con socketId: 5
+[INFO] 00:20:05:319 Planificador/(14994:14995): Se conecto Cpu con sockedId: 5
+[INFO] 00:20:10:131 Planificador/(14994:14999): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:20:10:133 Planificador/(14994:14995): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:20:12:182 Planificador/(14994:14995): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: n=
+[INFO] 00:20:14:227 Planificador/(14994:14995): Mensaje de cpu: mProc 0 - Finalizado.eida: n=
+[INFO] 00:20:16:235 Planificador/(14994:14995): Se conecto Cpu con sockedId: 5
+[INFO] 00:20:43:219 Planificador/(14994:14995): Se desconecto cpu con socketId: 5
+[INFO] 00:26:02:743 Planificador/(15340:15341): Se conecto Cpu con sockedId: 5
+[INFO] 00:26:07:787 Planificador/(15340:15345): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:30:15:321 Planificador/(15625:15626): Se conecto Cpu con sockedId: 5
+[INFO] 00:30:19:402 Planificador/(15625:15630): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:30:19:403 Planificador/(15625:15626): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:30:21:460 Planificador/(15625:15626): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: 
+[INFO] 00:30:23:519 Planificador/(15625:15626): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 00:30:25:528 Planificador/(15625:15626): Se conecto Cpu con sockedId: 5
+[INFO] 00:30:34:423 Planificador/(15625:15630): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 00:30:34:466 Planificador/(15625:15626): Mensaje de cpu: mProc 1 - Iniciado.
+[INFO] 00:30:36:520 Planificador/(15625:15626): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: 
+[INFO] 00:30:38:569 Planificador/(15625:15626): Mensaje de cpu: mProc 1 - Finalizado.
+[INFO] 00:30:40:580 Planificador/(15625:15626): Se conecto Cpu con sockedId: 5
+[INFO] 00:31:49:768 Planificador/(15625:15626): Se desconecto cpu con socketId: 5
+[INFO] 00:36:50:506 Planificador/(15946:15947): Se conecto Cpu con sockedId: 5
+[INFO] 00:36:54:2 Planificador/(15946:15951): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:36:55:5 Planificador/(15946:15947): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:36:57:53 Planificador/(15946:15947): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: A
+[INFO] 00:36:59:808 Planificador/(15946:15947): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 00:37:01:817 Planificador/(15946:15947): Se conecto Cpu con sockedId: 5
+[INFO] 00:37:08:135 Planificador/(15946:15951): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 00:37:08:145 Planificador/(15946:15947): Mensaje de cpu: (null)
+[INFO] 00:37:10:157 Planificador/(15946:15947): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: 
+[INFO] 00:37:12:176 Planificador/(15946:15947): Se desconecto cpu con socketId: 5
+[INFO] 00:50:38:419 Planificador/(16264:16265): Se conecto Cpu con sockedId: 5
+[INFO] 00:50:42:297 Planificador/(16264:16269): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:50:42:317 Planificador/(16264:16265): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:50:44:374 Planificador/(16264:16265): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: 
+[INFO] 00:50:46:448 Planificador/(16264:16265): Mensaje de cpu: mProc 0 - Finalizado.
+[INFO] 00:50:48:445 Planificador/(16264:16265): Se conecto Cpu con sockedId: 5
+[INFO] 00:50:55:220 Planificador/(16264:16269): Se envio a ejecutar el programa: mcod.txt con PID: 1
+[INFO] 00:50:55:260 Planificador/(16264:16265): Mensaje de cpu: mProc 1 - Iniciado.
+[INFO] 00:50:57:311 Planificador/(16264:16265): Mensaje de cpu: mProc 1 - Pagina 3
+ leida: 
+[INFO] 00:50:59:358 Planificador/(16264:16265): Mensaje de cpu: mProc 1 - Finalizado.
+[INFO] 00:51:01:365 Planificador/(16264:16265): Se conecto Cpu con sockedId: 5
+[INFO] 00:51:07:524 Planificador/(16264:16265): Se desconecto cpu con socketId: 5
+[INFO] 00:56:38:729 Planificador/(16553:16568): Se conecto Cpu con sockedId: 5
+[INFO] 00:57:24:221 Planificador/(16553:16579): Se envio a ejecutar el programa: mcod.txt con PID: 0
+[INFO] 00:57:32:651 Planificador/(16553:16568): Mensaje de cpu: mProc 0 - Iniciado.
+[INFO] 00:57:37:639 Planificador/(16553:16568): Mensaje de cpu: mProc 0 - Pagina 3
+ leida: 
+[INFO] 00:57:44:993 Planificador/(16553:16568): Mensaje de cpu: mProc 0 - Finalizado.

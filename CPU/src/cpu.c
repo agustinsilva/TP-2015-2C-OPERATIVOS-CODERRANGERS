@@ -104,7 +104,6 @@ void escucharYAtender()
 {
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	socketPlanificador = socketClientePlanificador;
-
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0)
 	{
@@ -112,7 +111,9 @@ void escucharYAtender()
 		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
 		printf("NO se creo la conexion con planificador.\n");
 	}
-	printf("Se creo la conexion con planificador.\n");
+	log_info(CPULog,"Se conectó planificador al cpu correctamente.\n");
+	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
+	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
 	t_pcb* pcb;
 	while(1)
 	{

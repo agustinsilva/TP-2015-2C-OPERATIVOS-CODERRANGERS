@@ -74,4 +74,5 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
 void crearHilosCPU (void);
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
+char* recibirMensaje(sock_t* socket);
 #endif /* CPU_H_ */
