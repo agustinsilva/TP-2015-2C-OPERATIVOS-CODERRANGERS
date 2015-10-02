@@ -37,9 +37,7 @@ void* mostrarConsola() {
 				break;
 			case 3:
 				//Metodo que ejecuta el PS
-				printf("Debera mostrar en pantalla el PID, nombre de programa y estado de cada proceso 'mProc'");
-				  getchar();
-				  getchar();
+				mostrarProcesos();
 				break;
 			case 4:
 				//Metodo que ejecuta el Correr
@@ -52,6 +50,32 @@ void* mostrarConsola() {
 				break;
 		}
 	}
+}
+
+void mostrarProcesos() {
+	int index;
+	if (list_size(proc_listos) > 0) {
+		printf("Los programas en cola de ready son:\n");
+		for (index = 0; index < list_size(proc_listos); ++index) {
+			t_pcb *pcbListo = list_get(proc_listos, index);
+			printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcbListo->idProceso,
+					pcbListo->path, pcbListo->estadoProceso);
+		}
+	} else
+		printf("No hay programas en espera de ejecucion\n");
+
+	if (list_size(proc_ejecutados) > 0) {
+		printf("Los programas ejecutados son:\n");
+		for (index = 0; index < list_size(proc_ejecutados); ++index) {
+			t_pcb *pcb = list_get(proc_ejecutados, index);
+			printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
+					pcb->path, pcb->estadoProceso);
+		}
+	} else
+		printf("No hay programas finalizados\n");
+	printf("Presione enter para volver al menu...\n");
+	getchar();
+	getchar();
 }
 
 void leerComando(int* comando, char* mensaje) {
