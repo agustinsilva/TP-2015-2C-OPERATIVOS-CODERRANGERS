@@ -174,6 +174,7 @@ void logearFinalizacionCpu(uint32_t socketCpu, struct arg_struct *args){
 	t_list *cpuOcupado = list_find(args->cpu_ocupados,  (void*) _cpuBySocket);
 	list_remove_by_condition(args->cpu_ocupados, (void*) _cpuBySocket);
 	list_add(args->cpu_listos,cpuOcupado);
+	sem_post(&sincrocpu); // Aumento semaforo cpu
 }
 
 
