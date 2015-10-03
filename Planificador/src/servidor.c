@@ -154,9 +154,7 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
 	free(mensajeCpu);
-
 //	sem_wait(&mutex);
-
 	int _cpuBySocket(t_hilosConectados *hilosConectados) {
 		if (hilosConectados->socketHilo == socketCpu)
 			return 1;
@@ -165,8 +163,6 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	}
 	//Vuelvo a poner el cpu como disponible
 	t_list *cpuPlanificado = list_filter(cpu_ocupados, (void*) _cpuBySocket);
-	printf("tamanio lista %d BARRRA ENE PARA ELI \n",list_size(cpuPlanificado));
-
 	t_hilosConectados *cpu = list_get(cpu_ocupados, 0);
 	cpu->estadoHilo = 0; // Ponemos hilo en estado disponible
 	int _pcbByCpuPid(t_pcb *proc_ejecutado) {
@@ -176,7 +172,6 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 			return 0;
 	}
 	t_list *pcbFinalizado = list_filter(proc_ejecutados, (void*) _pcbByCpuPid);
-	printf("tamanio lista %d BARRRA ENE PARA ELI 22222 \n",list_size(pcbFinalizado));
 	t_pcb *pcb = list_get(pcbFinalizado, 0);
 	pcb->estadoProceso = 2;
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
