@@ -222,10 +222,10 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	uint32_t lecturaExitosa = deserializarEnteroSinSigno(socketAdminMemoria);
 	if(lecturaExitosa==PEDIDO_ERROR){
 		return PEDIDO_ERROR;
-		log_error(CPULog,"El pedido de lectura no fue exitoso.\n","ERROR");
+		log_error(CPULog,"El pedido de lectura no fue exitoso.","ERROR");
 	}
 	char* contenido = recibirMensaje(socketAdminMemoria);
-	log_info(CPULog,"[PID:%s] Lectura realizada. Contenido: %s \n",string_itoa(pid),contenido);
+	log_info(CPULog,"[PID:%s] Lectura realizada. Contenido: %s",string_itoa(pid),contenido);
 
 	//mProc 10 - Pagina 2 leida: contenido
 	cabecera = RESPUESTA_PLANIFICADOR;
@@ -237,7 +237,6 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	string_append(&mensaje, pagina);
 	string_append(&mensaje," leida: ");
 	string_append(&mensaje,contenido);
-	string_append(&mensaje,"\0");
 	uint32_t longitudMensaje = strlen(mensaje);
 	tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 	message = malloc(tamanio);
@@ -257,7 +256,7 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
 	if(enviado!=sizeof(int32_t)){
 		printf("No se envió correctamente la información entera\n");
-		log_error(CPULog,"Error al enviar codigo de operacion. \n","ERROR");
+		log_error(CPULog,"Error al enviar codigo de operacion.","ERROR");
 		return;
 	}
 }

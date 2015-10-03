@@ -222,7 +222,7 @@ void creoCpu(uint32_t socketCpu, t_list *cpu_listos){
 	hilosConectados->path = NULL;
 	list_add(cpu_listos,hilosConectados);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
-	log_info(planificadorLog,"Se conecto Cpu con sockedId: %d", socketCpu);
+	log_info(planificadorLog,"Se conecto Cpu con socketId: %d", socketCpu);
 }
 
 uint32_t crearSocketReceptor()

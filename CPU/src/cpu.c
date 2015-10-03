@@ -47,22 +47,22 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
 	char instruccion[TAMINSTRUCCION];
 	char* src = string_new();
-	string_append(&src, "../Planificador/src/");
+	string_append(&src, "../Planificador/src/Codigos/");
 	string_append(&src, path);
 	FILE* entrada = fopen(src, "r");
 
 	if(entrada==NULL){
-		log_error(CPULog,"No se pudo abrir el archivo de entrada. \n","ERROR");
+		log_error(CPULog,"No se pudo abrir el archivo de entrada. ","ERROR");
 		return -1;
 	}
-	log_info(CPULog,"El archivo se abrio correctamente: %s \n",path,"INFO");
+	log_info(CPULog,"El archivo se abrio correctamente: %s ",path,"INFO");
 
 	//Conectar con Admin de Memoria
 	sock_t* clientSocketAdmin = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(clientSocketAdmin);
 	if (conexionAdminMemoria != 0) {
 		perror("Error al conectar socket");
-		log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. \n","ERROR");
+		log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. ","ERROR");
 		exit(EXIT_FAILURE);
 	}
 	socketAdminMemoria = clientSocketAdmin;
@@ -71,23 +71,23 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		lista = string_split(instruccion," ");
 
 		if (string_equals_ignore_case(lista[0], "iniciar")){
-			log_info(CPULog," [PID:%s] Instruccion: iniciar\n",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pid));
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 			informarAdminMemoriaComandoIniciar(lista[1],pid);
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
 		}else if(string_equals_ignore_case(lista[0], "finalizar")){
-			log_info(CPULog," [PID:%s] Instruccion: finalizar\n",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pid));
 			//Informar al AdminMemoria que finalice el proceso
 			informarAdminMemoriaComandoFinalizar(pid);
 			sleep(configuracion->retardo);
 		}else if(string_equals_ignore_case(lista[0], "leer")){
-			log_info(CPULog," [PID:%s] Instruccion: leer\n",string_itoa(pid));
+			log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pid));
 			//lista[1] contiene el nro de pagina
 			informarAdminMemoriaComandoLeer(pid,lista[1]);
 			sleep(configuracion->retardo);
 		}else{
-			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado\n",string_itoa(pid));
+			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pid));
 		}
 	}
 
@@ -111,7 +111,7 @@ void escucharYAtender()
 		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
 		printf("NO se creo la conexion con planificador.\n");
 	}
-	log_info(CPULog,"Se conectó planificador al cpu correctamente.\n");
+	log_info(CPULog,"Se conectó planificador al cpu correctamente.");
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
 	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
 	t_pcb* pcb;

@@ -20,7 +20,7 @@ int main(void)
 	respServidor = pthread_create(&hiloServidor,NULL,iniciarServidor,NULL);
 	if(respServidor)
 	{
-		fprintf(stderr,"Error- Iniciar servidor codigo de retorn %d\n",respServidor);
+		fprintf(stderr,"Error- Iniciar servidor codigo de retorno %d\n",respServidor);
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}

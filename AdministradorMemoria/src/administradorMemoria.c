@@ -33,12 +33,12 @@ int main(void)
 				paramsCPU->swapSocket = clientSocketSwap;
 				if (pthread_create(&hiloCPU, NULL,(void*)hiloEjecucionCPU,(void*)paramsCPU))
 				{
-					log_error(MemoriaLog,"Error al crear el hilo de CPU\n");
+					log_error(MemoriaLog,"Error al crear el hilo de CPU");
 					EXIT_FAILURE;
 				}
 				else
 				{
-					log_info(MemoriaLog,"Conectado al hilo CPU de socket %d\n", cpuSocket->fd);
+					log_info(MemoriaLog,"Conectado al hilo CPU de socket %d", cpuSocket->fd);
 				}
 			}
 			else
