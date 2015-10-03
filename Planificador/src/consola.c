@@ -65,11 +65,24 @@ void mostrarProcesos() {
 		printf("No hay programas en espera de ejecucion\n");
 
 	if (list_size(proc_ejecutados) > 0) {
-		printf("Los programas ejecutados son:\n");
+
+		printf("Los programas en ejecucion son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
-			printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
-					pcb->path, pcb->estadoProceso);
+			if (pcb->estadoProceso == 1) {
+				printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
+						pcb->path, pcb->estadoProceso);
+			}
+
+		}
+		printf("Los programas finalizados son:\n");
+		for (index = 0; index < list_size(proc_ejecutados); ++index) {
+			t_pcb *pcb = list_get(proc_ejecutados, index);
+			if (pcb->estadoProceso == 2) {
+				printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
+						pcb->path, pcb->estadoProceso);
+			}
+
 		}
 	} else
 		printf("No hay programas finalizados\n");
