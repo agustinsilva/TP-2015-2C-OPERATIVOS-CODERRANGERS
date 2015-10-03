@@ -39,12 +39,8 @@ typedef struct {
 	uint32_t socketHilo;
 	uint32_t estadoHilo; //0-disponible 1-Ejecutando
 	char* path;
+	uint32_t idProceso;
 }t_hilosConectados;
-
-struct arg_struct {
-	t_list *cpu_listos;
-	t_list *cpu_ocupados;
-}args;
 
 //Variables globales
 t_configuracion* configuracion; //Puntero a configuracion
@@ -52,8 +48,11 @@ t_config* fdConfiguracion; //Descriptor de archivo
 int contadorProceso;
 t_list *proc_listos;
 t_list *proc_ejecutados;
+t_list *cpu_listos;
+t_list *cpu_ocupados;
 sem_t sincroproc;
 sem_t sincrocpu;
+sem_t mutex;
 t_log* planificadorLog;
 
 //Constantes
@@ -67,13 +66,14 @@ t_log* planificadorLog;
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
-void consumirRecursos(struct arg_struct *args);
+void consumirRecursos();
 void logearResultadoCpu(uint32_t socketCpu);
-void logearFinalizacionCpu(uint32_t socketCpu,struct arg_struct *args);
+void logearFinalizacionCpu(uint32_t socketCpu);
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
-void generoHiloPlanificador(uint32_t *hiloCreado, struct arg_struct *args);
-void creoCpu(uint32_t socketCpu, t_list *cpu_listos);
+void generoHiloPlanificador(uint32_t *hiloCreado);
+void creoCpu(uint32_t socketCpu);
 int contarInstrucciones(char* path);
+void mostrarProcesos();
 void* mostrarConsola();
 void leerComando(int* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);
