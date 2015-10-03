@@ -103,30 +103,33 @@ void leerComando(int* comando, char* mensaje) {
 
 void encolar(char* path) {
 	int cantidadInstrucciones = contarInstrucciones(path);
-
-	t_pcb *pcb = malloc(sizeof(t_pcb));
-
-	pcb->idProceso = contadorProceso;
-	contadorProceso++;
-	pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
-	pcb->contadorPuntero = 0;
-	pcb->cantidadInstrucciones = cantidadInstrucciones;
-	pcb->path = strdup(path);
-
-	list_add(proc_listos,pcb);
-	sem_post(&sincroproc);
-	printf("Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n");
+	if(cantidadInstrucciones){ //Si se abre el archivo, creo pcb
+		t_pcb *pcb = malloc(sizeof(t_pcb));
+		pcb->idProceso = contadorProceso;
+		contadorProceso++;
+		pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
+		pcb->contadorPuntero = 0;
+		pcb->cantidadInstrucciones = cantidadInstrucciones;
+		pcb->path = malloc(strlen(path));
+		pcb->path = strdup(path);
+		list_add(proc_listos,pcb);
+		sem_post(&sincroproc);
+		printf("Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n");
+	}
+	else{
+		printf("Se introdujo un path incorrecto.\n");
+	}
 }
 
 int contarInstrucciones(char* path) {
 	int ch;
 	int cantidad_lineas = 1;
 	char* src = string_new();
-	string_append(&src, "src/Codigos/");
+	string_append(&src, "src/");
 	string_append(&src, path);
 	FILE* fp = fopen(src, "r");
 	if (fp == NULL) {
-		perror("Error in opening file");
+		return 0;
 	}
 	do {
 		ch = fgetc(fp);
