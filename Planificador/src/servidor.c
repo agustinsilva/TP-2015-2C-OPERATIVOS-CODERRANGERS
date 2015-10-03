@@ -164,9 +164,10 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 			return 0;
 	}
 	//Vuelvo a poner el cpu como disponible
-	t_list *cpuPlanificado = list_find(cpu_ocupados, (void*) _cpuBySocket);
-	t_hilosConectados *cpu = malloc(sizeof(t_hilosConectados));
-	cpu = list_get(cpuPlanificado, 0);
+	t_list *cpuPlanificado = list_filter(cpu_ocupados, (void*) _cpuBySocket);
+	printf("tamanio lista %d BARRRA ENE PARA ELI \n",list_size(cpuPlanificado));
+
+	t_hilosConectados *cpu = list_get(cpu_ocupados, 0);
 	cpu->estadoHilo = 0; // Ponemos hilo en estado disponible
 	int _pcbByCpuPid(t_pcb *proc_ejecutado) {
 		if (cpu->idProceso == proc_ejecutado->idProceso)
@@ -174,11 +175,12 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 		else
 			return 0;
 	}
-	t_list *pcbFinalizado = list_find(proc_ejecutados, (void*) _pcbByCpuPid);
+	t_list *pcbFinalizado = list_filter(proc_ejecutados, (void*) _pcbByCpuPid);
+	printf("tamanio lista %d BARRRA ENE PARA ELI 22222 \n",list_size(pcbFinalizado));
 	t_pcb *pcb = list_get(pcbFinalizado, 0);
 	pcb->estadoProceso = 2;
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
-	list_add(cpu_listos, cpuPlanificado);
+	list_add_all(cpu_listos, cpuPlanificado);
 //	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 }
@@ -257,6 +259,6 @@ uint32_t crearSocketReceptor() {
 		exit(1);
 	}
 	bind(socketReceptor, serverInfo->ai_addr, serverInfo->ai_addrlen);
-	freeaddrinfo(serverInfo); // Ya no lo vamos a necesitar
+	freeaddrinfo(serverInfo);
 	return socketReceptor;
 }
