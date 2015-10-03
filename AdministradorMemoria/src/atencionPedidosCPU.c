@@ -158,17 +158,17 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	if(confirmacionSwap==pedido_exitoso)
 	{
-		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito \n  PID: %d, Cantidad de Páginas: %d \n", idmProc, cantPaginas);
+		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito. PID: %d, Cantidad de Páginas: %d.", idmProc, cantPaginas);
 	}
 	else
 	{
 		if(confirmacionSwap == pedido_error)
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: No hay memoria disponible\n");
+			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: No hay memoria disponible.");
 		}
 		else
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear \n Razón: Error de comunicación \n");
+			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: Error de comunicación. ");
 		}
 	}
 }
@@ -211,7 +211,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 *		//liberar espacio
 *	}*/
 	enviarEnteros(cpuSocket, confirmacionSwap);
-	log_info(MemoriaLog," - *Fin de proceso* PID: %d \n", idmProc);
+	log_info(MemoriaLog," - *Fin de proceso* PID: %d ", idmProc);
 	printf("Fin operación finalizar \n");
 }
 
@@ -231,7 +231,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		printf("No se recibió correctamente la información de la CPU\n");
 		return;
 	}
-	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d\n", idmProc, nroPagina);
+	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d", idmProc, nroPagina);
 	if(configuracion->tlb_habilitada==1)
 	{
 		/*
@@ -254,7 +254,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			enviarEnteros(cpuSocket, pedido_error);
 			return;
 		}
-		log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d\n", idmProc);
+		log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
 		/* actualizar memoria principal con frame/pagina y copiar contenido */
 		enviarContenidoPagina(cpuSocket, pedido);
 		free(pedido->contenido);
