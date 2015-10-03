@@ -73,7 +73,10 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 		if (string_equals_ignore_case(lista[0], "iniciar")){
 			log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pid));
 			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
-			informarAdminMemoriaComandoIniciar(lista[1],pid);
+
+			if(informarAdminMemoriaComandoIniciar(lista[1],pid)==EXIT_FAILURE) break;
+
+
 			sleep(configuracion->retardo);
 			//instructionPointer++; VER SI VA
 		}else if(string_equals_ignore_case(lista[0], "finalizar")){

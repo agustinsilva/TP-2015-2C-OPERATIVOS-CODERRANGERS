@@ -101,24 +101,26 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
-
 	cabecera = RESPUESTA_PLANIFICADOR;
 	char* mensaje = string_new();
 	offset = 0;
-	if(status==PEDIDO_ERROR){//mProc X - Fallo
+	if(entero==PEDIDO_ERROR){//mProc X - Fallo
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
-		string_append(&mensaje, " - Fallo.");
+		string_append(&mensaje, " - Fallo.\0");
+		log_error(CPULog,"Error por falta de memoria. Se finalizará el proceso.","ERROR");
+
 		uint32_t longitudMensaje = strlen(mensaje);
 		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 		char* message2 = malloc(tamanio);
-		message2 = malloc(tamanio);
 		memcpy(message2, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
-		memcpy(message2 + offset, &mensaje, sizeof(mensaje));
-		offset = offset + sizeof(mensaje);
+		memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+		offset = offset + sizeof(uint32_t);
+		memcpy(message2 + offset, mensaje, longitudMensaje);
 		status = send(socketPlanificador->fd,message2,tamanio,0);
 		free(message2);
+		return EXIT_FAILURE;
 	}else{//mProc X - Iniciado
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
@@ -126,13 +128,11 @@ int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 		uint32_t longitudMensaje = strlen(mensaje);
 		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
 		char* message3 = malloc(tamanio);
-		message3 = malloc(tamanio);
 		memcpy(message3, &cabecera, sizeof(cabecera)); //Codigo
 		offset = sizeof(cabecera);
 		memcpy(message3 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
 		offset = offset + sizeof(uint32_t);
 		memcpy(message3 + offset, mensaje, longitudMensaje); //Mensaje
-		offset = offset + longitudMensaje;
 		status = send(socketPlanificador->fd,message3,tamanio,0);
 		free(message3);
 	}

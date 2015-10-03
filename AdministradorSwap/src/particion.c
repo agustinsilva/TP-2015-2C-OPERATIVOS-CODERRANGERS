@@ -8,8 +8,8 @@ void crearParticion()
 	sprintf(instruccion, "dd if=/dev/zero of=%s bs=%d count=%d", configuracion->nombre_swap,configuracion->tamano_pagina,configuracion->cantidad_paginas);
 
 	//Descomentar para generar Archivo con A
-	//int32_t tamanio = configuracion->cantidad_paginas*configuracion->tamano_pagina;
-	//sprintf(instruccion, "< /dev/urandom tr -dc 'A' | head -c%d > %s",tamanio,configuracion->nombre_swap);
+//	int32_t tamanio = configuracion->cantidad_paginas*configuracion->tamano_pagina;
+//	sprintf(instruccion, "< /dev/urandom tr -dc 'A' | head -c%d > %s",tamanio,configuracion->nombre_swap);
 
 	system(instruccion);
 	sprintf(instruccion, "clear");
