@@ -116,13 +116,29 @@ void liberarProceso(uint32_t PID)
 	pidCondicion = PID;
 	nodoOcupado = list_remove_by_condition(espacioOcupado,validarMismoPid);
     byteInicial = nodoOcupado->comienzo * configuracion->tamano_pagina;
-    tamanio = nodoOcupado->paginas * configuracion->tamano_pagina;
-	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
+    tamanio = nodoOcupado->	paginas * configuracion->tamano_pagina;
+    ubicacionCondicion = nodoOcupado->comienzo + nodoOcupado->paginas;
+    t_nodoLibre* nodoLibre = list_find(espacioLibre,buscarNodoComienzo);
+    if(nodoLibre == NULL)
+    {
+	nodoLibre = malloc(sizeof(t_nodoLibre));
     nodoLibre->comienzo = nodoOcupado->comienzo;
     nodoLibre->paginas = nodoOcupado->paginas;
     list_add(espacioLibre,nodoLibre);
+    }
+    else
+    {
+    	nodoLibre->comienzo = nodoOcupado->comienzo;
+    	nodoLibre->paginas += nodoOcupado->paginas;
+    }
     log_info(SwapLog,"Se libera proceso con PID %d, byte inicial %d y tamaño %d",PID,byteInicial,tamanio);
     free(nodoOcupado);
+}
+
+bool buscarNodoComienzo(void* nodo)
+{
+	t_nodoLibre* nodoLibre = nodo;
+	return nodoLibre->comienzo == ubicacionCondicion;
 }
 
 bool validarMismoPid(void* nodo)

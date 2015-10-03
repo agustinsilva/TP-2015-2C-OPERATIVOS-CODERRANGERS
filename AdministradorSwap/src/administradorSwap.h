@@ -114,4 +114,5 @@ void procesarLectura(t_mensaje*,sock_t*);
 void limpiarNodosLibres(void*);
 void limpiarNodosOcupados(void*);
 void limpiarEstadisticas(void*);
+bool buscarNodoComienzo(void*);
 #endif /* ADMINSWAP_H_ */
