@@ -22,19 +22,15 @@ int cargarArchivoDeConfiguracion()
 {
 	/* para correr en eclipse */
 	fd_configuracion= config_create("src/configMemoria.txt");
-
 	/* para correr por consola */
 //	fd_configuracion= config_create("configMemoria.txt");
-	
 	if (!conf_es_valida(fd_configuracion)) //ver que el archivo config este completo
 	{
 		//printf("Archivo de configuracion incompleto o invalido.\n");
 		log_error(MemoriaLog,"Archivo de configuración inválido.","ERROR");
 		return -1;
 	}
-       
 	configuracion = malloc(sizeof(t_Memoria_Config));
-
 	configuracion->puerto_escucha = config_get_int_value(fd_configuracion, "PUERTO_ESCUCHA");
 	configuracion->ip_swap = string_new();
 	configuracion->ip_swap = config_get_string_value(fd_configuracion, "IP_SWAP");
@@ -45,7 +41,6 @@ int cargarArchivoDeConfiguracion()
 	configuracion->entradas_tlb = config_get_int_value(fd_configuracion, "ENTRADAS_TLB");
 	configuracion->tlb_habilitada = config_get_int_value(fd_configuracion, "TLB_HABILITADA");
 	configuracion->retardo_memoria = config_get_int_value(fd_configuracion, "RETARDO_MEMORIA");
-	
 	printf("PUERTO_ESCUCHA: %d\n", configuracion->puerto_escucha);
 	printf("IP_SWAP: %s\n", configuracion->ip_swap);
 	printf("PUERTO_SWAP: %d\n", configuracion->puerto_swap);
@@ -55,7 +50,6 @@ int cargarArchivoDeConfiguracion()
 	printf("ENTRADAS_TLB: %d\n", configuracion->entradas_tlb);
 	printf("TLB_HABILITADA: %d\n", configuracion->tlb_habilitada);
 	printf("RETARDO_MEMORIA: %d\n", configuracion->retardo_memoria);
-
 	return 0;
 }
 

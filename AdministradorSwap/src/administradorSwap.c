@@ -2,8 +2,8 @@
 
 #include "administradorSwap.h"
 
-int main(void) {
-
+int main(void)
+{
 	printf("Inicia Administrador de Swap\n");
 	puts("Cargo archivo de configuracion de Administrador Swap\n");
 	SwapLog = log_create("SwapLog", "AdministradorSwap", true, LOG_LEVEL_INFO);
@@ -12,7 +12,6 @@ int main(void) {
 	inicializarParticion();
 	iniciarServidor();
 	printf("Finaliza correctamente Administrador de Swap\n");
-
 	liberarRecursos();
 	return EXIT_SUCCESS;
 }

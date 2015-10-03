@@ -24,12 +24,14 @@
 #define codigo_finalizar 2
 #define codigo_leer 3
 #define codigo_escribir 4
+#define codigo_morir 5
 #define pedido_exitoso 1
 #define pedido_error 0
 #define pedido_no_memoria -1
 
 //Estructuras
-typedef struct{
+typedef struct
+{
 	uint32_t puerto_escucha;
 	char* ip_swap;
 	int32_t puerto_swap;
@@ -41,23 +43,27 @@ typedef struct{
 	int32_t retardo_memoria;
 } t_Memoria_Config;
 
-typedef struct{
+typedef struct
+{
 	sock_t* cpuSocket;
 	sock_t* swapSocket;
 } t_HiloCPU;
 
-typedef struct{
+typedef struct
+{
 	int32_t	marco;
 	int32_t	pagina;
 } t_TLB;
 
-typedef struct{
+typedef struct
+{
 	int32_t	marco;
 	int32_t	pagina;
 	char* contenido;
 } t_MP;
 
-typedef struct{
+typedef struct
+{
 	int32_t	idProc;
 	int32_t	frame;
 	int32_t	nroPag;
@@ -67,7 +73,8 @@ typedef struct{
 	bool accessed;
 } t_TP;
 
-typedef struct{
+typedef struct
+{
 	int32_t encontro;
 	int32_t longitud;
 	char* contenido;
@@ -80,7 +87,6 @@ t_log* MemoriaLog;
 t_list* TLB; /* de t_TLB */
 t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
-
 
 //Firma de funciones
 
@@ -113,5 +119,6 @@ void procesoDestroyer(t_TP* );
 int32_t getPagina();
 int32_t getFrame();
 bool hayEspacio();
+void limpiarRecursos();
 
 #endif /* ADMINMEMORIA_H_ */
