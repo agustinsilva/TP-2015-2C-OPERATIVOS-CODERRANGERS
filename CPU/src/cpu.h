@@ -46,10 +46,13 @@ typedef struct {
 #define TAMINSTRUCCION 80
 #define INICIAR 1
 #define FINALIZAR 2
+#define RESPUESTA_PLANIFICADOR_ESCRIBIR 4
+#define RESPUESTA_PLANIFICADOR_ENTRADA_SALIDA 5
 #define RESPUESTA_PLANIFICADOR 2
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define LEER 3
 #define ESCRIBIR 4
+#define ENTRADA_SALIDA 6
 #define ANORMAL 5
 #define NUEVO_HILO 1
 #define PEDIDO_ERROR 0
@@ -67,10 +70,14 @@ int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender();
+int abrirArchivoYValidar(char* path, int32_t pid);
 void limpiarConfiguracion();
+int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo);
+int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 int informarAdminMemoriaComandoFinalizar(int32_t pid);
 int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
+int informarPlanificadorLiberacionCPU(int32_t pid);
 void crearHilosCPU (void);
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
