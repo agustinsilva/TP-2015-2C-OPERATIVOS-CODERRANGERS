@@ -19,7 +19,7 @@ int main(void)
 	cpu_listos = list_create();
 	cpu_ocupados = list_create();
 	puts("Cargo archivo de configuracion de Planificador");
-	planificadorLog = log_create("PlanificadorLog", "Planificador", true, LOG_LEVEL_INFO);
+	planificadorLog = log_create("PlanificadorLog", "Planificador", false, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 	respServidor = pthread_create(&hiloServidor,NULL,iniciarServidor,NULL);
 	if(respServidor)

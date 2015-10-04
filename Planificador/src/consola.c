@@ -125,7 +125,7 @@ int contarInstrucciones(char* path) {
 	int ch;
 	int cantidad_lineas = 1;
 	char* src = string_new();
-	string_append(&src, "src/");
+	string_append(&src, "src/Codigos/");
 	string_append(&src, path);
 	FILE* fp = fopen(src, "r");
 	if (fp == NULL) {
