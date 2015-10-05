@@ -283,7 +283,7 @@ int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* 
 
 		//Recibe respuesta
 		status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
-		cabecera = RESPUESTA_PLANIFICADOR_ESCRIBIR;
+		cabecera = RESPUESTA_PLANIFICADOR;
 		char* mensaje = string_new();
 		offset = 0;
 		if(entero==PEDIDO_ERROR){//mProc X - Fallo Escritura
@@ -359,7 +359,7 @@ int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo){
 
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
-	cabecera = RESPUESTA_PLANIFICADOR_ENTRADA_SALIDA;
+	cabecera = RESPUESTA_PLANIFICADOR;
 	char* mensaje = string_new();
 	offset = 0;
 	if(entero==PEDIDO_ERROR){//mProc X - Fallo
