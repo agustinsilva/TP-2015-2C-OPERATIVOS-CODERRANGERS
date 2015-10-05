@@ -2,8 +2,7 @@
 
 #include "planificador.h"
 
-int main(void)
-{
+int main(void) {
 	contadorProceso = 0;
 	int respHilo = 0;
 	int respServidor = 0;
@@ -21,22 +20,19 @@ int main(void)
 	puts("Cargo archivo de configuracion de Planificador");
 	planificadorLog = log_create("PlanificadorLog", "Planificador", false, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
-	respServidor = pthread_create(&hiloServidor,NULL,iniciarServidor,NULL);
-	if(respServidor)
-	{
-		fprintf(stderr,"Error- Iniciar servidor codigo de retorno %d\n",respServidor);
+	respServidor = pthread_create(&hiloServidor, NULL, iniciarServidor, NULL);
+	if (respServidor) {
+		fprintf(stderr, "Error- Iniciar servidor codigo de retorno %d\n", respServidor);
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
 
 	respHilo = pthread_create(&hiloConsola, NULL, mostrarConsola, NULL);
-	if(respHilo)
-	{
-		fprintf(stderr,"Error - pthread_create() return code: %d\n",respHilo);
+	if (respHilo) {
+		fprintf(stderr, "Error - pthread_create() return code: %d\n", respHilo);
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
-
 
 	pthread_join(hiloConsola, NULL);
 	pthread_join(hiloServidor, NULL);

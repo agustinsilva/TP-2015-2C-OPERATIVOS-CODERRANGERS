@@ -61,6 +61,7 @@ t_log* planificadorLog;
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
 #define LOGEARFINALIZACIONCPU 3
+#define BLOQUEOPCB 4
 #define ENVIARPCB 2
 #define ERROR 5
 
@@ -77,7 +78,9 @@ t_log* planificadorLog;
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos();
-void creoPadre(socketProcesado);
+void replanificar(uint32_t socketProcesado);
+void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre);
+char* serializarTipoPlanificaion(uint32_t *totalPaquete);
 void logearResultadoCpu(uint32_t socketCpu);
 void logearFinalizacionCpu(uint32_t socketCpu);
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);

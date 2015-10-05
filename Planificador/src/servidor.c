@@ -4,6 +4,7 @@
 void* iniciarServidor() {
 	fd_set set_maestro, set_temporal, socketsHilos;
 	uint32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
+	uint32_t *socketCpuPadre = malloc(sizeof(uint32_t));
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
 	FD_ZERO(&set_temporal); //Limpia el set temporal
 	FD_ZERO(&socketsHilos);
@@ -46,15 +47,17 @@ void* iniciarServidor() {
 					cabecera = deserializarEnteroSinSigno(socketProcesado);
 					switch (cabecera) {
 					case AGREGARPADRECPU:
-						creoPadre(socketProcesado);
+						creoPadre(socketProcesado, socketCpuPadre);
 						break;
 					case AGREGARHILOCPU:
 						creoCpu(socketProcesado);
-						//Genero Hilo Fifo o Hilo RR
 						generoHiloPlanificador(hiloCreado);
 						break;
 					case LOGEARRESULTADOCPU:
 						logearResultadoCpu(socketProcesado);
+						break;
+					case BLOQUEOPCB:
+						replanificar(socketProcesado);
 						break;
 					case LOGEARFINALIZACIONCPU:
 						logearFinalizacionCpu(socketProcesado);
@@ -69,6 +72,7 @@ void* iniciarServidor() {
 			}
 		}
 	}
+	free(socketCpuPadre);
 	return NULL;
 }
 
@@ -222,6 +226,10 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
 	return paqueteSerializado;
 }
 
+void replanificar(uint32_t socketProcesado){
+
+}
+
 void creoCpu(uint32_t socketCpu){
 	t_hilosConectados *hilosConectados = malloc(sizeof(t_hilosConectados));
 	hilosConectados->socketHilo = socketCpu;
@@ -233,12 +241,54 @@ void creoCpu(uint32_t socketCpu){
 //	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	log_info(planificadorLog,"Se conecto Cpu con socketId: %d", socketCpu);
-
 }
 
 //Agrego socket Padre y le informo el tipo de planificacion
-void creoPadre(socketProcesado){
+void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre){
+	*socketCpuPadre = socketProcesado;
+	//Envio el tipo de planificacion al cpu
+	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
+	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
+	char* mensaje = malloc(*totalPaquete);
+	memcpy(mensaje, tipoPlanificacion, *totalPaquete);
+	int sendByte = send(*socketCpuPadre, mensaje, *totalPaquete, 0);
+	if (sendByte < 0) {
+		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
+	}
 
+}
+char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
+	uint32_t codigo, tipoPlanificacion, quantum;
+	codigo = 0;
+	quantum = configuracion->quantum;
+	if(!strcmp(configuracion->algoritmoPlanificacion,"FIFO")){ //si es fifo
+		*totalPaquete = 2 * sizeof(uint32_t);
+		tipoPlanificacion = 0; //Tipo FIFO
+	}
+	else {//si es RoundRobin
+		*totalPaquete = 3 * sizeof(uint32_t);
+		tipoPlanificacion = 1; //Tipo Round Robin
+	}
+
+	char *paqueteSerializado = malloc(*totalPaquete);
+	int offset = 0;
+	int medidaAMandar;
+
+	medidaAMandar = sizeof(codigo);
+	memcpy(paqueteSerializado + offset, &codigo, medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(tipoPlanificacion);
+	memcpy(paqueteSerializado + offset, &tipoPlanificacion, medidaAMandar);
+	offset += medidaAMandar;
+
+	if(tipoPlanificacion == 1){
+		medidaAMandar = sizeof(quantum);
+		memcpy(paqueteSerializado + offset, &quantum, medidaAMandar);
+		offset += medidaAMandar;
+	}
+
+	return paqueteSerializado;
 }
 
 uint32_t crearSocketReceptor() {

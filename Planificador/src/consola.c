@@ -17,6 +17,7 @@ void* mostrarConsola() {
 			printf("2 - Finalizar PID \n");
 			printf("3 - Estado de procesos \n");
 			printf("4 - Cpu\n");
+			printf("5 - Kill Them All\n");
 			printf("-------------------- \n");
 			*comando = 0;
 			leerComando(comando, "Debe ingresar un numero valido de comando\n");
@@ -42,6 +43,12 @@ void* mostrarConsola() {
 			case 4:
 				//Metodo que ejecuta el Correr
 				printf("Debera mostrar en pantalla del planificador un listado de ls CPUS actuales del sistema indicando para cada una su procentaje de uso del ultimo minuto");
+				  getchar();
+				  getchar();
+				break;
+			case 5:
+				//Metodo que ejecuta el Correr
+				printf("Debera matar a todos los procesos indicando la finalizacion");
 				  getchar();
 				  getchar();
 				break;
