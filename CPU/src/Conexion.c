@@ -252,6 +252,155 @@ int informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	return EXIT_SUCCESS;
 }
 
+int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto){
+		int32_t status;
+		int32_t entero;
+		//Envia aviso al Adm de Memoria: comando Escribir.
+
+		int32_t cabecera = ESCRIBIR; //DECIR A ELIANA QUE LE MANDAMOS LA CABECERA ESCRIBIR CUANDO ESCRIBE
+		char*textoAEscribir=texto;
+
+		uint32_t offset=0;
+		uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + sizeof(textoAEscribir);
+		char* message = malloc(tamanio);
+		memcpy(message, &cabecera, sizeof(cabecera));
+		offset = sizeof(cabecera);
+		memcpy(message + offset, &pid, sizeof(pid));
+		offset = offset + sizeof(pid);
+		memcpy(message + offset, &numeroPagina, sizeof(numeroPagina));
+		offset = offset + sizeof(numeroPagina);
+		memcpy(message + offset, &textoAEscribir, sizeof(numeroPagina));
+		offset = offset + sizeof(textoAEscribir);
+		status = send(socketAdminMemoria->fd,message,tamanio,0);
+		free(message);
+
+		if(!status)	{
+			printf("No se envió el mensaje escribir al Administrador de Memoria.\n");
+		}
+		else {
+			printf("Se envió el mensaje escribir correctamente al Admin de Memoria.\n");
+		}
+
+		//Recibe respuesta
+		status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+		cabecera = RESPUESTA_PLANIFICADOR_ESCRIBIR;
+		char* mensaje = string_new();
+		offset = 0;
+		if(entero==PEDIDO_ERROR){//mProc X - Fallo Escritura
+			string_append(&mensaje, "mProc ");
+			string_append(&mensaje, string_itoa(pid));
+			string_append(&mensaje, " - Fallo Escritura.\0");
+			log_error(CPULog,"Error en la escritura del proceso.","ERROR");
+
+			uint32_t longitudMensaje = strlen(mensaje);
+			uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+			char* message2 = malloc(tamanio);
+			memcpy(message2, &cabecera, sizeof(cabecera));
+			offset = sizeof(cabecera);
+			memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+			offset = offset + sizeof(uint32_t);
+			memcpy(message2 + offset, mensaje, longitudMensaje);
+
+		//Manda mensaje a Planificador del error de escritura
+			status = send(socketPlanificador->fd,message2,tamanio,0);
+			free(message2);
+		} else {
+			string_append(&mensaje, "mProc ");
+			string_append(&mensaje, string_itoa(pid));
+			string_append(&mensaje, " - Página ");
+			string_append(&mensaje, string_itoa(numeroPagina));
+			string_append(&mensaje, " escrita: ");
+			string_append(&mensaje, textoAEscribir);
+			string_append(&mensaje, "\0");
+			log_error(CPULog,"Se escribió %s en el Proceso %d, Página %d",textoAEscribir, pid, numeroPagina,"ERROR");
+
+			uint32_t longitudMensaje = strlen(mensaje);
+			uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+			char* message2 = malloc(tamanio);
+			memcpy(message2, &cabecera, sizeof(cabecera));
+			offset = sizeof(cabecera);
+			memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+			offset = offset + sizeof(uint32_t);
+			memcpy(message2 + offset, mensaje, longitudMensaje);
+
+		//Manda mensaje a Planificador informando que se escribió en la página.
+			status = send(socketPlanificador->fd,message2,tamanio,0);
+			free(message2);
+		}
+
+	return EXIT_SUCCESS;
+}
+
+int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo){
+
+	int32_t status;
+	int32_t entero;
+	//Envia aviso al Adm de Memoria: comando Entrada-Salida.
+
+	int32_t cabecera = ENTRADA_SALIDA;
+	uint32_t offset=0;
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(tiempo);
+	char* message = malloc(tamanio);
+	memcpy(message, &cabecera, sizeof(cabecera));
+	offset = sizeof(cabecera);
+	memcpy(message + offset, &pid, sizeof(pid));
+	offset = offset + sizeof(pid);
+	memcpy(message + offset, &tiempo, sizeof(tiempo));
+	offset = offset + sizeof(tiempo);
+	status = send(socketAdminMemoria->fd,message,tamanio,0);
+	free(message);
+
+	if(!status)	{
+		printf("No se envió el mensaje de entrada-salida al Administrador de Memoria.\n");
+	}
+	else {
+		printf("Se envió el mensaje de entrada-salida correctamente al Admin de Memoria.\n");
+	}
+
+	//Recibe respuesta
+	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
+	cabecera = RESPUESTA_PLANIFICADOR_ENTRADA_SALIDA;
+	char* mensaje = string_new();
+	offset = 0;
+	if(entero==PEDIDO_ERROR){//mProc X - Fallo
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje, " - Fallo la Entrada-Salida.\0");
+		log_error(CPULog,"Falló la entrada-salida del proceso %s.",string_itoa(pid),"ERROR");
+
+		uint32_t longitudMensaje = strlen(mensaje);
+		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+		char* message2 = malloc(tamanio);
+		memcpy(message2, &cabecera, sizeof(cabecera));
+		offset = sizeof(cabecera);
+		memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+		offset = offset + sizeof(uint32_t);
+		memcpy(message2 + offset, mensaje, longitudMensaje);
+		status = send(socketPlanificador->fd,message2,tamanio,0);
+		free(message2);
+		return EXIT_FAILURE;
+	}else{//mProc X - en entrada-salida de tiempo T.
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje, " en entrada-salida de tiempo");
+		string_append(&mensaje, string_itoa(tiempo));
+		string_append(&mensaje, ".\0");
+
+		uint32_t longitudMensaje = strlen(mensaje);
+		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
+		char* message3 = malloc(tamanio);
+		memcpy(message3, &cabecera, sizeof(cabecera)); //Codigo
+		offset = sizeof(cabecera);
+		memcpy(message3 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
+		offset = offset + sizeof(uint32_t);
+		memcpy(message3 + offset, mensaje, longitudMensaje); //Mensaje
+		status = send(socketPlanificador->fd,message3,tamanio,0);
+		free(message3);
+	}
+	return EXIT_SUCCESS;
+}
+
+
 void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
 	if(enviado!=sizeof(int32_t)){
@@ -283,4 +432,7 @@ char* recibirMensaje(sock_t* socket){
 	return mensaje;
 }
 
+int informarPlanificadorLiberacionCPU(int32_t pid){
 
+	return EXIT_SUCCESS;
+}
