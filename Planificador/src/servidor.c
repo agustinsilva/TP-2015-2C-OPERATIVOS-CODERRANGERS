@@ -45,8 +45,12 @@ void* iniciarServidor() {
 				{
 					cabecera = deserializarEnteroSinSigno(socketProcesado);
 					switch (cabecera) {
+					case AGREGARPADRECPU:
+						creoPadre(socketProcesado);
+						break;
 					case AGREGARHILOCPU:
 						creoCpu(socketProcesado);
+						//Genero Hilo Fifo o Hilo RR
 						generoHiloPlanificador(hiloCreado);
 						break;
 					case LOGEARRESULTADOCPU:
@@ -229,6 +233,11 @@ void creoCpu(uint32_t socketCpu){
 //	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	log_info(planificadorLog,"Se conecto Cpu con socketId: %d", socketCpu);
+
+}
+
+//Agrego socket Padre y le informo el tipo de planificacion
+void creoPadre(socketProcesado){
 
 }
 

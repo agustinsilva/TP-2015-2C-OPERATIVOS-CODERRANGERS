@@ -58,29 +58,27 @@ void mostrarProcesos() {
 		printf("Los programas en cola de ready son:\n");
 		for (index = 0; index < list_size(proc_listos); ++index) {
 			t_pcb *pcbListo = list_get(proc_listos, index);
-			printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcbListo->idProceso,
-					pcbListo->path, pcbListo->estadoProceso);
+			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_GREEN"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
+					pcbListo->path, convertirNumeroEnString(pcbListo->estadoProceso));
 		}
 	} else
 		printf("No hay programas en espera de ejecucion\n");
 
 	if (list_size(proc_ejecutados) > 0) {
 
-		printf("Los programas en ejecucion son:\n");
+		printf("Los programas procesados son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
 			if (pcb->estadoProceso == 1) {
-				printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
-						pcb->path, pcb->estadoProceso);
+				printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_YELLOW"%s\n"ANSI_COLOR_RESET, pcb->idProceso,
+						pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}
 
 		}
-		printf("Los programas finalizados son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
 			if (pcb->estadoProceso == 2) {
-				printf("PId: %d -- Nombre: %s -- Estado: %d\n", pcb->idProceso,
-						pcb->path, pcb->estadoProceso);
+				printf("   PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_RED"%s\n"ANSI_COLOR_RESET, pcb->idProceso, pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}
 
 		}
@@ -89,6 +87,15 @@ void mostrarProcesos() {
 	printf("Presione enter para volver al menu...\n");
 	getchar();
 	getchar();
+}
+
+char* convertirNumeroEnString(uint32_t estado){
+	if(estado==0)
+		return "Espera";
+	if(estado==1)
+		return "Ejecucion";
+	else
+		return "Finalizado";
 }
 
 void leerComando(int* comando, char* mensaje) {
@@ -114,10 +121,10 @@ void encolar(char* path) {
 		pcb->path = strdup(path);
 		list_add(proc_listos,pcb);
 		sem_post(&sincroproc);
-		printf("Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n");
+		printf(ANSI_COLOR_GREEN "Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n" ANSI_COLOR_RESET);
 	}
 	else{
-		printf("Se introdujo un path incorrecto.\n");
+		printf(ANSI_COLOR_RED "Se introdujo un path incorrecto.\n"ANSI_COLOR_RESET );
 	}
 }
 

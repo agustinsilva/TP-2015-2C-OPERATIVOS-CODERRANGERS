@@ -57,22 +57,34 @@ t_log* planificadorLog;
 
 //Constantes
 #define PAQUETE 1024
+#define AGREGARPADRECPU 0
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
 #define LOGEARFINALIZACIONCPU 3
 #define ENVIARPCB 2
 #define ERROR 5
 
+//Colores Consola
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 //Firma de funciones
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos();
+void creoPadre(socketProcesado);
 void logearResultadoCpu(uint32_t socketCpu);
 void logearFinalizacionCpu(uint32_t socketCpu);
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete);
 void generoHiloPlanificador(uint32_t *hiloCreado);
 void creoCpu(uint32_t socketCpu);
 int contarInstrucciones(char* path);
+char* convertirNumeroEnString(uint32_t estado);
 void mostrarProcesos();
 void* mostrarConsola();
 void leerComando(int* comando, char* mensaje);
