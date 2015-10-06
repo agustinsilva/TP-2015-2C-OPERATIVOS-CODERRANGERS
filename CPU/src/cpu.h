@@ -79,7 +79,7 @@ void* ConectarAPlanificador();
 int conectarCPUPadreAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender();
-int abrirArchivoYValidar(char* path, int32_t pid);
+int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer);
 void limpiarConfiguracion();
 int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo);
 int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);

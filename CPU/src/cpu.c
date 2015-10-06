@@ -43,9 +43,9 @@ void crearHilosCPU()
 }
 
 
-int abrirArchivoYValidar(char* path, int32_t pid){
+int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 	char **lista;
-	//	int instructionPointer=0; Cuando se ejecuta finalizar tengo que ir a la ultima insturccion para eso cuento todas?
+	uint32_t numeroInstruccion=0;
 	char instruccion[TAMINSTRUCCION];
 	char* src = string_new();
 	string_append(&src, "../Planificador/src/Codigos/");
@@ -68,49 +68,56 @@ int abrirArchivoYValidar(char* path, int32_t pid){
 	}
 	socketAdminMemoria = clientSocketAdmin;
 
-	while (fgets(instruccion,TAMINSTRUCCION, entrada) != NULL) {
-		lista = string_split(instruccion," ");
+	if (instructionPointer == numeroInstruccion) {
+		while  (fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 
-		if (string_equals_ignore_case(lista[0], "iniciar")){
-			log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pid));
-			//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
-			if(informarAdminMemoriaComandoIniciar(lista[1],pid)==EXIT_FAILURE) break;
-			sleep(configuracion->retardo);
-			//instructionPointer++; VER SI VA
-		}else if(string_equals_ignore_case(lista[0], "finalizar")){
-			log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pid));
-			//Informar al AdminMemoria que finalice el proceso
-			informarAdminMemoriaComandoFinalizar(pid);
-			sleep(configuracion->retardo);
-		}else if(string_equals_ignore_case(lista[0], "leer")){
-			log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pid));
-			//lista[1] contiene el nro de pagina
-			informarAdminMemoriaComandoLeer(pid,lista[1]);
-			sleep(configuracion->retardo);
+			lista = string_split(instruccion," ");
 
-		}else if(string_equals_ignore_case(lista[0], "escribir")){
-			char* textoEscribir = string_from_format("%s",lista[2]);
-			int32_t numeroPagina=*lista[1];
-			log_info(CPULog," [PID:%s] Instruccion: escribir en página %s del proceso %s : %s",string_itoa(pid),numeroPagina, string_itoa(pid), textoEscribir);
-			//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
-			informarAdminMemoriaComandoEscribir(pid,numeroPagina,textoEscribir);
-			sleep(configuracion->retardo);
+			if (string_equals_ignore_case(lista[0], "iniciar")){
+				log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pid));
+				//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
+				if(informarAdminMemoriaComandoIniciar(lista[1],pid)==EXIT_FAILURE) break;
+				sleep(configuracion->retardo);
+				//instructionPointer++; VER SI VA
+			}else if(string_equals_ignore_case(lista[0], "finalizar")){
+				log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pid));
+				//Informar al AdminMemoria que finalice el proceso
+				informarAdminMemoriaComandoFinalizar(pid);
+				sleep(configuracion->retardo);
+			}else if(string_equals_ignore_case(lista[0], "leer")){
+				log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pid));
+				//lista[1] contiene el nro de pagina
+				informarAdminMemoriaComandoLeer(pid,lista[1]);
+				sleep(configuracion->retardo);
 
-		}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
-			int32_t tiempoDeEjec=*lista[1];
-			log_info(CPULog," [PID:%s] Instruccion: entrada-salida en proceso %s de tiempo %s.", string_itoa(pid), string_itoa(pid), tiempoDeEjec);
-					//lista[1] Contiene el tiempo que se debe bloquear.
-					informarAdminMemoriaComandoEntradaSalida(pid,tiempoDeEjec);
-					sleep(configuracion->retardo);
-					informarPlanificadorLiberacionCPU(pid); //HACER FUNCION PARA INFORMAR AL PLANIFICADOR. PAGINA 5
+			}else if(string_equals_ignore_case(lista[0], "escribir")){
+				char* textoEscribir = string_from_format("%s",lista[2]);
+				int32_t numeroPagina=*lista[1];
+				log_info(CPULog," [PID:%s] Instruccion: escribir en página %s del proceso %s : %s",string_itoa(pid),numeroPagina, string_itoa(pid), textoEscribir);
+				//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
+				informarAdminMemoriaComandoEscribir(pid,numeroPagina,textoEscribir);
+				sleep(configuracion->retardo);
 
-		}else{
-			log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pid));
+			}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
+				int32_t tiempoDeEjec=*lista[1];
+				log_info(CPULog," [PID:%s] Instruccion: entrada-salida en proceso %s de tiempo %s.", string_itoa(pid), string_itoa(pid), tiempoDeEjec);
+				//lista[1] Contiene el tiempo que se debe bloquear.
+				informarAdminMemoriaComandoEntradaSalida(pid,tiempoDeEjec);
+				sleep(configuracion->retardo);
+				informarPlanificadorLiberacionCPU(pid); //HACER FUNCION PARA INFORMAR AL PLANIFICADOR. PAGINA 5
+
+			}else{
+				log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pid));
+			}
 		}
+	} else {
+		fgets(instruccion,TAMINSTRUCCION+1, entrada); //TOMA LA LINEA E INCREMENTA Y SIGUE CON LA SIGUIENTE.
+		numeroInstruccion ++;
 	}
 
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
+
 	return 0;
 }
 
@@ -136,8 +143,9 @@ void escucharYAtender()
 	while(1)
 	{
 		pcb = escucharPlanificador();
+		int instructionPointer= pcb->contadorPuntero;
 		printf("El path recibido es: %s \n",pcb->path);
-		abrirArchivoYValidar(pcb->path,pcb->idProceso);
+		abrirArchivoYValidar(pcb->path,pcb->idProceso,instructionPointer);
 		free(pcb->path);
 		free(pcb);
 	}
