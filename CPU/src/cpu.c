@@ -111,6 +111,7 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 			}
 		}
 	} else {
+		fgets(instruccion,TAMINSTRUCCION+1, entrada); //TOMA LA LINEA E INCREMENTA Y SIGUE CON LA SIGUIENTE.
 		numeroInstruccion ++;
 	}
 
