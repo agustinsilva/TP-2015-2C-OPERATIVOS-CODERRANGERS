@@ -28,6 +28,7 @@
 #define pedido_exitoso 1
 #define pedido_error 0
 #define pedido_no_memoria -1
+#define swap_in -2
 
 //Estructuras
 typedef struct
@@ -53,12 +54,13 @@ typedef struct
 {
 	int32_t	marco;
 	int32_t	pagina;
+	int32_t idProc;
 } t_TLB;
 
 typedef struct
 {
 	int32_t	marco;
-	int32_t	pagina;
+	bool ocupado;
 	char* contenido;
 } t_MP;
 
@@ -100,6 +102,7 @@ int32_t hiloEjecucionCPU(t_HiloCPU* );
 void setUp();
 void limpiarMemoriaPrincipal();
 void limpiarTLB();
+void TLBDestroyer(t_TLB* );
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -120,5 +123,12 @@ int32_t getPagina();
 int32_t getFrame();
 bool hayEspacio();
 void limpiarRecursos();
+void actualizarTLB(int32_t, int32_t , int32_t );
+void swapIN(sock_t* , sock_t* , int32_t , int32_t );
+void manejarMemoriaPrincipal(t_MP* , sock_t* );
+t_TLB* buscarEnTLB(int32_t , int32_t );
+t_MP* buscarEnMemoriaPrincipal(int32_t);
+int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
+void manejarMemoriaPrincipal(t_MP* , sock_t* );
 
 #endif /* ADMINMEMORIA_H_ */
