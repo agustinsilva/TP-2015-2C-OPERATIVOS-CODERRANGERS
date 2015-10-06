@@ -61,6 +61,7 @@ void* mostrarConsola() {
 
 void mostrarProcesos() {
 	int index;
+	sem_wait(&mutex);
 	if (list_size(proc_listos) > 0) {
 		printf("Los programas en cola de ready son:\n");
 		for (index = 0; index < list_size(proc_listos); ++index) {
@@ -92,6 +93,7 @@ void mostrarProcesos() {
 	} else
 		printf("No hay programas finalizados\n");
 	printf("Presione enter para volver al menu...\n");
+	sem_post(&mutex);
 	getchar();
 	getchar();
 }
@@ -117,6 +119,7 @@ void leerComando(int* comando, char* mensaje) {
 
 void encolar(char* path) {
 	int cantidadInstrucciones = contarInstrucciones(path);
+	sem_wait(&mutex);
 	if(cantidadInstrucciones){ //Si se abre el archivo, creo pcb
 		t_pcb *pcb = malloc(sizeof(t_pcb));
 		pcb->idProceso = contadorProceso;
@@ -133,6 +136,7 @@ void encolar(char* path) {
 	else{
 		printf(ANSI_COLOR_RED "Se introdujo un path incorrecto.\n"ANSI_COLOR_RESET );
 	}
+	sem_post(&mutex);
 }
 
 int contarInstrucciones(char* path) {

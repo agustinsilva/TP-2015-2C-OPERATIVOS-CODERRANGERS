@@ -102,11 +102,11 @@ void generoHiloPlanificador(uint32_t *hilo) {
 
 void consumirRecursos() {
 	//mientras halla cpu listos, mandar a ejecutar pcb
-//	sem_wait(&mutex);
 	while (1) {
 		sem_wait(&sincrocpu);
 		sem_wait(&sincroproc);
 		while (list_size(cpu_listos) > 0 && list_size(proc_listos) > 0) {
+			sem_wait(&mutex);
 			t_list *cpu_ocupado = list_take_and_remove(cpu_listos, 1);
 			t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
 			//Mandar por socket al cpu el proc para ejecutar
@@ -130,14 +130,14 @@ void consumirRecursos() {
 			//Asignar los cpu y proc usados en la lista de ocupados y ejecutados.
 			list_add(proc_ejecutados, pcb);
 			list_add(cpu_ocupados, cpu);
-
 			log_info(planificadorLog, "Se envio a ejecutar el programa: %s con PID: %d", pcb->path, pcb->idProceso);
 			free(mensaje);
 			free(pcbSerializado);
 			free(totalPaquete);
+			sem_post(&mutex);
 		}
 	}
-//	sem_post(&mutex);
+
 }
 
 void logearResultadoCpu(uint32_t socketCpu) {
@@ -161,7 +161,7 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
 	free(mensajeCpu);
-//	sem_wait(&mutex);
+	sem_wait(&mutex);
 	int _cpuBySocket(t_hilosConectados *hilosConectados) {
 		if (hilosConectados->socketHilo == socketCpu)
 			return 1;
@@ -183,8 +183,8 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	pcb->estadoProceso = 2;
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
 	list_add_all(cpu_listos, cpuPlanificado);
-//	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
+	sem_post(&mutex);
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
@@ -226,27 +226,27 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
 }
 
 void replanificar(uint32_t socketCpu){
-	//recibir el pcb
+	//Recibo el pcb bloqueado
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
-	//Habilitar el hilo cpu
-	//Modificar Pcb de las
-	int _pcbById(t_pcb *proc_ejecutado) {
-		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
+
+	int _cpuById(t_hilosConectados *cpu_ocupado) {
+		if (pcbBloqueado->idProceso == cpu_ocupado->idProceso)
 			return 1;
 		else
 			return 0;
 	}
-	t_list *pcbBloqueadoLista = list_filter(proc_ejecutados, (void*) _pcbById);
-	list_remove_and_destroy_element(pcbBloqueadoLista, 0, (void*) pcbDestroy);
-	//HAGO UN SLEEP de T
-	sleep(5);
+	//Modifico lista proc y cpu
+//	t_list *pcbBloqueadoLista = list_filter(proc_ejecutados, (void*) _pcbById);
+	list_remove_and_destroy_element(proc_ejecutados, 0, (void*) pcbDestroy);
+	pcbBloqueado->estadoProceso = 0;
+//	t_list *cpuOcupado = list_filter(cpu_ocupados, (void*) _cpuById);
+	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
+	cpuOcupado->estadoHilo = 0;
+	cpuOcupado->path = "";
+	list_add(cpu_listos, cpuOcupado);
 	list_add(proc_listos, pcbBloqueado);
-
-	//to be continued...
-
-
-	//actualizar contenido pcb
-
+	sem_post(&sincrocpu); // Aumento semaforo cpu
+	sem_post(&sincroproc); // Aumento semaforo cpu
 }
 
 void pcbDestroy(t_pcb *self) {
@@ -289,9 +289,9 @@ void creoCpu(uint32_t socketCpu){
 	hilosConectados->estadoHilo = 0; //0-disponible 1-Ejecutando
 	hilosConectados->path = NULL;
 	hilosConectados->idProceso = 0; // inicializo en 0
-//	sem_wait(&mutex);
+	sem_wait(&mutex);
 	list_add(cpu_listos, hilosConectados);
-//	sem_post(&mutex);
+	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	log_info(planificadorLog,"Se conecto Cpu con socketId: %d", socketCpu);
 }
