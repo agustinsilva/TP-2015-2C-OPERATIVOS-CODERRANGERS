@@ -41,19 +41,27 @@ typedef struct {
 	char* path;
 }t_pcb;
 
+typedef struct {
+	uint32_t tipoPlanificacion;
+	uint32_t quantum;
+}t_cpu_padre;
+
 //Constantes
 #define PAQUETE 1024
 #define TAMINSTRUCCION 80
+#define ANORMAL 5
+#define PEDIDO_ERROR 0
+/*con admin de memoria*/
 #define INICIAR 1
 #define FINALIZAR 2
-#define RESPUESTA_PLANIFICADOR 2
-#define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define LEER 3
 #define ESCRIBIR 4
+/*con planificador*/
 #define ENTRADA_SALIDA 6
-#define ANORMAL 5
+#define RESPUESTA_PLANIFICADOR_LOGEAR 2
+#define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1
-#define PEDIDO_ERROR 0
+#define CONEXION_CPU_PADRE 0
 
 //Variables globales
 t_configuracion* configuracion;
@@ -61,6 +69,8 @@ t_config * fd_configuracion;
 t_log* CPULog;
 sock_t* socketAdminMemoria;
 sock_t* socketPlanificador;
+sock_t* socketPlanificadorPadre;
+t_cpu_padre configCPUPadre;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
@@ -81,3 +91,4 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 char* recibirMensaje(sock_t* socket);
 #endif /* CPU_H_ */
+

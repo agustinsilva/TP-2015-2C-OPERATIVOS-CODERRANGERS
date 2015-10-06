@@ -250,7 +250,7 @@ void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre){
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
 	char* mensaje = malloc(*totalPaquete);
-	memcpy(mensaje, tipoPlanificacion, *totalPaquete);
+	//memcpy(mensaje, tipoPlanificacion, *totalPaquete); NO Entiendo para que es esta linea(marian)
 	int sendByte = send(*socketCpuPadre, mensaje, *totalPaquete, 0);
 	if (sendByte < 0) {
 		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
