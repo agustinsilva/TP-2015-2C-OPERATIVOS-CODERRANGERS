@@ -8,7 +8,7 @@ int main(void)
 	puts("Cargo archivo de configuracion de CPU");
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
-	//conectarCPUPadreAPlanificador();
+	conectarCPUPadreAPlanificador();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
 	limpiarConfiguracion();

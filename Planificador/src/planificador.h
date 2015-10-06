@@ -57,7 +57,7 @@ t_log* planificadorLog;
 
 //Constantes
 #define PAQUETE 1024
-#define AGREGARPADRECPU 0
+#define AGREGARPADRECPU 10
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
 #define LOGEARFINALIZACIONCPU 3
@@ -78,7 +78,9 @@ t_log* planificadorLog;
 void* iniciarServidor();
 void encolar(char* path);
 void consumirRecursos();
+void pcbDestroy(t_pcb *self);
 void replanificar(uint32_t socketProcesado);
+t_pcb* recibirPcb(uint32_t socketCpu);
 void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre);
 char* serializarTipoPlanificaion(uint32_t *totalPaquete);
 void logearResultadoCpu(uint32_t socketCpu);
@@ -94,7 +96,8 @@ void leerComando(int* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
-uint32_t deserializarEnteroSinSigno(uint32_t socket);
+int32_t deserializarEnteroSinSigno(uint32_t socket);
 void limpiarConfiguracion();
+void Inicilizar();
 char* recibirMensaje(uint32_t socket);
 #endif /* PLANIFICADOR_H_ */

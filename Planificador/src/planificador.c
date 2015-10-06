@@ -3,20 +3,12 @@
 #include "planificador.h"
 
 int main(void) {
-	contadorProceso = 0;
 	int respHilo = 0;
 	int respServidor = 0;
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
+	Inicilizar();
 
-	sem_init(&sincroproc, 0, 0);
-	sem_init(&sincrocpu, 0, 0);
-	sem_init(&mutex, 0, 1);
-
-	proc_listos = list_create();
-	proc_ejecutados = list_create();
-	cpu_listos = list_create();
-	cpu_ocupados = list_create();
 	puts("Cargo archivo de configuracion de Planificador");
 	planificadorLog = log_create("PlanificadorLog", "Planificador", false, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
@@ -41,3 +33,15 @@ int main(void) {
 	limpiarConfiguracion();
 	return EXIT_SUCCESS;
 }
+
+void Inicilizar() {
+	contadorProceso = 0;
+	sem_init(&sincroproc, 0, 0);
+	sem_init(&sincrocpu, 0, 0);
+	sem_init(&mutex, 0, 1);
+	proc_listos = list_create();
+	proc_ejecutados = list_create();
+	cpu_listos = list_create();
+	cpu_ocupados = list_create();
+}
+

@@ -61,7 +61,7 @@ typedef struct {
 #define RESPUESTA_PLANIFICADOR_LOGEAR 2
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1
-#define CONEXION_CPU_PADRE 0
+#define CONEXION_CPU_PADRE 10
 
 //Variables globales
 t_configuracion* configuracion;
@@ -76,6 +76,7 @@ t_cpu_padre configCPUPadre;
 int conf_es_valida(t_config* configuracion);
 int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
+int conectarCPUPadreAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender();
 int abrirArchivoYValidar(char* path, int32_t pid);

@@ -14,7 +14,7 @@ void* iniciarServidor() {
 	listen(socketReceptor, 10);	// IMPORTANTE: listen() es una syscall BLOQUEANTE.
 	FD_SET(socketReceptor, &set_maestro);	//Agrega receptor al set maestro
 	fdMaximo = socketReceptor;	//Hacer seguimiento de descriptor maximo
-	uint32_t cabecera;
+	int32_t cabecera;
 	uint32_t *hiloCreado = malloc(sizeof(uint32_t));
 	*hiloCreado = 0;
 	printf("Esperando conexiones\n");
@@ -28,9 +28,9 @@ void* iniciarServidor() {
 		for (socketProcesado = 0; socketProcesado <= fdMaximo;
 				socketProcesado++) {
 			if (FD_ISSET(socketProcesado, &set_temporal)) //Si el socketProcesado pertenece al setTemporal
-					{
+			{
 				if (socketProcesado == socketReceptor) //Aca se recibe nueva conexion
-						{
+				{
 					addrlen = sizeof(remoteaddr);
 					if ((nuevoFd = accept(socketReceptor,
 							(struct sockaddr *) &remoteaddr, &addrlen)) == -1) {
@@ -38,7 +38,7 @@ void* iniciarServidor() {
 					} else {
 						FD_SET(nuevoFd, &set_maestro);
 						if (nuevoFd > fdMaximo) //Actualizo maximo descriptor de socket
-								{
+						{
 							fdMaximo = nuevoFd;
 						}
 					}
@@ -76,9 +76,9 @@ void* iniciarServidor() {
 	return NULL;
 }
 
-uint32_t deserializarEnteroSinSigno(uint32_t socket) {
-	uint32_t enteroSinSigno;
-	uint32_t status = recv(socket, &enteroSinSigno, sizeof(uint32_t), 0);
+int32_t deserializarEnteroSinSigno(uint32_t socket) {
+	int32_t enteroSinSigno;
+	int32_t status = recv(socket, &enteroSinSigno, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
 		enteroSinSigno = status;
 	}
@@ -131,8 +131,7 @@ void consumirRecursos() {
 			list_add(proc_ejecutados, pcb);
 			list_add(cpu_ocupados, cpu);
 
-			log_info(planificadorLog,
-					"Se envio a ejecutar el programa: %s con PID: %d", pcb->path, pcb->idProceso);
+			log_info(planificadorLog, "Se envio a ejecutar el programa: %s con PID: %d", pcb->path, pcb->idProceso);
 			free(mensaje);
 			free(pcbSerializado);
 			free(totalPaquete);
@@ -226,8 +225,62 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
 	return paqueteSerializado;
 }
 
-void replanificar(uint32_t socketProcesado){
+void replanificar(uint32_t socketCpu){
+	//recibir el pcb
+	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
+	//Habilitar el hilo cpu
+	//Modificar Pcb de las
+	int _pcbById(t_pcb *proc_ejecutado) {
+		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
+			return 1;
+		else
+			return 0;
+	}
+	t_list *pcbBloqueadoLista = list_filter(proc_ejecutados, (void*) _pcbById);
+	list_remove_and_destroy_element(pcbBloqueadoLista, 0, (void*) pcbDestroy);
+	//HAGO UN SLEEP de T
+	sleep(5);
+	list_add(proc_listos, pcbBloqueado);
 
+	//to be continued...
+
+
+	//actualizar contenido pcb
+
+}
+
+void pcbDestroy(t_pcb *self) {
+    free(self->idProceso);
+    free(self->estadoProceso);
+    free(self->contadorPuntero);
+    free(self->cantidadInstrucciones);
+    free(self->tamaniopath);
+    free(self->path);
+    free(self);
+}
+t_pcb* recibirPcb(uint32_t socketCpu){
+	int32_t status = 0;
+	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
+
+	//Recibe mensaje de Planificador: PCB
+	uint32_t tamanioChar;
+	status = recv(socketCpu,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
+	status = recv(socketCpu,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
+	status = recv(socketCpu,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
+	status = recv(socketCpu,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
+	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
+	pcbRecibido->path = malloc(tamanioChar + 1);
+	status = recv(socketCpu,pcbRecibido->path,tamanioChar,0);
+	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
+
+	//memcpy(pcbRecibido->path[tamanioChar+1],'\0',1);
+	//pcbRecibido->path[tamanioChar+1] = '\0';
+	//printf("path: %s",pcbRecibido->path);
+	return pcbRecibido;
 }
 
 void creoCpu(uint32_t socketCpu){
@@ -250,7 +303,7 @@ void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre){
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
 	char* mensaje = malloc(*totalPaquete);
-	//memcpy(mensaje, tipoPlanificacion, *totalPaquete); NO Entiendo para que es esta linea(marian)
+	memcpy(mensaje, tipoPlanificacion, *totalPaquete); //NO Entiendo para que es esta linea(marian)
 	int sendByte = send(*socketCpuPadre, mensaje, *totalPaquete, 0);
 	if (sendByte < 0) {
 		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
