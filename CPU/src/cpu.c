@@ -4,11 +4,9 @@
 
 int main(void)
 {
-	puts("Comienzo de cpu");
-	puts("Cargo archivo de configuracion de CPU");
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
-	conectarCPUPadreAPlanificador();
+	hiloPadre();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
 	limpiarConfiguracion();
@@ -23,8 +21,7 @@ int main(void)
 void crearHilosCPU()
 {
 	int rtaHilo = 0;
-	pthread_t hiloCpu; //id de cpu
-
+	pthread_t hiloCpu;
 	rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
 	if(rtaHilo)
 	{
@@ -42,7 +39,6 @@ void crearHilosCPU()
 	//    }
 }
 
-
 int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 	char **lista;
 	uint32_t numeroInstruccion=0;
@@ -51,7 +47,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 	string_append(&src, "../Planificador/src/Codigos/");
 	string_append(&src, path);
 	FILE* entrada = fopen(src, "r");
-
 	if(entrada==NULL){
 		log_error(CPULog,"No se pudo abrir el archivo de entrada. ","ERROR");
 		return -1;
@@ -70,7 +65,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 
 	if (instructionPointer == numeroInstruccion) {
 		while  (fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
-
 			lista = string_split(instruccion," ");
 
 			if (string_equals_ignore_case(lista[0], "iniciar")){
@@ -89,7 +83,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 				//lista[1] contiene el nro de pagina
 				informarAdminMemoriaComandoLeer(pid,lista[1]);
 				sleep(configuracion->retardo);
-
 			}else if(string_equals_ignore_case(lista[0], "escribir")){
 				char* textoEscribir = string_from_format("%s",lista[2]);
 				int32_t numeroPagina=*lista[1];
@@ -97,7 +90,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 				//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
 				informarAdminMemoriaComandoEscribir(pid,numeroPagina,textoEscribir);
 				sleep(configuracion->retardo);
-
 			}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
 				int32_t tiempoDeEjec=*lista[1];
 				log_info(CPULog," [PID:%s] Instruccion: entrada-salida en proceso %s de tiempo %s.", string_itoa(pid), string_itoa(pid), tiempoDeEjec);
@@ -105,7 +97,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 				informarAdminMemoriaComandoEntradaSalida(pid,tiempoDeEjec);
 				sleep(configuracion->retardo);
 				informarPlanificadorLiberacionCPU(pid); //HACER FUNCION PARA INFORMAR AL PLANIFICADOR. PAGINA 5
-
 			}else{
 				log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pid));
 			}
@@ -117,7 +108,6 @@ int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer){
 
 	fclose(entrada);
 	puts("Se cerró el archivo\n");
-
 	return 0;
 }
 
@@ -132,9 +122,7 @@ void escucharYAtender()
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0)
 	{
-		perror("Error al conectar socket");
 		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
-		printf("NO se creo la conexion con planificador.\n");
 	}
 	log_info(CPULog,"Se conectó planificador al cpu correctamente.");
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
@@ -149,5 +137,19 @@ void escucharYAtender()
 		free(pcb->path);
 		free(pcb);
 	}
+}
+
+int hiloPadre(){
+	pthread_t hiloCpuPadre;
+	int rtaHiloPadre;
+	rtaHiloPadre = pthread_create(&hiloCpuPadre,NULL,(void*)conectarCPUPadreAPlanificador,NULL);
+	if(rtaHiloPadre)
+	{
+		fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHiloPadre);
+		printf("Se cerrara el programa");
+		return EXIT_FAILURE;
+	}
+	pthread_join(hiloCpuPadre, NULL);
+	return EXIT_SUCCESS;
 }
 

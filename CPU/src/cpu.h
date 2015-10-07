@@ -16,7 +16,7 @@
 #include <socket.h>
 #include <commons/log.h>
 #include <pthread.h>
-
+#include <semaphore.h>
 
 //Estructuras
 typedef struct {
@@ -57,7 +57,7 @@ typedef struct {
 #define LEER 3
 #define ESCRIBIR 4
 /*con planificador*/
-#define ENTRADA_SALIDA 6
+#define ENTRADA_SALIDA 4
 #define RESPUESTA_PLANIFICADOR_LOGEAR 2
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1

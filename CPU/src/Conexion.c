@@ -6,7 +6,7 @@ int conectarCPUPadreAPlanificador(){
 	if (validationConnection != 0 )
 	{
 		printf("No se ha podido conectar correctamente al Planificador.\n");
-		return PEDIDO_ERROR;
+		return EXIT_FAILURE;
 	}
 	enviarCodigoOperacion(socketPlanificadorPadre,CONEXION_CPU_PADRE);
 	//Recibe respuesta
@@ -19,7 +19,7 @@ int conectarCPUPadreAPlanificador(){
 		configCPUPadre.quantum = 0;
 	}
 	printf("tipo de planificacion: %d , quantum: %d \n",configCPUPadre.quantum,configCPUPadre.quantum);
-	return 1;
+	return EXIT_SUCCESS;
 }
 
 void* ConectarAPlanificador()
@@ -59,7 +59,6 @@ void* ConectarAPlanificador()
  *
  * @return estructura deserializada que comparten Planificador y CPU
  */
-	char message[1024];
 t_pcb* escucharPlanificador(){
 	//char pathIntermedio[512];
 	int32_t status = 0;
