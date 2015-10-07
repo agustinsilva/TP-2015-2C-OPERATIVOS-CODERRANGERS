@@ -6,8 +6,9 @@
  * @DESC: Muestra la consola a ejecutarse
  */
 void* mostrarConsola() {
-		int* comando = malloc(sizeof(int));
+		uint32_t* comando = malloc(sizeof(uint32_t));
 		char path[255];
+		uint32_t *pid = malloc(sizeof(uint32_t));
 		while (1) {
 			printf("-------------------- \n");
 			printf("Bienvenido a la consola del Planificador \n");
@@ -33,8 +34,10 @@ void* mostrarConsola() {
 				printf("-------------------- \n");
 				printf("Indique el PID del proceso que quiere finalizar: \n");
 				//Metodo que ejecuta el finalizar proceso
-				  getchar();
-				  getchar();
+				scanf("%d",pid);
+				finalizarProceso(pid);
+				getchar();
+				getchar();
 				break;
 			case 3:
 				//Metodo que ejecuta el PS
@@ -43,8 +46,9 @@ void* mostrarConsola() {
 			case 4:
 				//Metodo que ejecuta el Correr
 				printf("Debera mostrar en pantalla del planificador un listado de ls CPUS actuales del sistema indicando para cada una su procentaje de uso del ultimo minuto");
-				  getchar();
-				  getchar();
+//				pedirEstadoCpu();
+				getchar();
+				getchar();
 				break;
 			case 5:
 				//Metodo que ejecuta el Correr
@@ -98,16 +102,40 @@ void mostrarProcesos() {
 	getchar();
 }
 
+void finalizarProceso(uint32_t *pid){
+	int _pcbByPid(t_pcb *proc_ejecutado) {
+		if (*pid == proc_ejecutado->idProceso)
+			return 1;
+		else
+			return 0;
+	}
+	//TODO: Revisar esta implementacion...
+	//Que pasa si el proceso no esta en la cola de listos y esta ejecutando:
+	//1- le cambio su contador a la ultima instruccion
+	//( cuidado si el cpu me devuelve el pcb con el contador modificado)
+	//2- Creo un hilo que espere hasta que el proceso se encuentre en la cola de listos y ahi cambio su contador
+	t_pcb *pcbFinalizar = list_find(proc_listos, (void*) _pcbByPid);
+	if(pcbFinalizar == NULL){ // ver si esto funca asi
+		t_pcb *pcbFinalizar = list_find(proc_ejecutados, (void*) _pcbByPid);
+		pcbFinalizar->contadorPuntero = pcbFinalizar->cantidadInstrucciones;
+	}
+	else
+		pcbFinalizar->contadorPuntero = pcbFinalizar->cantidadInstrucciones;
+
+}
+
 char* convertirNumeroEnString(uint32_t estado){
 	if(estado==0)
 		return "Espera";
 	if(estado==1)
 		return "Ejecucion";
-	else
+	if(estado==2)
 		return "Finalizado";
+	else
+		return "Bloqueado";
 }
 
-void leerComando(int* comando, char* mensaje) {
+void leerComando(uint32_t* comando, char* mensaje) {
 	int c;
 	if (!scanf("%d", comando)) {
 		printf("%s", mensaje);
@@ -137,6 +165,20 @@ void encolar(char* path) {
 		printf(ANSI_COLOR_RED "Se introdujo un path incorrecto.\n"ANSI_COLOR_RESET );
 	}
 	sem_post(&mutex);
+}
+
+void pedirEstadoCpu(){
+	enviarCodigoOperacion(ESTADOCPUPADRE);
+	//recibir los datos de los cpus y mostrarlos por consola
+}
+
+void enviarCodigoOperacion(int32_t entero){
+	int32_t enviado = send(socketCpuPadre, &entero, sizeof(int32_t), 0);
+	if(enviado!=sizeof(int32_t)){
+		printf("No se envió correctamente la información entera\n");
+		log_error(planificadorLog,"Error al enviar codigo de operacion a CPU Padre.","ERROR");
+		return;
+	}
 }
 
 int contarInstrucciones(char* path) {

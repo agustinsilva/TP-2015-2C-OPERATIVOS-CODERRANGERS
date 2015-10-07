@@ -7,7 +7,7 @@ int main(void) {
 	int respServidor = 0;
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
-	Inicilizar();
+	inicializar();
 
 	puts("Cargo archivo de configuracion de Planificador");
 	planificadorLog = log_create("PlanificadorLog", "Planificador", false, LOG_LEVEL_INFO);
@@ -34,7 +34,7 @@ int main(void) {
 	return EXIT_SUCCESS;
 }
 
-void Inicilizar() {
+void inicializar() {
 	contadorProceso = 0;
 	sem_init(&sincroproc, 0, 0);
 	sem_init(&sincrocpu, 0, 0);

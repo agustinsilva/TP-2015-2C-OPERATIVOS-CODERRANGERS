@@ -28,7 +28,7 @@ typedef struct {
 
 typedef struct {
 	uint32_t idProceso;
-	uint32_t estadoProceso; //0-Espera 1-Ejecucion 2-Finalizado
+	uint32_t estadoProceso; //0-Espera 1-Ejecucion 2-Finalizado 3-Bloqueado
 	uint32_t contadorPuntero;
 	uint32_t cantidadInstrucciones;
 	uint32_t tamaniopath;
@@ -46,6 +46,7 @@ typedef struct {
 t_configuracion* configuracion; //Puntero a configuracion
 t_config* fdConfiguracion; //Descriptor de archivo
 int contadorProceso;
+uint32_t socketCpuPadre;
 t_list *proc_listos;
 t_list *proc_ejecutados;
 t_list *cpu_listos;
@@ -58,6 +59,7 @@ t_log* planificadorLog;
 //Constantes
 #define PAQUETE 1024
 #define AGREGARPADRECPU 10
+#define ESTADOCPUPADRE 11
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
 #define LOGEARFINALIZACIONCPU 3
@@ -80,8 +82,9 @@ void encolar(char* path);
 void consumirRecursos();
 void pcbDestroy(t_pcb *self);
 void replanificar(uint32_t socketProcesado);
+void finalizarProceso(uint32_t *pid);
 t_pcb* recibirPcb(uint32_t socketCpu);
-void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre);
+void creoPadre(uint32_t socketProcesado);
 char* serializarTipoPlanificaion(uint32_t *totalPaquete);
 void logearResultadoCpu(uint32_t socketCpu);
 void logearFinalizacionCpu(uint32_t socketCpu);
@@ -92,12 +95,14 @@ int contarInstrucciones(char* path);
 char* convertirNumeroEnString(uint32_t estado);
 void mostrarProcesos();
 void* mostrarConsola();
-void leerComando(int* comando, char* mensaje);
+void pedirEstadoCpu();
+void enviarCodigoOperacion(int32_t entero);
+void leerComando(uint32_t* comando, char* mensaje);
 int conf_es_valida(t_config * configuracion);
 int cargarArchivoDeConfiguracion();
 uint32_t crearSocketReceptor();
 int32_t deserializarEnteroSinSigno(uint32_t socket);
 void limpiarConfiguracion();
-void Inicilizar();
+void inicializar();
 char* recibirMensaje(uint32_t socket);
 #endif /* PLANIFICADOR_H_ */

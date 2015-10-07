@@ -4,7 +4,6 @@
 void* iniciarServidor() {
 	fd_set set_maestro, set_temporal, socketsHilos;
 	uint32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
-	uint32_t *socketCpuPadre = malloc(sizeof(uint32_t));
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
 	FD_ZERO(&set_temporal); //Limpia el set temporal
 	FD_ZERO(&socketsHilos);
@@ -47,7 +46,7 @@ void* iniciarServidor() {
 					cabecera = deserializarEnteroSinSigno(socketProcesado);
 					switch (cabecera) {
 					case AGREGARPADRECPU:
-						creoPadre(socketProcesado, socketCpuPadre);
+						creoPadre(socketProcesado);
 						break;
 					case AGREGARHILOCPU:
 						creoCpu(socketProcesado);
@@ -72,7 +71,6 @@ void* iniciarServidor() {
 			}
 		}
 	}
-	free(socketCpuPadre);
 	return NULL;
 }
 
@@ -137,7 +135,6 @@ void consumirRecursos() {
 			sem_post(&mutex);
 		}
 	}
-
 }
 
 void logearResultadoCpu(uint32_t socketCpu) {
@@ -250,11 +247,6 @@ void replanificar(uint32_t socketCpu){
 }
 
 void pcbDestroy(t_pcb *self) {
-    free(self->idProceso);
-    free(self->estadoProceso);
-    free(self->contadorPuntero);
-    free(self->cantidadInstrucciones);
-    free(self->tamaniopath);
     free(self->path);
     free(self);
 }
@@ -297,14 +289,14 @@ void creoCpu(uint32_t socketCpu){
 }
 
 //Agrego socket Padre y le informo el tipo de planificacion
-void creoPadre(uint32_t socketProcesado, uint32_t *socketCpuPadre){
-	*socketCpuPadre = socketProcesado;
+void creoPadre(uint32_t socketProcesado){
+	socketCpuPadre = socketProcesado;
 	//Envio el tipo de planificacion al cpu
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
 	char* mensaje = malloc(*totalPaquete);
 	memcpy(mensaje, tipoPlanificacion, *totalPaquete); //NO Entiendo para que es esta linea(marian)
-	int sendByte = send(*socketCpuPadre, mensaje, *totalPaquete, 0);
+	int sendByte = send(socketCpuPadre, mensaje, *totalPaquete, 0);
 	if (sendByte < 0) {
 		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
 	}
