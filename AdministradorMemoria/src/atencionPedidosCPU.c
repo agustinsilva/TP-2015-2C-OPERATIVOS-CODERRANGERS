@@ -149,12 +149,11 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
-	/* No para este checkpoint
-	 *
-	 * if(confirmacionSwap==pedido_exitoso){
-	 *	crearTablaDePaginas(idmProc,cantPaginas);
-	 *  }
-	 */
+
+	  if(confirmacionSwap==pedido_exitoso){
+	 	crearTablaDePaginas(idmProc,cantPaginas);
+	  }
+
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	if(confirmacionSwap==pedido_exitoso)
 	{
