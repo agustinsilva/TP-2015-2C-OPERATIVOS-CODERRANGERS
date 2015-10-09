@@ -78,6 +78,7 @@ void setUp()
 		entrada->contenido = malloc(configuracion->tamanio_marco);
 		list_add(memoriaPrincipal,entrada);
 	}
+	tablasDePaginas = list_create();
 }
 
 static void mpDestroyer(t_MP* entrada)
@@ -98,5 +99,9 @@ void limpiarMemoriaPrincipal()
 void limpiarTLB()
 {
 	list_destroy_and_destroy_elements(TLB, (void*)TLBDestroyer);
+}
+void limpiarTablasDePaginas()
+{
+	list_destroy_and_destroy_elements(tablasDePaginas, (void*)procesoDestroyer);
 }
 

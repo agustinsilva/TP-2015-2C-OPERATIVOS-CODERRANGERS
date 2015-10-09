@@ -29,7 +29,7 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 		tabla->present = false;
 		tabla->idProc = idmProc;
 		/*los frames no se asignan aun*/
-		tabla->nroPag = i+1;
+		tabla->nroPag = i;
 		list_add(tablasDePaginas,tabla);
 	}
 	return pedido_exitoso;
