@@ -93,18 +93,33 @@ void swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroP
 	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
 
 	enviarContenidoPagina(cpuSocket, pedido);
-	free(pedido->contenido);
-	free(pedido);
+
+	//TODO metodo para buscar en tabla de paginas que devuelva toda la entrada
+	bool porPIDyPag(t_TP* entrada){
+		return entrada->idProc==idmProc && entrada->nroPag==nroPagina;
+	}
+	t_TP* paginaEncontrada = list_find(tablasDePaginas, (void*) porPIDyPag);
+	paginaEncontrada->present=1;
 
 	/* falta actualizar memoria principal con frame/pagina y copiar contenido */
+	//TODO pasar a funcion actualizarMP();
+	t_MP* mp = buscarEnMemoriaPrincipal(paginaEncontrada->frame);
+	mp->ocupado = 1;
+	strcpy(mp->contenido, pedido->contenido);
+
+
+	free(pedido->contenido);
+	free(pedido);
 }
 
 
 void manejarMemoriaPrincipal(t_MP* entradaMP, sock_t* cpuSocket){
 	if(entradaMP!=NULL){
 		t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
+		pedido->longitud = string_length(entradaMP->contenido)+1;
+		pedido->contenido = malloc(pedido->longitud);
 		pedido->encontro=1;
-		memcpy(pedido->contenido, entradaMP->contenido, string_length(entradaMP->contenido));
+		strcpy(pedido->contenido, entradaMP->contenido);
 
 		enviarContenidoPagina(cpuSocket,pedido);
 		free(pedido->contenido);
