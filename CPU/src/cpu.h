@@ -46,6 +46,7 @@ typedef struct {
 	uint32_t quantum;
 }t_cpu_padre;
 
+
 //Constantes
 #define PAQUETE 1024
 #define TAMINSTRUCCION 80
