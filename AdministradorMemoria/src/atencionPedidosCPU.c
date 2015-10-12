@@ -251,7 +251,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			actualizarTLB(idmProc, nroPagina, marco);
 
 			switch(marco){
-				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)"); break;
+				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)");
+				enviarEnteros(cpuSocket, pedido_error);
+				break;
 				case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
 				default:  /*buscar contenido en memoria principal*/ {
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
@@ -268,7 +270,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
 
 		switch(marco){
-			case -1: printf("Segmentation Fault pero de paginación (que no es page fault)"); break;
+			case -1: printf("Segmentation Fault pero de paginación (que no es page fault)");
+			enviarEnteros(cpuSocket, pedido_error);
+			break;
 			case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
 			default:  /*buscar contenido en memoria principal*/ {
 				t_MP* miss = buscarEnMemoriaPrincipal(marco);
