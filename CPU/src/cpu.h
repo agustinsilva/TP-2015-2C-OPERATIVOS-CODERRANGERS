@@ -58,7 +58,8 @@ typedef struct {
 #define LEER 3
 #define ESCRIBIR 4
 /*con planificador*/
-#define BLOQUEO_PCB 4
+#define FIN_QUANTUM 4
+#define ENTRADA_SALIDA 5
 #define RESPUESTA_PLANIFICADOR_LOGEAR 2
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1
@@ -82,16 +83,18 @@ t_pcb* escucharPlanificador();
 void escucharYAtender();
 int abrirArchivoYValidar(t_pcb* pcb);
 void limpiarConfiguracion();
-int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo);
-int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);
-int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
-int informarAdminMemoriaComandoFinalizar(int32_t pid);
-int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
-int informarPlanificadorLiberacionCPU(t_pcb* pcb);
-int procesarInstruccion(char **lista, int32_t pid);
+char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);
+char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
+char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones);
+char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina);
+int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones);
+char* procesarInstruccion(char **lista, int32_t pid, char* resultadosDeEjecuciones);
 void crearHilosCPU (void);
+int hiloPadre();
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);
 char* recibirMensaje(sock_t* socket);
+int conectarAAdministradorMemoria();
+int conectarCPUPadreAPlanificador();
 #endif /* CPU_H_ */
 
