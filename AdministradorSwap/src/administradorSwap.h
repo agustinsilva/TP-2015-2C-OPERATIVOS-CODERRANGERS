@@ -115,4 +115,6 @@ void limpiarNodosLibres(void*);
 void limpiarNodosOcupados(void*);
 void limpiarEstadisticas(void*);
 bool buscarNodoComienzo(void*);
+void compactacionBruta();
+bool compararUbicaciones(void*,void*);
 #endif /* ADMINSWAP_H_ */

@@ -1,5 +1,6 @@
 #include "administradorSwap.h"
 
+//Comienza en 0 a contar las paginas.
 void crearParticion()
 {
 	char instruccion[1000]={0};
@@ -104,6 +105,7 @@ uint32_t ocuparEspacio(uint32_t PID,uint32_t paginasAOcupar)
 		nodoLibre = list_remove_by_condition(espacioLibre, validarUbicacionLibre);
 		free(nodoLibre);
 	}
+
 	list_add(espacioOcupado,nodoOcupado);
 	return posicionInicial;
 }
@@ -339,4 +341,37 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 			printf("No se envió la cantidad de bytes a enviar luego\n");
 		}
 	}
+}
+
+void compactacionBruta()
+{
+
+	list_sort(espacioOcupado,compararUbicaciones);
+	uint32_t cantidadOcupados = list_size(espacioOcupado);
+    uint32_t comienzo = 0;
+	uint32_t indice;
+    t_nodoOcupado* nodoOcupado;
+    for(indice = 0;indice < cantidadOcupados;indice++)
+    {
+    	nodoOcupado = list_get(espacioOcupado,indice);
+
+    }
+
+	uint32_t totalLibres;
+	totalLibres = contarPaginasLibres();
+	uint32_t comienzoLibre = configuracion->cantidad_paginas - totalLibres;
+	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
+	nodoLibre->comienzo = comienzoLibre;
+	nodoLibre->paginas = totalLibres;
+	list_destroy_and_destroy_elements(espacioLibre,(void*)limpiarNodosLibres);
+	list_add(espacioLibre,nodoLibre);
+
+}
+
+bool compararUbicaciones(void* nodoAnterior,void* nodo)
+{
+	t_nodoOcupado* anterior = nodoAnterior;
+	t_nodoOcupado* actual = nodo;
+
+	return anterior->comienzo < actual->comienzo;
 }
