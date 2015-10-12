@@ -77,9 +77,12 @@ int abrirArchivoYValidar(t_pcb* pcb){
 				procesarInstruccion(lista,pcb->idProceso);
 				cantInstruccionesEjecutadas++;
 				QUANTUMRESTANTE--;
+			}else{
+				break;
 			}
 		}
 		if(QUANTUMRESTANTE == 0){
+			log_info(CPULog," [PID:%s] Finalizó quantum de ejecución.\n",string_itoa(pcb->idProceso));
 			//actualizamos el puntero del pcb
 			pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas;
 			//enviamos el pcb al planificador ya que terminó de ejecutar su quantum
