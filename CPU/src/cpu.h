@@ -58,7 +58,7 @@ typedef struct {
 #define LEER 3
 #define ESCRIBIR 4
 /*con planificador*/
-#define ENTRADA_SALIDA 4
+#define BLOQUEO_PCB 4
 #define RESPUESTA_PLANIFICADOR_LOGEAR 2
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1
@@ -80,14 +80,15 @@ void* ConectarAPlanificador();
 int conectarCPUPadreAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender();
-int abrirArchivoYValidar(char* path, int32_t pid, int32_t instructionPointer);
+int abrirArchivoYValidar(t_pcb* pcb);
 void limpiarConfiguracion();
 int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo);
 int informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);
 int informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 int informarAdminMemoriaComandoFinalizar(int32_t pid);
 int informarAdminMemoriaComandoLeer(int32_t pid, char* numeroPagina);
-int informarPlanificadorLiberacionCPU(int32_t pid);
+int informarPlanificadorLiberacionCPU(t_pcb* pcb);
+int procesarInstruccion(char **lista, int32_t pid);
 void crearHilosCPU (void);
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
 uint32_t deserializarEnteroSinSigno(sock_t* socket);

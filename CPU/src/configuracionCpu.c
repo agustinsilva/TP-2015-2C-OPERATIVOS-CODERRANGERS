@@ -17,6 +17,7 @@ int conf_es_valida(t_config* fd_configuracion)
 int cargarArchivoDeConfiguracion()
 
 {
+	puts("Cargo archivo de configuracion de CPU");
 	configuracion = malloc(sizeof(t_configuracion));
 	fd_configuracion= config_create("src/configCPU.txt");
 	
