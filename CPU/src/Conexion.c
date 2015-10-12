@@ -18,7 +18,7 @@ int conectarCPUPadreAPlanificador(){
 	}else{
 		configCPUPadre.quantum = 0;
 	}
-	printf("tipo de planificacion: %d , quantum: %d \n",configCPUPadre.quantum,configCPUPadre.quantum);
+	printf("tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
 	return EXIT_SUCCESS;
 }
 
@@ -60,7 +60,6 @@ void* ConectarAPlanificador()
  * @return estructura deserializada que comparten Planificador y CPU
  */
 t_pcb* escucharPlanificador(){
-	//char pathIntermedio[512];
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
 
@@ -78,10 +77,6 @@ t_pcb* escucharPlanificador(){
 	pcbRecibido->path = malloc(tamanioChar + 1);
 	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
-
-	//memcpy(pcbRecibido->path[tamanioChar+1],'\0',1);
-	//pcbRecibido->path[tamanioChar+1] = '\0';
-	//printf("path: %s",pcbRecibido->path);
 	return pcbRecibido;
 }
 
@@ -357,7 +352,7 @@ int informarAdminMemoriaComandoEntradaSalida(int32_t pid, int32_t tiempo){
 	int32_t entero;
 	//Envia aviso al Adm de Memoria: comando Entrada-Salida.
 
-	int32_t cabecera = ENTRADA_SALIDA;
+	int32_t cabecera = BLOQUEO_PCB;
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(tiempo);
 	char* message = malloc(tamanio);
@@ -452,7 +447,53 @@ char* recibirMensaje(sock_t* socket){
 	return mensaje;
 }
 
-int informarPlanificadorLiberacionCPU(int32_t pid){
+char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
+	int32_t cabecera = BLOQUEO_PCB;
+	int32_t offset=0;
+	uint32_t tamanioenteros, tamaniopath, tamanioCabecera, path;
+	tamanioenteros = 4 * sizeof(uint32_t); //codigo+4 int de pcb
+	tamaniopath = sizeof(uint32_t);
+	tamanioCabecera = sizeof(cabecera);
+	path = strlen(pcb->path);
+	*totalPaquete = tamanioenteros + tamaniopath + tamanioCabecera + path;
+	char *paqueteSerializado = malloc(*totalPaquete);
 
+	int medidaAMandar;
+	medidaAMandar = tamanioCabecera;
+	memcpy(paqueteSerializado + offset, &cabecera, medidaAMandar);
+	offset = medidaAMandar;
+	medidaAMandar = sizeof(pcb->idProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->estadoProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->estadoProceso), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->contadorPuntero);
+	memcpy(paqueteSerializado + offset, &(pcb->contadorPuntero), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->cantidadInstrucciones);
+	memcpy(paqueteSerializado + offset, &(pcb->cantidadInstrucciones),medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(uint32_t);
+	memcpy(paqueteSerializado + offset, &path, medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = path;
+	memcpy(paqueteSerializado + offset, pcb->path, medidaAMandar);
+	offset += medidaAMandar;
+	return paqueteSerializado;
+}
+
+int informarPlanificadorLiberacionCPU(t_pcb* pcb){
+	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
+	char* pcbSerializado = serializarPCB(pcb, totalPaquete);
+	char* mensaje = malloc(*totalPaquete);
+	memcpy(mensaje, pcbSerializado, *totalPaquete);
+	int sendByte = send(socketPlanificador->fd, mensaje, *totalPaquete, 0);
+	if (sendByte < 0) {
+		log_error(CPULog, "Error al enviar el proc/pcb al Planificador","ERROR");
+	}
+	free(mensaje);
+	free(pcbSerializado);
+	free(totalPaquete);
 	return EXIT_SUCCESS;
 }
