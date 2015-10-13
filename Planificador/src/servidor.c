@@ -145,12 +145,15 @@ void logearResultadoCpu(uint32_t socketCpu) {
 
 char* recibirMensaje(uint32_t socket) {
 	/*recibe la cantidad de bytes que va a tener el mensaje*/
-	int32_t longitudMensaje;
+	int32_t longitudMensaje = 0;
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	recv(socket, &longitudMensaje, sizeof(int32_t), 0);
+	int32_t status = recv(socket, &longitudMensaje, sizeof(int32_t), 0);
+	if(status<0)
+		return "error";
 	char* mensaje = (char*) malloc(longitudMensaje + 1);
 	recv(socket, mensaje, longitudMensaje, 0);
 	mensaje[longitudMensaje] = '\0';
+
 	return mensaje;
 }
 
@@ -223,6 +226,10 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
 }
 
 void replanificar(uint32_t socketCpu){
+	//Recibo el Mensaje a logear
+	char* mensajeALogear = recibirMensaje(socketCpu);
+	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeALogear);
+	free(mensajeALogear);
 	//Recibo el pcb bloqueado
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
 
@@ -250,6 +257,7 @@ void pcbDestroy(t_pcb *self) {
     free(self->path);
     free(self);
 }
+
 t_pcb* recibirPcb(uint32_t socketCpu){
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));

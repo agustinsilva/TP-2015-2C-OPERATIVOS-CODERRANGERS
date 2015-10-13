@@ -53,8 +53,7 @@ void* mostrarConsola() {
 			case 5:
 				//Metodo que ejecuta el Correr
 				printf("Debera matar a todos los procesos indicando la finalizacion");
-				  getchar();
-				  getchar();
+				killThemAll();
 				break;
 			default:
 				printf("Se selecciono un comando incorrecto.\n");
@@ -122,6 +121,16 @@ void finalizarProceso(uint32_t *pid){
 	else
 		pcbFinalizar->contadorPuntero = pcbFinalizar->cantidadInstrucciones;
 
+}
+
+void killThemAll(){
+	close(socketCpuPadre);
+	int index;
+	for (index = 0; index <= list_size(cpu_listos); ++index) {
+		t_hilosConectados *cpu = list_get(cpu_listos,index);
+		if(cpu->socketHilo != NULL)
+			close(cpu->socketHilo);
+	}
 }
 
 char* convertirNumeroEnString(uint32_t estado){

@@ -104,5 +104,6 @@ uint32_t crearSocketReceptor();
 int32_t deserializarEnteroSinSigno(uint32_t socket);
 void limpiarConfiguracion();
 void inicializar();
+void killThemAll();
 char* recibirMensaje(uint32_t socket);
 #endif /* PLANIFICADOR_H_ */

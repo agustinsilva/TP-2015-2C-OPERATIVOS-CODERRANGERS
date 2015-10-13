@@ -389,27 +389,27 @@ char* recibirMensaje(sock_t* socket){
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuciones) {
-	int32_t cabecera = FIN_QUANTUM;
-	int32_t offset=0;
-	uint32_t tamanioenteros, tamaniopath, tamanioCabecera, path, tamanioMensajes, mensajes;
-	tamanioenteros = 4 * sizeof(uint32_t); //codigo+4 int de pcb
+	uint32_t cabecera = FIN_QUANTUM;
+	uint32_t offset=0;
+	uint32_t tamanioenterosPCB, tamaniopath, tamanioCabecera, path, tamanioMensajes, tamanioCabeceraMensaje;
+	tamanioenterosPCB = 4 * sizeof(uint32_t); //4 int de pcb
 	tamaniopath = sizeof(uint32_t);
 	tamanioCabecera = sizeof(cabecera);
 	path = strlen(pcb->path);
-	tamanioMensajes = sizeof(uint32_t);
-	mensajes = strlen(resultadosDeEjecuciones);
-	*totalPaquete = tamanioenteros + tamaniopath + tamanioCabecera + path + tamanioMensajes + mensajes;
+	tamanioCabeceraMensaje = sizeof(uint32_t);
+	tamanioMensajes = strlen(resultadosDeEjecuciones);
+	*totalPaquete = tamanioCabecera + tamanioCabeceraMensaje + tamanioMensajes + tamanioenterosPCB + tamaniopath + path;
 	char *paqueteSerializado = malloc(*totalPaquete);
 
 	int medidaAMandar;
 	medidaAMandar = tamanioCabecera;
 	memcpy(paqueteSerializado + offset, &cabecera, medidaAMandar);
 	offset = medidaAMandar;
-	medidaAMandar = tamanioMensajes;
+	medidaAMandar = tamanioCabeceraMensaje ;
 	memcpy(paqueteSerializado + offset, &tamanioMensajes, medidaAMandar);
 	offset = medidaAMandar;
-	medidaAMandar = mensajes;
-	memcpy(paqueteSerializado + offset, &mensajes, medidaAMandar);
+	medidaAMandar = tamanioMensajes;
+	memcpy(paqueteSerializado + offset, resultadosDeEjecuciones, medidaAMandar);
 	offset = medidaAMandar;
 	medidaAMandar = sizeof(pcb->idProceso);
 	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
@@ -441,6 +441,8 @@ int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
 	if (sendByte < 0) {
 		log_error(CPULog, "Error al enviar el proc/pcb al Planificador","ERROR");
 	}
+	free(resultadosDeEjecuciones);
+	free(pcb->path);
 	free(mensaje);
 	free(pcbSerializado);
 	free(totalPaquete);
