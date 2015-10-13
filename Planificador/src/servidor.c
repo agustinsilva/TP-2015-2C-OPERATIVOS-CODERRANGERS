@@ -263,7 +263,7 @@ t_pcb* recibirPcb(uint32_t socketCpu){
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
 
 	//Recibe mensaje de Planificador: PCB
-	uint32_t tamanioChar;
+
 	status = recv(socketCpu,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
 	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
 	status = recv(socketCpu,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
@@ -272,13 +272,13 @@ t_pcb* recibirPcb(uint32_t socketCpu){
 	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
 	status = recv(socketCpu,&(pcbRecibido->cantidadInstrucciones),sizeof(uint32_t),0);
 	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
-	status = recv(socketCpu,&(tamanioChar),sizeof(uint32_t),0);
-	pcbRecibido->path = malloc(tamanioChar + 1);
-	status = recv(socketCpu,pcbRecibido->path,tamanioChar,0);
+	status = recv(socketCpu,&(pcbRecibido->tamaniopath),sizeof(uint32_t),0);
+	pcbRecibido->path = malloc(pcbRecibido->tamaniopath + 1);
+	status = recv(socketCpu,pcbRecibido->path,pcbRecibido->tamaniopath,0);
 	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
 
 	//memcpy(pcbRecibido->path[tamanioChar+1],'\0',1);
-	//pcbRecibido->path[tamanioChar+1] = '\0';
+	pcbRecibido->path[pcbRecibido->tamaniopath] = '\0';
 	//printf("path: %s",pcbRecibido->path);
 	return pcbRecibido;
 }

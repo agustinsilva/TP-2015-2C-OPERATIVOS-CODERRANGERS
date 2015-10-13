@@ -165,7 +165,7 @@ void encolar(char* path) {
 		pcb->contadorPuntero = 0;
 		pcb->cantidadInstrucciones = cantidadInstrucciones;
 		pcb->path = malloc(strlen(path));
-		pcb->path = strdup(path);
+		pcb->path = strdup(path); //TODO: revisar codigo maligno
 		list_add(proc_listos,pcb);
 		sem_post(&sincroproc);
 		printf(ANSI_COLOR_GREEN "Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n" ANSI_COLOR_RESET);

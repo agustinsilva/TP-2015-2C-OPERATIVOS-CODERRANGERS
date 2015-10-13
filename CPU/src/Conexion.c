@@ -89,6 +89,7 @@ t_pcb* escucharPlanificador(){
 	pcbRecibido->path = malloc(tamanioChar + 1);
 	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
+	pcbRecibido->path[tamanioChar] = '\0';
 	return pcbRecibido;
 }
 
@@ -404,13 +405,13 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuc
 	int medidaAMandar;
 	medidaAMandar = tamanioCabecera;
 	memcpy(paqueteSerializado + offset, &cabecera, medidaAMandar);
-	offset = medidaAMandar;
+	offset += medidaAMandar;
 	medidaAMandar = tamanioCabeceraMensaje ;
 	memcpy(paqueteSerializado + offset, &tamanioMensajes, medidaAMandar);
-	offset = medidaAMandar;
+	offset += medidaAMandar;
 	medidaAMandar = tamanioMensajes;
 	memcpy(paqueteSerializado + offset, resultadosDeEjecuciones, medidaAMandar);
-	offset = medidaAMandar;
+	offset += medidaAMandar;
 	medidaAMandar = sizeof(pcb->idProceso);
 	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
 	offset += medidaAMandar;
