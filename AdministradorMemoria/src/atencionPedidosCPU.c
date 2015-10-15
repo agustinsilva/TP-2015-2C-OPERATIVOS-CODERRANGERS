@@ -251,7 +251,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			actualizarTLB(idmProc, nroPagina, marco);
 
 			switch(marco){
-				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)");
+				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)\n");
 				enviarEnteros(cpuSocket, pedido_error);
 				break;
 				case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;

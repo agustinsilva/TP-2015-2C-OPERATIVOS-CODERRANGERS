@@ -92,7 +92,17 @@ void swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroP
 	}
 	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
 
-	enviarContenidoPagina(cpuSocket, pedido);
+
+	/* falta actualizar memoria principal con frame/pagina y copiar contenido */
+	//TODO pasar a funcion actualizarMP();
+
+	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP();
+	if(cantMarcosOtorgados==configuracion->cantidad_marcos)
+	//Obtener la cantidad de marcos en MP que tiene ese proceso
+	//chequear si sobrepasa
+	//					si sobrepasa -> algoritmo reemplazo ->actualizo MP
+	//					si no sobrepasa -> actualizo MP
+
 
 	//TODO metodo para buscar en tabla de paginas que devuelva toda la entrada
 	bool porPIDyPag(t_TP* entrada){
@@ -101,13 +111,12 @@ void swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroP
 	t_TP* paginaEncontrada = list_find(tablasDePaginas, (void*) porPIDyPag);
 	paginaEncontrada->present=1;
 
-	/* falta actualizar memoria principal con frame/pagina y copiar contenido */
-	//TODO pasar a funcion actualizarMP();
+
 	t_MP* mp = buscarEnMemoriaPrincipal(paginaEncontrada->frame);
 	mp->ocupado = 1;
 	strcpy(mp->contenido, pedido->contenido);
 
-
+	enviarContenidoPagina(cpuSocket, pedido);
 	free(pedido->contenido);
 	free(pedido);
 }
@@ -127,7 +136,13 @@ void manejarMemoriaPrincipal(t_MP* entradaMP, sock_t* cpuSocket){
 	}
 }
 
-
+int32_t calcularCantPaginasEnMP(int32_t idmProc){
+	bool porPIDyPresente(t_TP* entrada){
+			return entrada->idProc==idmProc && entrada->present==1;
+	}
+	int32_t cantidad = list_count_satisfying(tablasDePaginas, (void*) porPIDyPresente);
+	return cantidad;
+}
 
 t_TLB* buscarEnTLB(int32_t idmProc, int32_t nroPagina){
 	bool porNroPaginaYProceso(t_TLB* entrada){

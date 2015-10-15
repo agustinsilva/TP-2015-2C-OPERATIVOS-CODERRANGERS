@@ -70,9 +70,10 @@ typedef struct
 	int32_t	frame;
 	int32_t	nroPag;
 	int32_t	offset;
-	bool present;
-	bool modified;
-	bool accessed;
+	int32_t usedTime; // para LRU
+	bool present;  // para MP
+	bool modified; // para CM
+	bool accessed; // para CM
 } t_TP;
 
 typedef struct
