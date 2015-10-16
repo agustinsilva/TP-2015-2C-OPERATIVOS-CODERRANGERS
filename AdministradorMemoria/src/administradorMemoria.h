@@ -125,12 +125,15 @@ int32_t getFrame();
 bool hayEspacio();
 void limpiarRecursos();
 void actualizarTLB(int32_t, int32_t , int32_t );
-void swapIN(sock_t* , sock_t* , int32_t , int32_t );
+int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
 void manejarMemoriaPrincipal(t_MP* , sock_t* );
 t_TLB* buscarEnTLB(int32_t , int32_t );
 t_MP* buscarEnMemoriaPrincipal(int32_t);
 int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
 void manejarMemoriaPrincipal(t_MP* , sock_t* );
 int32_t calcularCantPaginasEnMP(int32_t );
+t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
+int32_t getRandomFrameVacio();
+void actualizarTLBSwap(int32_t , int32_t , int32_t );
 
 #endif /* ADMINMEMORIA_H_ */
