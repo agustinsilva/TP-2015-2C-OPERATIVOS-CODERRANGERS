@@ -20,24 +20,44 @@ int main(void)
  * */
 void crearHilosCPU()
 {
-	int rtaHilo = 0;
-	pthread_t hiloCpu;
-	rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
-	if(rtaHilo)
-	{
-		fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
-		printf("Se cerrara el programa");
-		exit(EXIT_FAILURE);
-	}
-	pthread_join(hiloCpu, NULL);
-	//  while (cantidad<configuracion->cantidadHilos)
-	//    {
-	//      strcpy(CPU[cantidad].ID_CPU,cantidad);
-	//      strcpy(CPU[cantidad].ESTADO,0); /*Estado 0 disponible, Estado 1 ocupado*/
-	//      printf("Se creo el hilo del CPU ID %i/n",CPU[cantidad].ID_CPU);
-	//      cantidad++;
-	//    }
+int rtaHilo = 0;
+pthread_t hiloCpu;
+rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
+if(rtaHilo)
+{
+fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
+printf("Se cerrara el programa");
+exit(EXIT_FAILURE);
 }
+pthread_join(hiloCpu, NULL);
+}
+
+/*void crearHilosCPU()
+{
+	int rtaHilo = 0;
+	int cantidad = 1;
+	t_list* listaCPU = list_create();
+
+	while (cantidad <= configuracion->cantidadHilos){
+
+		pthread_t hiloCpu;
+		rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
+
+		if(rtaHilo!=0)
+				{
+					fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
+					printf("Se cerrara el programa");
+					exit(EXIT_FAILURE);
+				}
+		else {
+			list_add(listaCPU, (void*)hiloCpu);
+			//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
+		}
+
+		cantidad++;
+	}
+}*/
+
 
 int abrirArchivoYValidar(t_pcb* pcb){
 	char* resultadosDeEjecuciones =  string_new();
