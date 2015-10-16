@@ -29,6 +29,10 @@
 #define pedido_error 0
 #define pedido_no_memoria -1
 #define swap_in -2
+#define marcos_insuficientes -1
+#define FIFO "FIFO"
+#define CLOCKM "CLOCK-M"
+#define LRU "LRU"
 
 //Estructuras
 typedef struct
@@ -42,6 +46,7 @@ typedef struct
 	int32_t entradas_tlb;
 	int32_t tlb_habilitada;
 	int32_t retardo_memoria;
+	char* algoritmo_reemplazo;
 } t_Memoria_Config;
 
 typedef struct
@@ -69,7 +74,7 @@ typedef struct
 	int32_t	idProc;
 	int32_t	frame;
 	int32_t	nroPag;
-	int32_t	offset;
+	int32_t loadedTime; //para FIFO
 	int32_t usedTime; // para LRU
 	bool present;  // para MP
 	bool modified; // para CM
@@ -135,5 +140,12 @@ int32_t calcularCantPaginasEnMP(int32_t );
 t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
 void actualizarTLBSwap(int32_t , int32_t , int32_t );
+int32_t reemplazarMP(int32_t , char* );
+int32_t reemplazarFIFO(t_list*);
+int32_t reemplazarCLOCKM(t_list*);
+int32_t reemplazarLRU(t_list*);
+int32_t getLoadedTimeForProc(int32_t);
+int32_t getMinLoadedTime(t_list* );
+
 
 #endif /* ADMINMEMORIA_H_ */

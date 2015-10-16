@@ -122,12 +122,15 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 	int32_t marcoAReemplazar;
 	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP(idmProc);
 	if(cantMarcosOtorgados>=configuracion->cantidad_marcos){
-		/* Swap Out*/
-		// marcoAReemplazar = reemplazarMP(idmProc, nroPagina, configuracion->algoritmo_reemplazo);
+		/* Swap Out con reemplazo local */
+		marcoAReemplazar = reemplazarMP(idmProc, configuracion->algoritmo_reemplazo);
 	} else {
 		marcoAReemplazar = getRandomFrameVacio();
 	}
 
+	if(marcoAReemplazar==marcos_insuficientes){
+		log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+	}
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
 
 	enviarContenidoPagina(cpuSocket, pedido);
@@ -156,6 +159,11 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	paginaSwappedIn->present=true;
 	paginaSwappedIn->frame = marcoAReemplazar;
 
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
+		paginaSwappedIn->loadedTime = getLoadedTimeForProc(idmProc);
+	}
+
 	/* por las dudas le pongo el ocupado */
 	t_MP* mp = buscarEnMemoriaPrincipal(paginaSwappedIn->frame);
 	mp->ocupado = true;
@@ -165,6 +173,31 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 
 
 	return mp;
+}
+
+int32_t getLoadedTimeForProc(int32_t idmProc){
+	bool porPIDYPresent(t_TP* entrada){
+		return entrada->idProc==idmProc && entrada->present==true;
+	}
+	t_list* tablaDelProceso = list_filter(tablasDePaginas, (void*) porPIDYPresent);
+
+	if(list_size(tablaDelProceso)==0){
+		return 0;
+	} else{
+		int32_t minLoadedTime = getMinLoadedTime(tablaDelProceso);
+		return minLoadedTime+1;
+	}
+}
+
+int32_t getMinLoadedTime(t_list* tablaDelProceso){
+	int32_t min=RAND_MAX;
+	void minimo(t_TP* entrada){
+		if(entrada->loadedTime<min){
+			min=entrada->loadedTime;
+		}
+	}
+	list_iterate(tablaDelProceso, (void*) minimo);
+	return min;
 }
 
 int32_t getRandomFrameVacio(){
@@ -188,6 +221,51 @@ void manejarMemoriaPrincipal(t_MP* entradaMP, sock_t* cpuSocket){
 		free(pedido);
 	}
 }
+
+int32_t reemplazarMP(int32_t idmProc, char* algoritmo_reemplazo){
+
+	bool porPIDYPresent(t_TP* entrada){
+		return entrada->idProc==idmProc && entrada->present==true;
+	}
+	t_list* tablaDelProceso = list_filter(tablasDePaginas, (void*) porPIDYPresent);
+
+	if(string_equals_ignore_case(algoritmo_reemplazo, FIFO)){
+		return reemplazarFIFO(tablaDelProceso);
+	}
+
+	/*no estarían funcionando aún */
+	if(string_equals_ignore_case(algoritmo_reemplazo, CLOCKM)){
+		return reemplazarCLOCKM(tablaDelProceso);
+	}
+
+	if(string_equals_ignore_case(algoritmo_reemplazo, LRU)){
+		return reemplazarLRU(tablaDelProceso);
+	}
+	return marcos_insuficientes;
+}
+
+int32_t reemplazarFIFO(t_list* tablaDelProceso){
+	if(list_size(tablaDelProceso)==0){
+		return marcos_insuficientes;
+	} else{
+		int32_t minLoaded = getMinLoadedTime(tablaDelProceso);
+
+		bool porMinLoaded(t_TP* entrada){
+			return entrada->loadedTime == minLoaded;
+		}
+		t_TP* aReemplazar = list_find(tablasDePaginas,(void*) porMinLoaded);
+		return aReemplazar->frame;
+	}
+}
+
+int32_t reemplazarCLOCKM(t_list* tablaDelProceso){
+	return marcos_insuficientes;
+}
+
+int32_t reemplazarLRU(t_list* tablaDelProceso){
+	return marcos_insuficientes;
+}
+
 
 int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	bool porPIDyPresente(t_TP* entrada){
