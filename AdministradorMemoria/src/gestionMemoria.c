@@ -96,8 +96,10 @@ void swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroP
 	/* falta actualizar memoria principal con frame/pagina y copiar contenido */
 	//TODO pasar a funcion actualizarMP();
 
-	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP();
-	if(cantMarcosOtorgados==configuracion->cantidad_marcos)
+	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP(idmProc);
+	if(cantMarcosOtorgados<=configuracion->cantidad_marcos){
+
+	}
 	//Obtener la cantidad de marcos en MP que tiene ese proceso
 	//chequear si sobrepasa
 	//					si sobrepasa -> algoritmo reemplazo ->actualizo MP

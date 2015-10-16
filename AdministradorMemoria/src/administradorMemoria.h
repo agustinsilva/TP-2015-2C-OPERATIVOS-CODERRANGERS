@@ -131,5 +131,6 @@ t_TLB* buscarEnTLB(int32_t , int32_t );
 t_MP* buscarEnMemoriaPrincipal(int32_t);
 int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
 void manejarMemoriaPrincipal(t_MP* , sock_t* );
+int32_t calcularCantPaginasEnMP(int32_t );
 
 #endif /* ADMINMEMORIA_H_ */
