@@ -41,7 +41,7 @@ void iniciarServidor()
 	printf("Administrador de memoria se ha conectado correctamente\n");
 	while(1)
 	{
-		cabecera = deserializarEnteroSinSigno(socketMemoria);
+		cabecera = deserializarEntero(socketMemoria);
 		if(cabecera != ANORMAL)
 		{
 		detalle = deserializarDetalle(socketMemoria, cabecera);
@@ -99,11 +99,11 @@ t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
 	{
 		case INICIAR:
 			printf("Se inicio un proceso\n");
-			detalle->PID = deserializarEnter(socket);
+			detalle->PID = deserializarEntero(socket);
 			detalle->paginas = deserializarEntero(socket);
 			break;
 		case FINALIZAR:
-			detalle->PID = deserializarEnteroSinSigno(socket);
+			detalle->PID = deserializarEntero(socket);
 			break;
 		case LEER:
 			detalle->PID = deserializarEntero(socket);
