@@ -136,6 +136,7 @@ void escucharYAtender()
 	{
 		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
 	}
+	system("clear");
 	log_info(CPULog,"Se conectó planificador al cpu correctamente.");
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
 	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
