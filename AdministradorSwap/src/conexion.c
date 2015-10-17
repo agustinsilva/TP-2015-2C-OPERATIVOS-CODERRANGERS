@@ -91,7 +91,7 @@ int32_t deserializarEntero(sock_t* socket)
 
 }
 
-t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
+t_mensaje* deserializarDetalle(sock_t* socket, int32_t cabecera)
 {
 	t_mensaje* detalle;
 	detalle = malloc(sizeof(t_mensaje));

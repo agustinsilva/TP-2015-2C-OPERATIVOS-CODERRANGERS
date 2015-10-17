@@ -102,7 +102,7 @@ void escribirPagina(char*,uint32_t,uint32_t);
 void iniciarServidor();
 void mappear_archivo();
 int32_t deserializarEntero(sock_t*);
-t_mensaje* deserializarDetalle(sock_t*, uint32_t);
+t_mensaje* deserializarDetalle(sock_t*, int32_t);
 bool asignarProceso(t_mensaje*);
 void agregarAEstadistica(uint32_t);
 void aumentarEscritura(uint32_t);
