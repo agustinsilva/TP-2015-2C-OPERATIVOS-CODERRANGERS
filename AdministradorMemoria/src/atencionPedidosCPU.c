@@ -209,6 +209,11 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 *		eliminarTablaDePaginas(idmProc);
 *		//liberar espacio
 *	}*/
+
+	vaciarMarcosOcupados(idmProc);
+	eliminarTablaDePaginas(idmProc);
+	eliminarPosiblesEntradasEnTLB(idmProc);
+
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	log_info(MemoriaLog," - *Fin de proceso* PID: %d ", idmProc);
 	printf("Fin operación finalizar \n");

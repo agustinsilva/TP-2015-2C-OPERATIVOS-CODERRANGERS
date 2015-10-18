@@ -35,22 +35,6 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 	return pedido_exitoso;
 }
 
-int32_t eliminarTablaDePaginas(int32_t idmProc)
-{
-	bool porIDProceso(void * entrada)
-	{
-		t_TP* tabla=(t_TP*) entrada;
-		return tabla->idProc==idmProc;
-	}
-	t_TP* encontrado = list_find(tablasDePaginas,porIDProceso);
-	if(encontrado==NULL)
-	{
-		return pedido_error;
-	}
-	list_remove_and_destroy_by_condition(tablasDePaginas, porIDProceso, (void*) procesoDestroyer);
-	return pedido_exitoso;
-}
-
 bool hayEspacio()
 {
 	return true;
@@ -107,6 +91,30 @@ void actualizarTLBSwap(int32_t idmProc, int32_t nroPagina, int32_t marco){
 		list_add(TLB,entradaAActualizar);
 	}
 
+}
+
+void eliminarTablaDePaginas(int32_t idmProc){
+
+	bool porPID(t_TP* entrada){
+		return entrada->idProc;
+	}
+	list_remove_and_destroy_by_condition(tablasDePaginas, (void*) porPID, (void*)procesoDestroyer);
+}
+
+void vaciarMarcosOcupados(int32_t idmProc){
+	t_list* paginasPresentes = getTablaDePaginasPresentes(idmProc);
+
+	void vaciarContenidoMP(t_TP* entrada){
+		if(entrada->present){
+			bool porMarco(t_MP* mp){
+				return mp->marco==entrada->frame;
+			}
+			t_MP* entradaADesocupar = list_find(memoriaPrincipal, (void*) porMarco);
+			entradaADesocupar->ocupado=false;
+			entradaADesocupar->marco=-1;
+		}
+	}
+	list_iterate(paginasPresentes, (void*) vaciarContenidoMP);
 }
 
 int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroPagina){
@@ -175,11 +183,24 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	return mp;
 }
 
-int32_t getLoadedTimeForProc(int32_t idmProc){
+void eliminarPosiblesEntradasEnTLB(int32_t idmProc){
+	bool porPID(t_TLB* entrada){
+		return entrada->idProc==idmProc;
+	}
+	list_remove_and_destroy_by_condition(TLB, (void*) porPID, (void*) TLBDestroyer);
+}
+
+t_list* getTablaDePaginasPresentes(int32_t idmProc){
 	bool porPIDYPresent(t_TP* entrada){
 		return entrada->idProc==idmProc && entrada->present==true;
 	}
 	t_list* tablaDelProceso = list_filter(tablasDePaginas, (void*) porPIDYPresent);
+	return tablaDelProceso;
+}
+
+int32_t getLoadedTimeForProc(int32_t idmProc){
+
+	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
 
 	if(list_size(tablaDelProceso)==0){
 		return 0;
