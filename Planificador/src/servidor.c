@@ -55,8 +55,11 @@ void* iniciarServidor() {
 					case LOGEARRESULTADOCPU:
 						logearResultadoCpu(socketProcesado);
 						break;
-					case BLOQUEOPCB:
+					case FINQUANTUM:
 						replanificar(socketProcesado);
+						break;
+					case ENTRADASALIDA:
+						bloquearProceso(socketProcesado);
 						break;
 					case LOGEARFINALIZACIONCPU:
 						logearFinalizacionCpu(socketProcesado);
@@ -135,6 +138,23 @@ void consumirRecursos() {
 			sem_post(&mutex);
 		}
 	}
+}
+
+void bloquearProceso(uint32_t socketProcesado){
+	//liberar cpu del proceso
+
+	//hacer recv del Tiempo de bloqueo
+
+	//hacer recv de la PCB
+
+	//meter la pcb en cola de bloqueados con el retardo
+
+	// hacer sleep de t segundos
+	// un solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
+	// hacerlo en un hilo que cuando se termine el sleep saque la pcb de bloqueados y la ponga en ready
+
+	//
+
 }
 
 void logearResultadoCpu(uint32_t socketCpu) {
