@@ -63,7 +63,8 @@ t_log* planificadorLog;
 #define AGREGARHILOCPU 1
 #define LOGEARRESULTADOCPU 2
 #define LOGEARFINALIZACIONCPU 3
-#define BLOQUEOPCB 4
+#define FINQUANTUM 4
+#define ENTRADASALIDA 5
 #define ENVIARPCB 2
 #define ERROR 5
 
@@ -82,6 +83,7 @@ void encolar(char* path);
 void consumirRecursos();
 void pcbDestroy(t_pcb *self);
 void replanificar(uint32_t socketProcesado);
+void bloquearProceso(uint32_t socketProcesado);
 void finalizarProceso(uint32_t *pid);
 t_pcb* recibirPcb(uint32_t socketCpu);
 void creoPadre(uint32_t socketProcesado);
