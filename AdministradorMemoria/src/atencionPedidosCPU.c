@@ -212,7 +212,9 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 
 	vaciarMarcosOcupados(idmProc);
 	eliminarTablaDePaginas(idmProc);
-	eliminarPosiblesEntradasEnTLB(idmProc);
+	if(configuracion->tlb_habilitada){
+		eliminarPosiblesEntradasEnTLB(idmProc);
+	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	log_info(MemoriaLog," - *Fin de proceso* PID: %d ", idmProc);
@@ -235,8 +237,6 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		printf("No se recibió correctamente la información de la CPU\n");
 		return;
 	}
-
-	/* 6/10 - no chequea la cantidad de marcos que se le pueden otorgar a cada proceso */
 
 	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d", idmProc, nroPagina);
 
@@ -262,7 +262,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				}
 				case swap_in:{
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
-					actualizarTLBSwap(idmProc, nroPagina, marco);
+					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
+						eliminarSwappedOutDeTLB(marco);
+					}
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {

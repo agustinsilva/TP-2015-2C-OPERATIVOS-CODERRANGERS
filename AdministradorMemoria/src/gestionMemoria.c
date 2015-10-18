@@ -35,13 +35,7 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 	return pedido_exitoso;
 }
 
-bool hayEspacio()
-{
-	return true;
-}
-
-int32_t getFrame()
-{
+int32_t getFrame() {
 	int32_t marcoLibre=-1;
 	void buscarMarcoLibre(t_MP* entrada)
 	{
@@ -65,32 +59,6 @@ void actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
 	nuevaEntrada->marco = marco;
 
 	list_add(TLB, nuevaEntrada);
-}
-
-
-void actualizarTLBSwap(int32_t idmProc, int32_t nroPagina, int32_t marco){
-
-	/* reviso la TLB */
-	int32_t indexEnTabla=-1, index;
-	for(index=0; index<list_size(TLB); index++){
-		t_TLB* entradaTLB = list_get(TLB,index);
-		if(entradaTLB->marco==marco){
-			indexEnTabla=index;
-		}
-	}
-
-	/* si hay una entrada con el marco actualizado, actualizo*/
-	if(indexEnTabla!=-1){
-
-		t_TLB* entradaAActualizar = list_remove(TLB,indexEnTabla);
-			if(entradaAActualizar!=NULL){
-				entradaAActualizar->idProc=idmProc;
-				entradaAActualizar->pagina=nroPagina;
-				entradaAActualizar->marco=marco;
-			}
-		list_add(TLB,entradaAActualizar);
-	}
-
 }
 
 void eliminarTablaDePaginas(int32_t idmProc){
@@ -136,9 +104,22 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 		marcoAReemplazar = getRandomFrameVacio();
 	}
 
-	if(marcoAReemplazar==marcos_insuficientes){
-		log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+	if(marcoAReemplazar==marcos_insuficientes || marcoAReemplazar==marcos_no_libres){
+
+		pedido->encontro=pedido_error;
+		enviarContenidoPagina(cpuSocket, pedido);
+		free(pedido->contenido);
+		free(pedido);
+
+		if(marcoAReemplazar==marcos_insuficientes){
+			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+			return marcos_insuficientes;
+		}else{
+			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
+			return marcos_no_libres;
+		}
 	}
+
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
 
 	enviarContenidoPagina(cpuSocket, pedido);
@@ -179,8 +160,14 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 
 	/* actualizar la TLB -> se hace fuera del switch */
 
-
 	return mp;
+}
+
+void eliminarSwappedOutDeTLB(int32_t marco){
+	bool porPID(t_TLB* entrada){
+			return entrada->marco==marco;
+	}
+	list_remove_and_destroy_by_condition(TLB, (void*) porPID, (void*) TLBDestroyer);
 }
 
 void eliminarPosiblesEntradasEnTLB(int32_t idmProc){
@@ -226,7 +213,12 @@ int32_t getRandomFrameVacio(){
 		return entrada->ocupado==false;
 	}
 	t_MP* mp = list_find(memoriaPrincipal, (void*)frameVacio);
-	return mp->marco;
+	if(mp!=NULL){
+		return mp->marco;
+	} else{
+		return marcos_no_libres;
+	}
+
 }
 
 void manejarMemoriaPrincipal(t_MP* entradaMP, sock_t* cpuSocket){

@@ -30,6 +30,7 @@
 #define pedido_no_memoria -1
 #define swap_in -2
 #define marcos_insuficientes -1
+#define marcos_no_libres -2
 #define FIFO "FIFO"
 #define CLOCKM "CLOCK-M"
 #define LRU "LRU"
@@ -149,6 +150,7 @@ int32_t getMinLoadedTime(t_list* );
 void eliminarPosiblesEntradasEnTLB(int32_t );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
+void eliminarSwappedOutDeTLB(int32_t );
 
 
 #endif /* ADMINMEMORIA_H_ */
