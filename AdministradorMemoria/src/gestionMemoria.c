@@ -49,7 +49,7 @@ int32_t getFrame() {
 }
 
 /* unico reemplazo -> FIFO */
-void actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
+t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
 	if(list_size(TLB)>=configuracion->entradas_tlb){
 		list_remove_and_destroy_element(TLB,0,(void*) TLBDestroyer);
 	}
@@ -59,6 +59,7 @@ void actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
 	nuevaEntrada->marco = marco;
 
 	list_add(TLB, nuevaEntrada);
+	return nuevaEntrada;
 }
 
 void eliminarTablaDePaginas(int32_t idmProc){
@@ -79,7 +80,6 @@ void vaciarMarcosOcupados(int32_t idmProc){
 			}
 			t_MP* entradaADesocupar = list_find(memoriaPrincipal, (void*) porMarco);
 			entradaADesocupar->ocupado=false;
-			entradaADesocupar->marco=-1;
 		}
 	}
 	list_iterate(paginasPresentes, (void*) vaciarContenidoMP);
@@ -137,8 +137,10 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 			return entrada->frame==marcoAReemplazar;
 	}
 	t_TP* paginaSwappedOut = list_find(tablasDePaginas, (void*) porMarco);
-	paginaSwappedOut->present = false;
-	paginaSwappedOut->frame = -1;
+	if(paginaSwappedOut!=NULL){
+		paginaSwappedOut->present = false;
+		paginaSwappedOut->frame = -1;
+	}
 
 	/* llevo la página a MP y le asigno el marco otorgado*/
 	bool porPIDyPag(t_TP* entrada){

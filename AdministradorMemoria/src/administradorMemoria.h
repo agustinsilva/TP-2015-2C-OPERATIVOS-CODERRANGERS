@@ -20,6 +20,9 @@
 #include <pthread.h>
 
 // Constantes
+#define RESET "\x1B[0m"
+#define RED "\x1B[31m"
+#define GREEN "\x1B[32m"
 #define codigo_iniciar 1
 #define codigo_finalizar 2
 #define codigo_leer 3
@@ -130,7 +133,7 @@ int32_t getPagina();
 int32_t getFrame();
 bool hayEspacio();
 void limpiarRecursos();
-void actualizarTLB(int32_t, int32_t , int32_t );
+t_TLB* actualizarTLB(int32_t, int32_t , int32_t );
 int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
 void manejarMemoriaPrincipal(t_MP* , sock_t* );
 t_TLB* buscarEnTLB(int32_t , int32_t );
@@ -140,7 +143,6 @@ void manejarMemoriaPrincipal(t_MP* , sock_t* );
 int32_t calcularCantPaginasEnMP(int32_t );
 t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
-void actualizarTLBSwap(int32_t , int32_t , int32_t );
 int32_t reemplazarMP(int32_t , char* );
 int32_t reemplazarFIFO(t_list*);
 int32_t reemplazarCLOCKM(t_list*);

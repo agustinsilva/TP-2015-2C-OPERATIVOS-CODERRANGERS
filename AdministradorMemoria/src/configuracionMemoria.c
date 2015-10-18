@@ -44,8 +44,8 @@ int cargarArchivoDeConfiguracion()
 	configuracion->algoritmo_reemplazo = string_new();
 	configuracion->algoritmo_reemplazo = config_get_string_value(fd_configuracion, "ALGORITMO_REEMPLAZO");
 
-	if(!string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO) ||
-	   !string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM) ||
+	if(!string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO) &&
+	   !string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM) &&
 	   !string_equals_ignore_case(configuracion->algoritmo_reemplazo, LRU) ){
 
 			log_error(MemoriaLog,"Algoritmo de reemplazo inválido.","ERROR");
@@ -67,10 +67,8 @@ int cargarArchivoDeConfiguracion()
 
 void limpiarConfiguracion()
 {
+	/* borra los char* s? */
 	config_destroy(fd_configuracion);
 	free(configuracion);
 }
 
-//***************************FIN********************************//
-//*******************ARCHIVO DE CONFIGURACION*******************//
-//***********************CPU***************************//

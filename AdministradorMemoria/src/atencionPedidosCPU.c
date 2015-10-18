@@ -157,17 +157,17 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	if(confirmacionSwap==pedido_exitoso)
 	{
-		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito. PID: %d, Cantidad de Páginas: %d.", idmProc, cantPaginas);
+		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito. PID: %d, Cantidad de Páginas: %d.\n", idmProc, cantPaginas);
 	}
 	else
 	{
 		if(confirmacionSwap == pedido_error)
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: No hay memoria disponible.");
+			log_error(MemoriaLog,RED" - *Proceso nuevo* Fallo al crear. Razón: No hay memoria disponible.\n"RESET);
 		}
 		else
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: Error de comunicación. ");
+			log_error(MemoriaLog,RED" - *Proceso nuevo* Fallo al crear. Razón: Error de comunicación. \n"RESET);
 		}
 	}
 }
@@ -246,7 +246,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
 
 		if(entradaTLB != NULL){    				/* TLB HIT */
-			log_info(MemoriaLog, " - *TLB HIT* Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
+			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
 			manejarMemoriaPrincipal(hit, cpuSocket);
@@ -264,6 +264,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
 					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
 						eliminarSwappedOutDeTLB(marco);
+						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 					}
 					break;
 				}
@@ -275,7 +276,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				}
 			}
 
-			log_info(MemoriaLog, " - *TLB MISS* Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+			log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 		}
 
 	}
