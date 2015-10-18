@@ -68,6 +68,16 @@ typedef struct{
 #define FALSO 0
 #define VERDADERO 1
 
+#define RESET "\x1B[0m"
+#define RED "\x1B[31m"
+#define GREEN "\x1B[32m"
+#define HIDDEN "\e[8m"
+#define BOLD "\e[1m"
+#define UNDERLINED "\e[4m"
+#define RESET_NON_BOLD "\e[21m"
+#define RESET_NON_UL "\e[24m"
+#define BLINK "\e[5m"
+#define RESET_NON_BLINK "\e[25m"
 //Variables globales
 t_configuracion* configuracion;
 t_config* fd_configuracion;
@@ -119,4 +129,5 @@ void limpiarEstadisticas(void*);
 bool buscarNodoComienzo(void*);
 void compactacionBruta();
 bool compararUbicaciones(void*,void*);
+void tituloInicial();
 #endif /* ADMINSWAP_H_ */

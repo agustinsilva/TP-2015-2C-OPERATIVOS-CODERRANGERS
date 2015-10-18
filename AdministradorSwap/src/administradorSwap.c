@@ -10,6 +10,7 @@ int main(void)
 	cargarArchivoDeConfiguracion();
 	printf("Creando particion\n");
 	inicializarParticion();
+	tituloInicial();
 	iniciarServidor();
 	printf("Finaliza correctamente Administrador de Swap\n");
 	liberarRecursos();
@@ -42,4 +43,39 @@ void limpiarEstadisticas(void* nodo)
 {
 	t_estadistica* estadistica = nodo;
 	free(estadistica);
+}
+
+void tituloInicial(){
+
+	printf("\n\t\t");
+
+
+	printf("\e[48;5;196m \e[0m" "");
+	printf("\e[48;5;196m \e[0m" "");
+	printf("\e[48;5;202m \e[0m" "");
+	printf("\e[48;5;202m \e[0m" "");
+	printf("\e[48;5;208m \e[0m" "");
+	printf("\e[48;5;208m \e[0m" "");
+	printf("\e[48;5;214m \e[0m" "");
+	printf("\e[48;5;214m \e[0m" "");
+	printf("\e[48;5;226m \e[0m" "");
+	printf("\e[48;5;226m \e[0m" "");
+    printf("\e[48;5;229m \e[0m" "");
+	printf("\e[48;5;229m \e[0m" "");
+	printf("\e[48;5;229m \e[30m" BOLD "Administrador de swap" RESET_NON_BOLD "\e[0m");
+	printf("\e[48;5;229m \e[0m" "");
+	printf("\e[48;5;229m \e[0m" "");
+	printf("\e[48;5;226m \e[0m" "");
+	printf("\e[48;5;226m \e[0m" "");
+	printf("\e[48;5;214m \e[0m" "");
+    printf("\e[48;5;214m \e[0m" "");
+	printf("\e[48;5;208m \e[0m" "");
+	printf("\e[48;5;208m \e[0m" "");
+	printf("\e[48;5;202m \e[0m" "");
+	printf("\e[48;5;202m \e[0m" "");
+	printf("\e[48;5;196m \e[0m" "");
+	printf("\e[48;5;196m \e[0m" "");
+
+
+	printf("\n\n");
 }

@@ -36,7 +36,7 @@ void iniciarServidor()
 	t_mensaje* detalle;
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
-	printf("Escucha conexiones \n");
+	printf("Esperando conexion con administrador de memoria. \n");
 	sock_t* socketMemoria = accept_connection(socketServerSwap);
 	printf("Administrador de memoria se ha conectado correctamente\n");
 	while(1)
