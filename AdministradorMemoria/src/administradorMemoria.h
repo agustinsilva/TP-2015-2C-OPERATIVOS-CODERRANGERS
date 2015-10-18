@@ -18,11 +18,13 @@
 #include <socket.h>
 #include <commons/log.h>
 #include <pthread.h>
+#include <signal.h>
 
 // Constantes
 #define RESET "\x1B[0m"
 #define RED "\x1B[31m"
 #define GREEN "\x1B[32m"
+#define HIDDEN "\e[8m"
 #define BOLD "\e[1m"
 #define UNDERLINED "\e[4m"
 #define RESET_NON_BOLD "\e[21m"
@@ -161,6 +163,13 @@ void eliminarPosiblesEntradasEnTLB(int32_t );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 void eliminarSwappedOutDeTLB(int32_t );
+
+/* de Signals.c */
+void signalHandler();
+void finalizacion();
+void MPFush();
+void MPDump();
+void TLBFush();
 
 
 #endif /* ADMINMEMORIA_H_ */

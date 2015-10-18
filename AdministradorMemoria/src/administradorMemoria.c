@@ -10,6 +10,8 @@ int main(void)
 	cargarArchivoDeConfiguracion();
 	setUp();
 
+	signalHandler();
+
 	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
@@ -122,3 +124,5 @@ void saludoInicial(){
 
 	printf("\n\n");
 }
+
+
