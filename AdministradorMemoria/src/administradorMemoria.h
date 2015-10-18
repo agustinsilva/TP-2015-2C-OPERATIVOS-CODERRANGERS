@@ -23,6 +23,13 @@
 #define RESET "\x1B[0m"
 #define RED "\x1B[31m"
 #define GREEN "\x1B[32m"
+#define BOLD "\e[1m"
+#define UNDERLINED "\e[4m"
+#define RESET_NON_BOLD "\e[21m"
+#define RESET_NON_UL "\e[24m"
+#define BLINK "\e[5m"
+#define RESET_NON_BLINK "\e[25m"
+
 #define codigo_iniciar 1
 #define codigo_finalizar 2
 #define codigo_leer 3
@@ -113,6 +120,7 @@ void setUp();
 void limpiarMemoriaPrincipal();
 void limpiarTLB();
 void TLBDestroyer(t_TLB* );
+void saludoInicial();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);

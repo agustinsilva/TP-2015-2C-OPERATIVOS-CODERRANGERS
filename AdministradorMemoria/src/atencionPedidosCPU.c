@@ -108,7 +108,6 @@ int32_t recibirCodigoOperacion(sock_t* cpu)
 
 void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 {
-	printf("Se recibió el pedido de Iniciar Proceso\n");
 	int32_t idmProc;
 	int32_t cantPaginas;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
@@ -124,13 +123,13 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoProc <= 0 || recibidoPags <= 0)
 	{
-		printf("No se recibió correctamente la información de la CPU\n");
+		log_error(MemoriaLog, RED "No se recibió correctamente la información de la CPU\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
 	else
 	{
-		printf("Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
+		log_info(MemoriaLog, "Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
 	}
 	enviarEnteros(swapSocket, codigo_iniciar);
 	enviarEnteros(swapSocket, idmProc);
@@ -145,7 +144,7 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoSwap <= 0)
 	{
-		printf("No se recibió correctamente la confirmación del Swap\n");
+		log_error(MemoriaLog,RED"No se recibió correctamente la confirmación del Swap\n"RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -157,7 +156,7 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	if(confirmacionSwap==pedido_exitoso)
 	{
-		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito. PID: %d, Cantidad de Páginas: %d.\n", idmProc, cantPaginas);
+		log_info(MemoriaLog,"-" BOLD " *Proceso nuevo* " RESET_NON_BOLD "Creado con éxito. PID: %d, Cantidad de Páginas: %d.\n", idmProc, cantPaginas);
 	}
 	else
 	{
@@ -182,9 +181,8 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}*/
-	if(recibidoProc <= 0)
-	{
-		printf("No se recibió correctamente la información de la CPU\n");
+	if(recibidoProc <= 0){
+		log_error(MemoriaLog,RED "No se recibió correctamente la información de la CPU\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -198,9 +196,8 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}*/
-	if(recibidoSwap <= 0)
-	{
-		printf("No se recibió correctamente la confirmación del Swap\n");
+	if(recibidoSwap <= 0)	{
+		log_error(MemoriaLog,RED "No se recibió correctamente la confirmación del Swap\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -217,8 +214,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
-	log_info(MemoriaLog," - *Fin de proceso* PID: %d ", idmProc);
-	printf("Fin operación finalizar \n");
+	log_info(MemoriaLog," - " BOLD "*Fin de proceso*" RESET_NON_BOLD " PID: %d ", idmProc);
 }
 
 void lectura(sock_t* cpuSocket, sock_t* swapSocket)
@@ -234,11 +230,11 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoProc <= 0 || recibidoPag <= 0)
 	{
-		printf("No se recibió correctamente la información de la CPU\n");
+		log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
 		return;
 	}
 
-	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d", idmProc, nroPagina);
+	log_info(MemoriaLog, " - "BOLD "*Solicitud de Lectura*" RESET_NON_BOLD " PID: %d, Nro de Página: %d", idmProc, nroPagina);
 
 												/* SI HAY TLB */
 	if(configuracion->tlb_habilitada==1){
