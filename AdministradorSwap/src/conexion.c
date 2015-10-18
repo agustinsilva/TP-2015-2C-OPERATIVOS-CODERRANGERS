@@ -2,17 +2,17 @@
 
 
 //deprecado
-char* recibirMensaje(sock_t* socket)
+/*char* recibirMensaje(sock_t* socket, int32_t longitud)
 {
-	/*recibe la cantidad de bytes que va a tener el mensaje*/
+	recibe la cantidad de bytes que va a tener el mensaje
 	int32_t longitudMensaje;
-	/*recibe el mensaje sabiendo cuánto va a ocupar*/
+	recibe el mensaje sabiendo cuánto va a ocupar
 	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
-	char* mensaje = malloc(longitudMensaje+1);
+	char* mensaje = malloc(longitudMensaje);
 	recv(socket->fd, mensaje, longitudMensaje, 0);
 	mensaje[longitudMensaje]='\0';
 	return mensaje;
-}
+}*/
 
 int32_t enviarMensaje(sock_t* socket, char* mensaje)
 {
@@ -32,7 +32,7 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje)
 
 void iniciarServidor()
 {
-	uint32_t cabecera;
+	int32_t cabecera;
 	t_mensaje* detalle;
 	sock_t* socketServerSwap = create_server_socket(configuracion->puerto_escucha);
 	listen_connections(socketServerSwap);
@@ -41,7 +41,7 @@ void iniciarServidor()
 	printf("Administrador de memoria se ha conectado correctamente\n");
 	while(1)
 	{
-		cabecera = deserializarEnteroSinSigno(socketMemoria);
+		cabecera = deserializarEntero(socketMemoria);
 		if(cabecera != ANORMAL)
 		{
 		detalle = deserializarDetalle(socketMemoria, cabecera);
@@ -58,7 +58,7 @@ void iniciarServidor()
 				procesarLectura(detalle,socketMemoria);
 				break;
 			case ESCRIBIR:
-				//Escribir falta implementar!
+				procesarEscritura(detalle,socketMemoria);
 				break;
 			case ANORMAL:
 			printf("Finalizacion anormal de administrador de memoria\n");
@@ -79,19 +79,19 @@ void iniciarServidor()
 }
 
 
-uint32_t deserializarEnteroSinSigno(sock_t* socket)
+int32_t deserializarEntero(sock_t* socket)
 {
-	uint32_t enteroSinSigno;
-	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	int32_t entero;
+	int32_t status = recv(socket->fd, &entero, sizeof(int32_t), 0);
 	if(status == -1 || status == 0)
 	{
-	enteroSinSigno = ANORMAL;
+	entero = ANORMAL;
 	}
-	return enteroSinSigno;
+	return entero;
 
 }
 
-t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
+t_mensaje* deserializarDetalle(sock_t* socket, int32_t cabecera)
 {
 	t_mensaje* detalle;
 	detalle = malloc(sizeof(t_mensaje));
@@ -99,17 +99,22 @@ t_mensaje* deserializarDetalle(sock_t* socket, uint32_t cabecera)
 	{
 		case INICIAR:
 			printf("Se inicio un proceso\n");
-			detalle->PID = deserializarEnteroSinSigno(socket);
-			detalle->paginas = deserializarEnteroSinSigno(socket);
+			detalle->PID = deserializarEntero(socket);
+			detalle->paginas = deserializarEntero(socket);
 			break;
 		case FINALIZAR:
-			detalle->PID = deserializarEnteroSinSigno(socket);
+			detalle->PID = deserializarEntero(socket);
 			break;
 		case LEER:
-			detalle->PID = deserializarEnteroSinSigno(socket);
-			detalle->ubicacion = deserializarEnteroSinSigno(socket);
+			detalle->PID = deserializarEntero(socket);
+			detalle->ubicacion = deserializarEntero(socket);
 			break;
 		case ESCRIBIR:
+			detalle->PID = deserializarEntero(socket);
+			detalle->ubicacion = deserializarEntero(socket);
+			detalle->tamanioContenido = deserializarEntero(socket);
+			detalle->contenidoPagina = malloc(sizeof(detalle->tamanioContenido));
+			recv(socket->fd, detalle->contenidoPagina, detalle->tamanioContenido, 0);
 			break;
 		default:
 			// Por si acaso

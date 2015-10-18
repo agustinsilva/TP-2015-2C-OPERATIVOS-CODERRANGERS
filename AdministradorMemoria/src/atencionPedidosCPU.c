@@ -108,7 +108,6 @@ int32_t recibirCodigoOperacion(sock_t* cpu)
 
 void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 {
-	printf("Se recibió el pedido de Iniciar Proceso\n");
 	int32_t idmProc;
 	int32_t cantPaginas;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
@@ -124,13 +123,13 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoProc <= 0 || recibidoPags <= 0)
 	{
-		printf("No se recibió correctamente la información de la CPU\n");
+		log_error(MemoriaLog, RED "No se recibió correctamente la información de la CPU\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
 	else
 	{
-		printf("Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
+		log_info(MemoriaLog, "Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
 	}
 	enviarEnteros(swapSocket, codigo_iniciar);
 	enviarEnteros(swapSocket, idmProc);
@@ -145,7 +144,7 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoSwap <= 0)
 	{
-		printf("No se recibió correctamente la confirmación del Swap\n");
+		log_error(MemoriaLog,RED"No se recibió correctamente la confirmación del Swap\n"RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -157,17 +156,17 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	enviarEnteros(cpuSocket, confirmacionSwap);
 	if(confirmacionSwap==pedido_exitoso)
 	{
-		log_info(MemoriaLog," - *Proceso nuevo* Creado con éxito. PID: %d, Cantidad de Páginas: %d.", idmProc, cantPaginas);
+		log_info(MemoriaLog,"-" BOLD " *Proceso nuevo* " RESET_NON_BOLD "Creado con éxito. PID: %d, Cantidad de Páginas: %d.\n", idmProc, cantPaginas);
 	}
 	else
 	{
 		if(confirmacionSwap == pedido_error)
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: No hay memoria disponible.");
+			log_error(MemoriaLog,RED" - *Proceso nuevo* Fallo al crear. Razón: No hay memoria disponible.\n"RESET);
 		}
 		else
 		{
-			log_error(MemoriaLog," - *Proceso nuevo* Fallo al crear. Razón: Error de comunicación. ");
+			log_error(MemoriaLog,RED" - *Proceso nuevo* Fallo al crear. Razón: Error de comunicación. \n"RESET);
 		}
 	}
 }
@@ -182,9 +181,8 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}*/
-	if(recibidoProc <= 0)
-	{
-		printf("No se recibió correctamente la información de la CPU\n");
+	if(recibidoProc <= 0){
+		log_error(MemoriaLog,RED "No se recibió correctamente la información de la CPU\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -198,9 +196,8 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}*/
-	if(recibidoSwap <= 0)
-	{
-		printf("No se recibió correctamente la confirmación del Swap\n");
+	if(recibidoSwap <= 0)	{
+		log_error(MemoriaLog,RED "No se recibió correctamente la confirmación del Swap\n" RESET);
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
@@ -209,9 +206,15 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 *		eliminarTablaDePaginas(idmProc);
 *		//liberar espacio
 *	}*/
+
+	vaciarMarcosOcupados(idmProc);
+	eliminarTablaDePaginas(idmProc);
+	if(configuracion->tlb_habilitada){
+		eliminarPosiblesEntradasEnTLB(idmProc);
+	}
+
 	enviarEnteros(cpuSocket, confirmacionSwap);
-	log_info(MemoriaLog," - *Fin de proceso* PID: %d ", idmProc);
-	printf("Fin operación finalizar \n");
+	log_info(MemoriaLog," - " BOLD "*Fin de proceso*" RESET_NON_BOLD " PID: %d ", idmProc);
 }
 
 void lectura(sock_t* cpuSocket, sock_t* swapSocket)
@@ -227,13 +230,11 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 	}*/
 	if(recibidoProc <= 0 || recibidoPag <= 0)
 	{
-		printf("No se recibió correctamente la información de la CPU\n");
+		log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
 		return;
 	}
 
-	/* 6/10 - no chequea la cantidad de marcos que se le pueden otorgar a cada proceso */
-
-	log_info(MemoriaLog, " - *Solicitud de Lectura*  PID: %d, Nro de Página: %d", idmProc, nroPagina);
+	log_info(MemoriaLog, " - "BOLD "*Solicitud de Lectura*" RESET_NON_BOLD " PID: %d, Nro de Página: %d", idmProc, nroPagina);
 
 												/* SI HAY TLB */
 	if(configuracion->tlb_habilitada==1){
@@ -241,32 +242,42 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
 
 		if(entradaTLB != NULL){    				/* TLB HIT */
-			log_info(MemoriaLog, " - *TLB HIT* Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
+			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
 			manejarMemoriaPrincipal(hit, cpuSocket);
 
 		} else {      							/* TLB MISS */
 			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
-			actualizarTLB(idmProc, nroPagina, marco);
 
 			switch(marco){
-				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)");
-				enviarEnteros(cpuSocket, pedido_error);
-				break;
-				case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
+				case -1: {
+					printf("Segmentation Fault pero de paginación (que no es page fault)\n");
+					enviarEnteros(cpuSocket, pedido_error);
+					break;
+				}
+				case swap_in:{
+					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
+						eliminarSwappedOutDeTLB(marco);
+						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
+					}
+					break;
+				}
 				default:  /*buscar contenido en memoria principal*/ {
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					manejarMemoriaPrincipal(miss, cpuSocket);
+					actualizarTLB(idmProc, nroPagina, marco);
 					break;
 				}
 			}
-			log_info(MemoriaLog, " - *TLB MISS* Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+
+			log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 		}
 
 	}
-	else          							/* SI NO HAY TLB */
-	{
+	else {         							/* SI NO HAY TLB */
+
 		int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
 
 		switch(marco){

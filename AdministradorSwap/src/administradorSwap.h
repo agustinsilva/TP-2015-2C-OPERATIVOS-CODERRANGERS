@@ -22,6 +22,7 @@ typedef struct {
 	uint32_t cantidad_paginas;
 	uint32_t tamano_pagina;
 	uint32_t retardo_compactacion;
+	uint32_t retardo_swap;
 } t_configuracion;
 
 //Comienzo de espacio libre y cantidad de paginas secuenciales libres.
@@ -83,7 +84,7 @@ t_archivoSwap* archivoMapeado;
 int conf_es_valida(t_config*);
 int cargarArchivoDeConfiguracion();
 int32_t enviarMensaje(sock_t*, char*);
-char* recibirMensaje(sock_t*);
+/*char* recibirMensaje(sock_t*,int32_t);*/
 void limpiarConfiguracion();
 void crearParticion();
 void eliminarParticion();
@@ -100,8 +101,8 @@ char* buscarPagina(uint32_t, uint32_t);
 void escribirPagina(char*,uint32_t,uint32_t);
 void iniciarServidor();
 void mappear_archivo();
-uint32_t deserializarEnteroSinSigno(sock_t*);
-t_mensaje* deserializarDetalle(sock_t*, uint32_t);
+int32_t deserializarEntero(sock_t*);
+t_mensaje* deserializarDetalle(sock_t*, int32_t);
 bool asignarProceso(t_mensaje*);
 void agregarAEstadistica(uint32_t);
 void aumentarEscritura(uint32_t);
@@ -111,6 +112,7 @@ void* encontrarNodoPorPID(t_list*, uint32_t);
 void liberarRecursos();
 void procesarFinalizacion(t_mensaje*,sock_t*);
 void procesarLectura(t_mensaje*,sock_t*);
+void procesarEscritura(t_mensaje*,sock_t*);
 void limpiarNodosLibres(void*);
 void limpiarNodosOcupados(void*);
 void limpiarEstadisticas(void*);

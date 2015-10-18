@@ -4,6 +4,7 @@
 //Inclusiones
 #include <stdio.h>
 #include <stdlib.h>
+#include <commons/collections/list.h>
 #include <commons/string.h>
 #include <commons/config.h>
 #include <sys/types.h>

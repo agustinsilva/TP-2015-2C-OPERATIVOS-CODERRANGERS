@@ -4,11 +4,14 @@
 
 int main(void)
 {
-	printf("Inicia el Administrador de Memoria \n");
+	saludoInicial();
 	puts("Cargo archivo de configuración de Administrador Memoria\n");
 	MemoriaLog = log_create("MemoriaLog", "AdministradorMemoria", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 	setUp();
+
+	signalHandler();
+
 	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
@@ -33,7 +36,7 @@ int main(void)
 				paramsCPU->swapSocket = clientSocketSwap;
 				if (pthread_create(&hiloCPU, NULL,(void*)hiloEjecucionCPU,(void*)paramsCPU))
 				{
-					log_error(MemoriaLog,"Error al crear el hilo de CPU");
+					log_error(MemoriaLog,RED"Error al crear el hilo de CPU\n"RESET);
 					EXIT_FAILURE;
 				}
 				else
@@ -104,4 +107,22 @@ void limpiarTablasDePaginas()
 {
 	list_destroy_and_destroy_elements(tablasDePaginas, (void*)procesoDestroyer);
 }
+void saludoInicial(){
+
+	int32_t i;
+	printf("\n\t\t");
+	for(i=16; i<21; i++){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+
+	printf("\e[48;5;21m" BOLD "Administrador de Memoria" RESET_NON_BOLD "\e[0m");
+	for(i=21; i>16; i--){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+
+	printf("\n\n");
+}
+
 

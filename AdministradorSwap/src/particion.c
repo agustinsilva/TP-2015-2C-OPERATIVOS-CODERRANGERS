@@ -192,17 +192,12 @@ char* buscarPagina(uint32_t PID, uint32_t pagina)
 	if(vacio)
 	{
 		tamanio = 0;
+		log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,"pagina vacia\0");
 	}
 	else
 	{
 		tamanio = string_length(paginaBuscada);
-	}
-	if(tamanio != 0)
-	{
-	log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,paginaBuscada);
-	}else
-	{
-		log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,"pagina vacia\0");
+		log_info(SwapLog,"Lectura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,byteInicial,tamanio,paginaBuscada);
 	}
 	return paginaBuscada;
 }
@@ -341,6 +336,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 			printf("No se envió la cantidad de bytes a enviar luego\n");
 		}
 	}
+	sleep(configuracion->retardo_swap);
 }
 
 void compactacionBruta()
@@ -356,7 +352,6 @@ void compactacionBruta()
     	nodoOcupado = list_get(espacioOcupado,indice);
 
     }
-
 	uint32_t totalLibres;
 	totalLibres = contarPaginasLibres();
 	uint32_t comienzoLibre = configuracion->cantidad_paginas - totalLibres;
@@ -368,10 +363,17 @@ void compactacionBruta()
 
 }
 
+void procesarEscritura(t_mensaje* detalle,sock_t* socketMemoria)
+{
+	escribirPagina(detalle->contenidoPagina,detalle->PID,detalle->ubicacion);
+	aumentarEscritura(detalle->PID);
+	sleep(configuracion->retardo_swap);
+	free(detalle->contenidoPagina);
+}
+
 bool compararUbicaciones(void* nodoAnterior,void* nodo)
 {
 	t_nodoOcupado* anterior = nodoAnterior;
 	t_nodoOcupado* actual = nodo;
-
 	return anterior->comienzo < actual->comienzo;
 }
