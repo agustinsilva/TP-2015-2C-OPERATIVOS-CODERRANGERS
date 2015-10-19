@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <socket.h>
 #include <commons/log.h>
+#include <commons/process.h>
 #include <pthread.h>
 #include <semaphore.h>
 
@@ -89,7 +90,7 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones);
 char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina);
 int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones);
-char* procesarInstruccion(char **lista, int32_t pid, char* resultadosDeEjecuciones);
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones);
 void crearHilosCPU (void);
 int hiloPadre();
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
@@ -97,5 +98,6 @@ uint32_t deserializarEnteroSinSigno(sock_t* socket);
 char* recibirMensaje(sock_t* socket);
 int conectarAAdministradorMemoria();
 int conectarCPUPadreAPlanificador();
+char* serializarPCB(t_pcb *pcb,uint32_t offset,char *paqueteSerializado);
 #endif /* CPU_H_ */
 

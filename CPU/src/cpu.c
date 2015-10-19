@@ -39,25 +39,24 @@ pthread_join(hiloCpu, NULL);
 	t_list* listaCPU = list_create();
 
 	while (cantidad <= configuracion->cantidadHilos){
-
 		pthread_t hiloCpu;
 		rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
-
 		if(rtaHilo!=0)
 				{
 					fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
 					printf("Se cerrara el programa");
 					exit(EXIT_FAILURE);
 				}
-		else {
-			list_add(listaCPU, (void*)hiloCpu);
-			//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
-		}
-
+		list_add(listaCPU, hiloCpu);
+		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",hiloCpu);
+		//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
 		cantidad++;
 	}
+	int i;
+	for( i=0 ; i <= list_size(listaCPU) ; i++){
+		pthread_join(list_get(listaCPU,i),NULL);
+	}
 }*/
-
 
 int abrirArchivoYValidar(t_pcb* pcb){
 	char* resultadosDeEjecuciones =  string_new();
@@ -87,17 +86,15 @@ int abrirArchivoYValidar(t_pcb* pcb){
 		while (QUANTUMRESTANTE > 0) {
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 				lista = string_split(instruccion," ");
-				char* rta = procesarInstruccion(lista,pcb->idProceso,resultadosDeEjecuciones);
+				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones);
 				if(string_equals_ignore_case(rta, "FIN")){
-					break;//Termina la ejecucion porque:bloqueo de E/S
+					break;//Termina la ejecucion porque:bloqueo de E/S, terminó el archivo
 				}else{
 					string_append(&resultadosDeEjecuciones,rta);
 				}
 				cantInstruccionesEjecutadas++;
 				QUANTUMRESTANTE--;
-			}/*else{
-				break;//Termina la ejecucion porque: terminó de ejecutar todas las instrucciones
-			}*/
+			}
 		}
 		if(QUANTUMRESTANTE == 0){
 			log_info(CPULog," [PID:%s] Finalizó quantum de ejecución.\n",string_itoa(pcb->idProceso));
@@ -134,10 +131,9 @@ void escucharYAtender()
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0)
 	{
-		log_error(CPULog,"Error al conectar CPU a Planificador","ERROR");
+		log_error(CPULog,"Error al conectar CPU a Planificador\n","ERROR");
 	}
-	system("clear");
-	log_info(CPULog,"Se conectó planificador al cpu correctamente.");
+	log_info(CPULog,"Se conectó planificador al cpu correctamente. Socket id: %u\n",socketPlanificador->fd);
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
 	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
 	t_pcb* pcb;
@@ -165,38 +161,38 @@ int hiloPadre(){
 	return EXIT_SUCCESS;
 }
 
-char* procesarInstruccion(char **lista, int32_t pid, char* resultadosDeEjecuciones){
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones){
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")){
-		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pid));
+		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
 		//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
-		rta = informarAdminMemoriaComandoIniciar(lista[1],pid);
+		rta = informarAdminMemoriaComandoIniciar(lista[1],pcb->idProceso);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "finalizar")){
-		log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pid));
+		log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pcb->idProceso));
 		//Informar al AdminMemoria que finalice el proceso
-		rta = informarAdminMemoriaComandoFinalizar(pid,resultadosDeEjecuciones);
+		rta = informarAdminMemoriaComandoFinalizar(pcb->idProceso,resultadosDeEjecuciones);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "leer")){
-		log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pid));
+		log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pcb->idProceso));
 		//lista[1] contiene el nro de pagina
-		rta = informarAdminMemoriaComandoLeer(pid,lista[1]);
+		rta = informarAdminMemoriaComandoLeer(pcb->idProceso,lista[1]);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "escribir")){
 		char* textoEscribir = string_from_format("%s",lista[2]);
 		int32_t numeroPagina=*lista[1];
-		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pid),numeroPagina,textoEscribir);
+		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),numeroPagina,textoEscribir);
 		//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
-		rta = informarAdminMemoriaComandoEscribir(pid,numeroPagina,textoEscribir);
+		rta = informarAdminMemoriaComandoEscribir(pcb->idProceso,numeroPagina,textoEscribir);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
 		int32_t tiempoDeEjec=*lista[1];
-		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pid), string_itoa(tiempoDeEjec));
+		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
 		//lista[1] Contiene el tiempo que se debe bloquear.
 		sleep(configuracion->retardo);
-		rta = informarEntradaSalida(pid,tiempoDeEjec,resultadosDeEjecuciones);
+		rta = informarEntradaSalida(pcb,tiempoDeEjec,resultadosDeEjecuciones);
 	}else{
-		log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pid));
+		log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pcb->idProceso));
 		rta = "Comando no interpretado.\n";
 	}
 	return rta;

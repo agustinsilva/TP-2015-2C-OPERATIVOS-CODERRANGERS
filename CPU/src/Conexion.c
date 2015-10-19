@@ -131,36 +131,15 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
 	cabecera = RESPUESTA_PLANIFICADOR_LOGEAR;
 	char* mensaje = string_new();
-	//offset = 0;
 	if(entero==PEDIDO_ERROR){//mProc X - Fallo
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Fallo.\n");
 		log_error(CPULog,"Error por falta de memoria. Se finalizará el proceso.","ERROR");
-		/*uint32_t longitudMensaje = strlen(mensaje);
-		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-		char* message2 = malloc(tamanio);
-		memcpy(message2, &cabecera, sizeof(cabecera));
-		offset = sizeof(cabecera);
-		memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-		offset = offset + sizeof(uint32_t);
-		memcpy(message2 + offset, mensaje, longitudMensaje);
-		status = send(socketPlanificador->fd,message2,tamanio,0);
-		free(message2);*/
 	}else{//mProc X - Iniciado
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Iniciado.\n");
-		/*uint32_t longitudMensaje = strlen(mensaje);
-		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-		char* message3 = malloc(tamanio);
-		memcpy(message3, &cabecera, sizeof(cabecera)); //Codigo
-		offset = sizeof(cabecera);
-		memcpy(message3 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-		offset = offset + sizeof(uint32_t);
-		memcpy(message3 + offset, mensaje, longitudMensaje); //Mensaje
-		status = send(socketPlanificador->fd,message3,tamanio,0);
-		free(message3);*/
 	}
 	return mensaje;
 }
@@ -197,7 +176,6 @@ char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuci
 
 	//Recibe respuesta
 	status = recv(socketAdminMemoria->fd,&entero,sizeof(int32_t),0);
-
 	//mProc X finalizado
 	cabecera = RESPUESTA_PLANIFICADOR_FIN_EJECUCION;
 	char* mensaje = string_new();
@@ -264,18 +242,6 @@ char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina){
 	string_append(&mensaje," leida: ");
 	string_append(&mensaje,contenido);
 	string_append(&mensaje,"\n");
-	/*uint32_t longitudMensaje = strlen(mensaje);
-	tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-	message = malloc(tamanio);
-	memcpy(message, &cabecera, sizeof(cabecera)); //Codigo
-	offset = sizeof(cabecera);
-	memcpy(message + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-	offset = offset + sizeof(uint32_t);
-	memcpy(message + offset, mensaje, longitudMensaje); //Mensaje
-	offset = offset + longitudMensaje;
-	status = send(socketPlanificador->fd,message,tamanio,0);
-	free(message);
-	free(contenido);*/
 	return mensaje;
 }
 
@@ -318,19 +284,6 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Fallo Escritura.\n");
 		log_error(CPULog,"Error en la escritura del proceso.","ERROR");
-
-		/*uint32_t longitudMensaje = strlen(mensaje);
-		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-		char* message2 = malloc(tamanio);
-		memcpy(message2, &cabecera, sizeof(cabecera));
-		offset = sizeof(cabecera);
-		memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-		offset = offset + sizeof(uint32_t);
-		memcpy(message2 + offset, mensaje, longitudMensaje);
-
-		//Manda mensaje a Planificador del error de escritura
-		status = send(socketPlanificador->fd,message2,tamanio,0);
-		free(message2);*/
 	} else {
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
@@ -340,21 +293,7 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 		string_append(&mensaje, textoAEscribir);
 		string_append(&mensaje, "\n");
 		log_error(CPULog,"Se escribió %s en el Proceso %d, Página %d",textoAEscribir, pid, numeroPagina,"ERROR");
-
-		/*uint32_t longitudMensaje = strlen(mensaje);
-		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + longitudMensaje;
-		char* message2 = malloc(tamanio);
-		memcpy(message2, &cabecera, sizeof(cabecera));
-		offset = sizeof(cabecera);
-		memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-		offset = offset + sizeof(uint32_t);
-		memcpy(message2 + offset, mensaje, longitudMensaje);
-
-		//Manda mensaje a Planificador informando que se escribió en la página.
-		status = send(socketPlanificador->fd,message2,tamanio,0);
-		free(message2);*/
 	}
-
 	return mensaje;
 }
 
@@ -389,7 +328,7 @@ char* recibirMensaje(sock_t* socket){
 	return mensaje;
 }
 
-char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuciones) {
+char* serializarFinQuantum(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuciones) {
 	uint32_t cabecera = FIN_QUANTUM;
 	uint32_t offset=0;
 	uint32_t tamanioenterosPCB, tamaniopath, tamanioCabecera, path, tamanioMensajes, tamanioCabeceraMensaje;
@@ -412,6 +351,31 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuc
 	medidaAMandar = tamanioMensajes;
 	memcpy(paqueteSerializado + offset, resultadosDeEjecuciones, medidaAMandar);
 	offset += medidaAMandar;
+	return serializarPCB(pcb, offset, paqueteSerializado);
+	/*medidaAMandar = sizeof(pcb->idProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->estadoProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->estadoProceso), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->contadorPuntero);
+	memcpy(paqueteSerializado + offset, &(pcb->contadorPuntero), medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(pcb->cantidadInstrucciones);
+	memcpy(paqueteSerializado + offset, &(pcb->cantidadInstrucciones),medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = sizeof(uint32_t);
+	memcpy(paqueteSerializado + offset, &path, medidaAMandar);
+	offset += medidaAMandar;
+	medidaAMandar = path;
+	memcpy(paqueteSerializado + offset, pcb->path, medidaAMandar);
+	offset += medidaAMandar;
+	return paqueteSerializado;*/
+}
+
+char* serializarPCB(t_pcb *pcb,uint32_t offset,char *paqueteSerializado) {
+	uint32_t path = strlen(pcb->path);
+	int medidaAMandar;
 	medidaAMandar = sizeof(pcb->idProceso);
 	memcpy(paqueteSerializado + offset, &(pcb->idProceso), medidaAMandar);
 	offset += medidaAMandar;
@@ -435,7 +399,7 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete, char* resultadosDeEjecuc
 
 int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
-	char* pcbSerializado = serializarPCB(pcb, totalPaquete, resultadosDeEjecuciones);
+	char* pcbSerializado = serializarFinQuantum(pcb, totalPaquete, resultadosDeEjecuciones);
 	char* mensaje = malloc(*totalPaquete);
 	memcpy(mensaje, pcbSerializado, *totalPaquete);
 	int sendByte = send(socketPlanificador->fd, mensaje, *totalPaquete, 0);
@@ -450,20 +414,20 @@ int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
 	return EXIT_SUCCESS;
 }
 
-int informarEntradaSalida(uint32_t pid, int32_t tiempo, char* resultadosDeEjecuciones){
+char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuciones){
 	int32_t status;
 	int32_t cabecera = ENTRADA_SALIDA;
 	uint32_t offset=0;
 	char* mensaje = string_new();
 	string_append(&mensaje,resultadosDeEjecuciones);
 	string_append(&mensaje, "mProc ");
-	string_append(&mensaje, string_itoa(pid));
+	string_append(&mensaje, string_itoa(pcb->idProceso));
 	string_append(&mensaje, " en entrada-salida de tiempo ");
 	string_append(&mensaje, string_itoa(tiempo));
 	string_append(&mensaje, "\n");
 
 	uint32_t longitudMensaje = strlen(mensaje);
-	uint32_t tamanio = sizeof(cabecera) + sizeof(tiempo) + sizeof(uint32_t) + longitudMensaje;
+	uint32_t tamanio = sizeof(cabecera) + sizeof(tiempo) + sizeof(uint32_t) + longitudMensaje + sizeof(&pcb);
 	char* message2 = malloc(tamanio);
 	memcpy(message2, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
@@ -472,7 +436,8 @@ int informarEntradaSalida(uint32_t pid, int32_t tiempo, char* resultadosDeEjecuc
 	memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
 	offset = offset + sizeof(uint32_t);
 	memcpy(message2 + offset, mensaje, longitudMensaje);
-	status = send(socketPlanificador->fd,message2,tamanio,0);
+	/*nuevo envio de pcb*/
+	status = send(socketPlanificador->fd,serializarPCB(pcb, offset, message2),tamanio,0);
 	free(message2);
 	return "FIN";
 }
