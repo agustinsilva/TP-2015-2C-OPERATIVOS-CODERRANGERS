@@ -14,8 +14,10 @@ void* iniciarServidor() {
 	FD_SET(socketReceptor, &set_maestro);	//Agrega receptor al set maestro
 	fdMaximo = socketReceptor;	//Hacer seguimiento de descriptor maximo
 	int32_t cabecera;
-	uint32_t *hiloCreado = malloc(sizeof(uint32_t));
-	*hiloCreado = 0;
+	uint32_t *hiloPlanificador = malloc(sizeof(uint32_t));
+	*hiloPlanificador = 0;
+	uint32_t *hiloBloqueado = malloc(sizeof(uint32_t));
+	*hiloBloqueado = 0;
 	printf("Esperando conexiones\n");
 	for (;;) {
 		set_temporal = set_maestro;
@@ -50,7 +52,7 @@ void* iniciarServidor() {
 						break;
 					case AGREGARHILOCPU:
 						creoCpu(socketProcesado);
-						generoHiloPlanificador(hiloCreado);
+						generoHiloPlanificador(hiloPlanificador);
 						break;
 					case LOGEARRESULTADOCPU:
 						logearResultadoCpu(socketProcesado);
@@ -59,7 +61,7 @@ void* iniciarServidor() {
 						replanificar(socketProcesado);
 						break;
 					case ENTRADASALIDA:
-						bloquearProceso(socketProcesado);
+						bloquearProceso(socketProcesado, hiloBloqueado);
 						break;
 					case LOGEARFINALIZACIONCPU:
 						logearFinalizacionCpu(socketProcesado);
@@ -140,20 +142,53 @@ void consumirRecursos() {
 	}
 }
 
-void bloquearProceso(uint32_t socketProcesado){
+void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
+	//recibo retardo y mensaje
+	int32_t retardo = deserializarEnteroSinSigno(socketCpu);
+	//Recibo el Mensaje a logear
+	char* mensajeALogear = recibirMensaje(socketCpu);
+	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeALogear);
+	free(mensajeALogear);
+	//recibo pcb
+	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
 	//liberar cpu del proceso
-
-	//hacer recv del Tiempo de bloqueo
-
-	//hacer recv de la PCB
-
-	//meter la pcb en cola de bloqueados con el retardo
-
+	int _cpuById(t_hilosConectados *cpu_ocupado) {
+		if (pcbBloqueado->idProceso == cpu_ocupado->idProceso)
+			return 1;
+		else
+			return 0;
+	}
+	//Modifico lista proc y cpu
+	list_remove_and_destroy_element(proc_ejecutados, 0, (void*) pcbDestroy);
+	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
+	//Sacar pcb de ejecutados - Meterlo en bloqueados
+	list_remove_and_destroy_element(proc_ejecutados, 0, (void*) pcbDestroy);
+	pcbBloqueado->estadoProceso = 3;
+	pcbBloqueado->retardo = retardo;
+	list_add(proc_bloqueados, pcbBloqueado);
 	// hacer sleep de t segundos
 	// un solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
+	pthread_t hiloBloqueados;
+	int respPlanificador = 0;
+	if (!*hiloBloqueado) {
+		*hiloBloqueado = 1;
+		respPlanificador = pthread_create(&hiloBloqueados, NULL, (void *) iniciarHiloBloqueados, NULL);
+	}
+	if (respPlanificador) {
+		fprintf(stderr, "Error- Iniciar Hilo Bloqueados %d\n", respPlanificador);
+		printf("Se cerrara el programa");
+		exit(EXIT_FAILURE);
+	}
+
+
+
 	// hacerlo en un hilo que cuando se termine el sleep saque la pcb de bloqueados y la ponga en ready
 
 	//
+
+}
+
+void iniciarHiloBloqueados(){
 
 }
 

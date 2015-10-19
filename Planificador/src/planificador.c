@@ -41,6 +41,7 @@ void inicializar() {
 	sem_init(&mutex, 0, 1);
 	proc_listos = list_create();
 	proc_ejecutados = list_create();
+	proc_bloqueados = list_create();
 	cpu_listos = list_create();
 	cpu_ocupados = list_create();
 }
