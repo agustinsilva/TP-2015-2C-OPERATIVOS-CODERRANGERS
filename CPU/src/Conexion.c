@@ -464,6 +464,7 @@ int informarEntradaSalida(uint32_t pid, int32_t tiempo, char* resultadosDeEjecuc
 
 	uint32_t longitudMensaje = strlen(mensaje);
 	uint32_t tamanio = sizeof(cabecera) + sizeof(tiempo) + sizeof(uint32_t) + longitudMensaje;
+	//cabecera + retardo + longMensaje + Mensaje + pcb
 	char* message2 = malloc(tamanio);
 	memcpy(message2, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);

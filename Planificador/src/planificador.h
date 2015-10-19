@@ -33,6 +33,7 @@ typedef struct {
 	uint32_t cantidadInstrucciones;
 	uint32_t tamaniopath;
 	char* path;
+	uint32_t retardo;
 }t_pcb;
 
 typedef struct {
@@ -49,6 +50,7 @@ int contadorProceso;
 uint32_t socketCpuPadre;
 t_list *proc_listos;
 t_list *proc_ejecutados;
+t_list *proc_bloqueados;
 t_list *cpu_listos;
 t_list *cpu_ocupados;
 sem_t sincroproc;
@@ -83,9 +85,10 @@ void encolar(char* path);
 void consumirRecursos();
 void pcbDestroy(t_pcb *self);
 void replanificar(uint32_t socketProcesado);
-void bloquearProceso(uint32_t socketProcesado);
+void bloquearProceso(uint32_t socketProcesado, uint32_t *hiloBloqueado);
 void finalizarProceso(uint32_t *pid);
 t_pcb* recibirPcb(uint32_t socketCpu);
+void iniciarHiloBloqueados();
 void creoPadre(uint32_t socketProcesado);
 char* serializarTipoPlanificaion(uint32_t *totalPaquete);
 void logearResultadoCpu(uint32_t socketCpu);
