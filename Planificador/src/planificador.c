@@ -8,10 +8,10 @@ int main(void) {
 	pthread_t hiloConsola;
 	pthread_t hiloServidor;
 	inicializar();
-
 	puts("Cargo archivo de configuracion de Planificador");
 	planificadorLog = log_create("PlanificadorLog", "Planificador", false, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
+	tituloInicial();
 	respServidor = pthread_create(&hiloServidor, NULL, iniciarServidor, NULL);
 	if (respServidor) {
 		fprintf(stderr, "Error- Iniciar servidor codigo de retorno %d\n", respServidor);
@@ -46,3 +46,20 @@ void inicializar() {
 	cpu_ocupados = list_create();
 }
 
+void tituloInicial(){
+	int32_t i;
+	printf("\n\t\t");
+	for(i=40; i<45; i++){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+	printf("\e[48;5;45m" BOLD "\e[30mPlanificador" RESET_NON_BOLD "\e[0m");
+	for(i=44; i>39; i--){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+
+	printf("\n\n");
+}

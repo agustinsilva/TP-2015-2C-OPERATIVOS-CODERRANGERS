@@ -78,6 +78,8 @@ t_log* planificadorLog;
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+#define BOLD "\e[1m"
+#define RESET_NON_BOLD "\e[21m"
 
 //Firma de funciones
 void* iniciarServidor();
@@ -111,4 +113,5 @@ void limpiarConfiguracion();
 void inicializar();
 void killThemAll();
 char* recibirMensaje(uint32_t socket);
+void tituloInicial();
 #endif /* PLANIFICADOR_H_ */

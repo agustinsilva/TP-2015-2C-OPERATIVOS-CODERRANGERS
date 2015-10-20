@@ -67,6 +67,10 @@ typedef struct {
 #define NUEVO_HILO 1
 #define CONEXION_CPU_PADRE 10
 
+//CONSOLA
+#define BOLD "\e[1m"
+#define RESET_NON_BOLD "\e[21m"
+
 //Variables globales
 t_configuracion* configuracion;
 t_config * fd_configuracion;
@@ -99,5 +103,6 @@ char* recibirMensaje(sock_t* socket);
 int conectarAAdministradorMemoria();
 int conectarCPUPadreAPlanificador();
 char* serializarPCB(t_pcb *pcb,uint32_t offset,char *paqueteSerializado);
+void tituloInicial();
 #endif /* CPU_H_ */
 

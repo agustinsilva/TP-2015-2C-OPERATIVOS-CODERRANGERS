@@ -6,6 +6,7 @@ int main(void)
 {
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
+	tituloInicial();
 	hiloPadre();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
@@ -196,4 +197,22 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		rta = "Comando no interpretado.\n";
 	}
 	return rta;
+}
+
+void tituloInicial(){
+	int32_t i;
+	printf("\n\t\t");
+	for(i=226; i<232; i++){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+	printf("\e[48;5;231m" BOLD "\e[30mCPU" RESET_NON_BOLD "\e[0m");
+	for(i=231; i>225; i--){
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+		printf("\e[48;5;%dm \e[0m" "", i);
+	}
+
+	printf("\n\n");
 }
