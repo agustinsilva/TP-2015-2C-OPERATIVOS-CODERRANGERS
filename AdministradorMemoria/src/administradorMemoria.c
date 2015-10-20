@@ -11,6 +11,7 @@ int main(void)
 	setUp();
 
 	signalHandler();
+	initializeMutex();
 
 	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
@@ -125,4 +126,8 @@ void saludoInicial(){
 	printf("\n\n");
 }
 
-
+void initializeMutex(){
+	pthread_mutex_init(&sem_TLB, NULL);
+	pthread_mutex_init(&sem_TP, NULL);
+	pthread_mutex_init(&sem_MP, NULL);
+}

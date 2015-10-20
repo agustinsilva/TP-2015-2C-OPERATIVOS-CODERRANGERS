@@ -19,6 +19,7 @@
 #include <commons/log.h>
 #include <pthread.h>
 #include <signal.h>
+#include <semaphore.h>
 
 // Constantes
 #define RESET "\x1B[0m"
@@ -109,6 +110,10 @@ t_list* TLB; /* de t_TLB */
 t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
 
+pthread_mutex_t sem_TLB;
+pthread_mutex_t sem_TP;
+pthread_mutex_t sem_MP;
+
 //Firma de funciones
 
 /* Principales */
@@ -123,6 +128,7 @@ void limpiarMemoriaPrincipal();
 void limpiarTLB();
 void TLBDestroyer(t_TLB* );
 void saludoInicial();
+void initializeMutex();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
