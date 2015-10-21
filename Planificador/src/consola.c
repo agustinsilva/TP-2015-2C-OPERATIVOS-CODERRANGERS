@@ -162,7 +162,7 @@ void encolar(char* path) {
 		pcb->idProceso = contadorProceso;
 		contadorProceso++;
 		pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
-		pcb->contadorPuntero = 0;
+		pcb->contadorPuntero = 1;
 		pcb->cantidadInstrucciones = cantidadInstrucciones;
 		pcb->path = malloc(strlen(path));
 		pcb->path = strdup(path); //TODO: revisar codigo maligno
