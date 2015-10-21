@@ -406,10 +406,10 @@ int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
 	if (sendByte < 0) {
 		log_error(CPULog, "Error al enviar el proc/pcb al Planificador","ERROR");
 	}
-	free(resultadosDeEjecuciones);
-	free(pcb->path);
+	//free(resultadosDeEjecuciones);
+	//free(pcb->path);
 	free(mensaje);
-	free(pcbSerializado);
+	//free(pcbSerializado);
 	free(totalPaquete);
 	return EXIT_SUCCESS;
 }

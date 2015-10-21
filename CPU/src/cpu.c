@@ -63,7 +63,7 @@ int abrirArchivoYValidar(t_pcb* pcb){
 	char* resultadosDeEjecuciones =  string_new();
 	int QUANTUMRESTANTE = configCPUPadre.quantum;
 	char **lista;
-	uint32_t numeroInstruccion=0;
+	uint32_t numeroInstruccion=1;
 	char instruccion[TAMINSTRUCCION];
 	char* src = string_new();
 	string_append(&src, "../Planificador/src/Codigos/");
@@ -100,7 +100,7 @@ int abrirArchivoYValidar(t_pcb* pcb){
 		if(QUANTUMRESTANTE == 0){
 			log_info(CPULog," [PID:%s] Finalizó quantum de ejecución.\n",string_itoa(pcb->idProceso));
 			//actualizamos el puntero del pcb
-			pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas + 1;
+			pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas;
 			//enviamos el pcb al planificador ya que terminó de ejecutar su quantum
 			informarPlanificadorLiberacionCPU(pcb,resultadosDeEjecuciones);
 		}
@@ -108,7 +108,7 @@ int abrirArchivoYValidar(t_pcb* pcb){
 		printf("Es FIFO\n");
 		while(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 			lista = string_split(instruccion," ");
-			char* rta = procesarInstruccion(lista,pcb->idProceso,resultadosDeEjecuciones);
+			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones);
 			if(string_equals_ignore_case(rta, "FIN")){
 				break;//Termina la ejecucion porque: bloqueo de E/S; terminó el archivo
 			}else{
