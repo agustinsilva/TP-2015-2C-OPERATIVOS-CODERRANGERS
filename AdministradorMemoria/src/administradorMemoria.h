@@ -44,6 +44,7 @@
 #define swap_in -2
 #define marcos_insuficientes -1
 #define marcos_no_libres -2
+#define marco_inhabilitado -3
 #define FIFO "FIFO"
 #define CLOCKM "CLOCK-M"
 #define LRU "LRU"
@@ -151,11 +152,11 @@ bool hayEspacio();
 void limpiarRecursos();
 t_TLB* actualizarTLB(int32_t, int32_t , int32_t );
 int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
-void manejarMemoriaPrincipal(t_MP* , sock_t* );
+void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
 t_TLB* buscarEnTLB(int32_t , int32_t );
 t_MP* buscarEnMemoriaPrincipal(int32_t);
 int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
-void manejarMemoriaPrincipal(t_MP* , sock_t* );
+void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
 int32_t calcularCantPaginasEnMP(int32_t );
 t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
@@ -169,6 +170,10 @@ void eliminarPosiblesEntradasEnTLB(int32_t );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 void eliminarSwappedOutDeTLB(int32_t );
+t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
+t_TP* buscarEnTablaDePaginasByMarco(int32_t );
+void escribirEnSwap(t_TP* , int32_t );
+void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
 
 /* de Signals.c */
 void signalHandler();

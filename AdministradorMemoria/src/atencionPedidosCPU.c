@@ -245,7 +245,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
-			manejarMemoriaPrincipal(hit, cpuSocket);
+			manejarMemoriaPrincipalLectura(hit, cpuSocket);
 
 		} else {      							/* TLB MISS */
 			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
@@ -266,7 +266,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				}
 				default:  /*buscar contenido en memoria principal*/ {
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
-					manejarMemoriaPrincipal(miss, cpuSocket);
+					manejarMemoriaPrincipalLectura(miss, cpuSocket);
 					actualizarTLB(idmProc, nroPagina, marco);
 					break;
 				}
@@ -287,7 +287,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
 			default:  /*buscar contenido en memoria principal*/ {
 				t_MP* miss = buscarEnMemoriaPrincipal(marco);
-				manejarMemoriaPrincipal(miss, cpuSocket);
+				manejarMemoriaPrincipalLectura(miss, cpuSocket);
 				break;
 			}
 		}
@@ -297,7 +297,87 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 
 void escritura(sock_t* cpuSocket, sock_t* swapSocket)
 {
-  //Sin implementar todavia
+
+	int32_t idmProc;
+		int32_t nroPagina;
+		int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
+		int32_t recibidoPag = recv(cpuSocket->fd, &nroPagina, sizeof(int32_t), 0);
+
+		if(recibidoProc <= 0 || recibidoPag <= 0) {
+			log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
+			return;
+		}
+
+		int32_t longitudContenido;
+		int32_t recibidolongitudContenido = recv(cpuSocket->fd, &longitudContenido, sizeof(int32_t), 0);
+
+		char* contenido = malloc(longitudContenido);
+		int32_t recibidoContenido = recv(cpuSocket->fd, contenido, longitudContenido, 0);
+		if(recibidolongitudContenido <=0 || recibidoContenido<=0){
+			log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
+			return;
+		}
+
+		log_info(MemoriaLog, " - "BOLD "*Solicitud de Escritura*" RESET_NON_BOLD " PID: %d, Nro de Página: %d", idmProc, nroPagina);
+
+													/* SI HAY TLB */
+		if(configuracion->tlb_habilitada==1){
+
+			t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
+
+			if(entradaTLB != NULL){    				/* TLB HIT */
+				log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
+
+				t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
+				manejarMemoriaPrincipalEscritura(hit, cpuSocket, contenido, idmProc, nroPagina);
+
+			} else {      							/* TLB MISS */
+				int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
+
+				switch(marco){
+					case -1: {
+						printf("Segmentation Fault pero de paginación (que no es page fault)\n");
+						enviarEnteros(cpuSocket, pedido_error);
+						break;
+					}
+					case swap_in:{
+						marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+						if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
+							eliminarSwappedOutDeTLB(marco);
+							entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
+						}
+						break;
+					}
+					default:  /*buscar contenido en memoria principal*/ {
+						t_MP* miss = buscarEnMemoriaPrincipal(marco);
+						manejarMemoriaPrincipalLectura(miss, cpuSocket);
+						actualizarTLB(idmProc, nroPagina, marco);
+						break;
+					}
+				}
+
+				log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+			}
+
+		}
+		else {         							/* SI NO HAY TLB */
+
+			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
+
+			switch(marco){
+				case -1: printf("Segmentation Fault pero de paginación (que no es page fault)");
+				enviarEnteros(cpuSocket, pedido_error);
+				break;
+				case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
+				default:  /*buscar contenido en memoria principal*/ {
+					t_MP* miss = buscarEnMemoriaPrincipal(marco);
+					manejarMemoriaPrincipalLectura(miss, cpuSocket);
+					break;
+				}
+			}
+		}
+		printf("Fin operación leer %d\n", nroPagina);
+
 }
 
 void enviarEnteros(sock_t* socket, int32_t entero)
