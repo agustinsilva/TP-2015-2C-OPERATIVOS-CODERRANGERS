@@ -210,7 +210,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 	vaciarMarcosOcupados(idmProc);
 	eliminarTablaDePaginas(idmProc);
 	if(configuracion->tlb_habilitada){
-		eliminarPosiblesEntradasEnTLB(idmProc);
+		eliminarDeTLBPorPID(idmProc);
 	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
@@ -259,7 +259,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				case swap_in:{
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
 					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
-						eliminarSwappedOutDeTLB(marco);
+						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 					}
 					break;
@@ -342,7 +342,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				case swap_in:{
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
 					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
-						eliminarSwappedOutDeTLB(marco);
+						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 					}
 					break;

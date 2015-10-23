@@ -146,13 +146,13 @@ void enviarContenidoPagina(sock_t* , t_LecturaSwap* );
 int32_t crearTablaDePaginas(int32_t , int32_t );
 void eliminarTablaDePaginas(int32_t );
 void procesoDestroyer(t_TP* );
-int32_t getPagina();
-int32_t getFrame();
-bool hayEspacio();
 void limpiarRecursos();
 t_TLB* actualizarTLB(int32_t, int32_t , int32_t );
+void eliminarDeTLBPorPID(int32_t );
+void eliminarDeTLBPorMarco(int32_t );
 int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
 void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
+void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
 int32_t calcularCantPaginasEnMP(int32_t );
 t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
@@ -162,12 +162,10 @@ int32_t reemplazarCLOCKM(t_list*);
 int32_t reemplazarLRU(t_list*);
 int32_t getLoadedTimeForProc(int32_t);
 int32_t getMinLoadedTime(t_list* );
-void eliminarPosiblesEntradasEnTLB(int32_t );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
-void eliminarSwappedOutDeTLB(int32_t );
-void escribirEnSwap(t_TP* , int32_t , sock_t* );
-void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
+bool escribirEnSwap(t_TP* , int32_t , sock_t* );
+
 
 /* de Signals.c */
 void signalHandler();

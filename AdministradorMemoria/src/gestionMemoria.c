@@ -35,18 +35,18 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 	return pedido_exitoso;
 }
 
-int32_t getFrame() {
-	int32_t marcoLibre=-1;
-	void buscarMarcoLibre(t_MP* entrada)
-	{
-		if(entrada->ocupado==0) {
-			marcoLibre=entrada->marco;
-			return;
-		}
-	}
-	list_iterate(memoriaPrincipal, (void*)buscarMarcoLibre);
-	return marcoLibre;
-}
+//int32_t getFrame() {
+//	int32_t marcoLibre=-1;
+//	void buscarMarcoLibre(t_MP* entrada)
+//	{
+//		if(entrada->ocupado==0) {
+//			marcoLibre=entrada->marco;
+//			return;
+//		}
+//	}
+//	list_iterate(memoriaPrincipal, (void*)buscarMarcoLibre);
+//	return marcoLibre;
+//}
 
 /* unico reemplazo -> FIFO */
 t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
@@ -122,7 +122,9 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 	t_TP* entradaARemoverDeMP = buscarEnTablaDePaginasByMarco(marcoAReemplazar);
 	if(entradaARemoverDeMP!=NULL && entradaARemoverDeMP->modified==true){
-		escribirEnSwap(entradaARemoverDeMP, marcoAReemplazar, swapSocket);
+		if(escribirEnSwap(entradaARemoverDeMP, marcoAReemplazar, swapSocket)){
+			entradaARemoverDeMP->modified=false;
+		}
 	}
 
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
@@ -134,7 +136,7 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 	return mp->marco;
 }
 
-void escribirEnSwap(t_TP* entradaARemoverDeMP, int32_t marco, sock_t* swapSocket){
+bool escribirEnSwap(t_TP* entradaARemoverDeMP, int32_t marco, sock_t* swapSocket){
 
 	//TODO
 
@@ -152,8 +154,10 @@ void escribirEnSwap(t_TP* entradaARemoverDeMP, int32_t marco, sock_t* swapSocket
 	}
 	if(confirmacionSwap==pedido_error){
 		log_error(MemoriaLog,RED "No se pudo guardar la página en la partición\n"RESET);
+		return false;
 	} else {
 		log_info(MemoriaLog, "Se escribió la página en la partición Swap\n");
+		return true;
 	}
 }
 
@@ -193,14 +197,14 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	return mp;
 }
 
-void eliminarSwappedOutDeTLB(int32_t marco){
-	bool porPID(t_TLB* entrada){
+void eliminarDeTLBPorMarco(int32_t marco){
+	bool porMarco(t_TLB* entrada){
 			return entrada->marco==marco;
 	}
-	list_remove_and_destroy_by_condition(TLB, (void*) porPID, (void*) TLBDestroyer);
+	list_remove_and_destroy_by_condition(TLB, (void*) porMarco, (void*) TLBDestroyer);
 }
 
-void eliminarPosiblesEntradasEnTLB(int32_t idmProc){
+void eliminarDeTLBPorPID(int32_t idmProc){
 	bool porPID(t_TLB* entrada){
 		return entrada->idProc==idmProc;
 	}
