@@ -173,7 +173,7 @@ void signalHandler();
 void finalizacion();
 void MPFush();
 void MPDump();
-void TLBFush();
+void TLBFlush();
 
 void escribirPagsModificadas(sock_t*);
 void actualizarTablaDePaginas();
