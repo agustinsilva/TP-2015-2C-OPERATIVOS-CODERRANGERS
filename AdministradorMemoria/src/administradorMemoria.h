@@ -153,10 +153,6 @@ void limpiarRecursos();
 t_TLB* actualizarTLB(int32_t, int32_t , int32_t );
 int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
 void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
-t_TLB* buscarEnTLB(int32_t , int32_t );
-t_MP* buscarEnMemoriaPrincipal(int32_t);
-int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
-void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
 int32_t calcularCantPaginasEnMP(int32_t );
 t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
@@ -170,8 +166,6 @@ void eliminarPosiblesEntradasEnTLB(int32_t );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 void eliminarSwappedOutDeTLB(int32_t );
-t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
-t_TP* buscarEnTablaDePaginasByMarco(int32_t );
 void escribirEnSwap(t_TP* , int32_t , sock_t* );
 void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
 
@@ -181,6 +175,13 @@ void finalizacion();
 void MPFush();
 void MPDump();
 void TLBFush();
+
+/* de busquedas.c*/
+t_TLB* buscarEnTLB(int32_t , int32_t );
+t_MP* buscarEnMemoriaPrincipal(int32_t);
+t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
+t_TP* buscarEnTablaDePaginasByMarco(int32_t );
+int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
 
 
 #endif /* ADMINMEMORIA_H_ */
