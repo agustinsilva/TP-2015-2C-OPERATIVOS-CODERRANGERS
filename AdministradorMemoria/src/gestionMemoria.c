@@ -28,7 +28,9 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 		tabla->modified = false;
 		tabla->present = false;
 		tabla->idProc = idmProc;
-		/*los frames no se asignan aun*/
+		tabla->usedTime = REINIT;
+		tabla->loadedTime = REINIT;
+		tabla->frame = marco_inhabilitado;
 		tabla->nroPag = i;
 		list_add(tablasDePaginas,tabla);
 	}
@@ -122,7 +124,7 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 	t_TP* entradaARemoverDeMP = buscarEnTablaDePaginasByMarco(marcoAReemplazar);
 	if(entradaARemoverDeMP!=NULL && entradaARemoverDeMP->modified==true){
-		if(escribirEnSwap(entradaARemoverDeMP, marcoAReemplazar, swapSocket)){
+		if(escribirEnSwap(entradaARemoverDeMP, swapSocket)){
 			entradaARemoverDeMP->modified=false;
 		}
 	}
@@ -136,11 +138,11 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 	return mp->marco;
 }
 
-bool escribirEnSwap(t_TP* entradaARemoverDeMP, int32_t marco, sock_t* swapSocket){
+bool escribirEnSwap(t_TP* entradaARemoverDeMP, sock_t* swapSocket){
 
 	//TODO
 
-	t_MP* mp = buscarEnMemoriaPrincipal(marco);
+	t_MP* mp = buscarEnMemoriaPrincipal(entradaARemoverDeMP->frame);
 
 	enviarEnteros(swapSocket, codigo_escribir);
 	enviarEnteros(swapSocket, entradaARemoverDeMP->idProc);

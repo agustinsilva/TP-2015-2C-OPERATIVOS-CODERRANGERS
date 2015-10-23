@@ -80,6 +80,7 @@ void setUp()
 		entrada->marco=i;
 		entrada->ocupado = false;
 		entrada->contenido = malloc(configuracion->tamanio_marco);
+		memcpy(entrada->contenido, "",configuracion->tamanio_marco);
 		list_add(memoriaPrincipal,entrada);
 	}
 	tablasDePaginas = list_create();

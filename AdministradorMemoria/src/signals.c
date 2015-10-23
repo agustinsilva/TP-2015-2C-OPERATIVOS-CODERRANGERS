@@ -8,6 +8,53 @@
 #include "administradorMemoria.h"
 
 
+/* Funciones Secundarias */
+
+void escribirPagsModificadas(sock_t* socketSwap){
+
+	bool modificadasEnMP(t_TP* entrada){
+		return entrada->present==true && entrada->modified==true;
+	}
+	t_list* pagsAEscribir = list_filter(tablasDePaginas, (void*) modificadasEnMP);
+
+	void escribirModificadas(t_TP* entrada){
+		if(escribirEnSwap(entrada, socketSwap)){
+			log_info(MemoriaLog, "Se escribió la página %d del proceso %d antes de limpiar la memoria.\n", entrada->nroPag, entrada->idProc);
+		} else {
+			log_error(MemoriaLog,RED "No se pudo guardar la página %d del proceso %d en la partición antes de vaciar la memoria. Se perderá el contenido.\n"RESET, entrada->nroPag, entrada->idProc);
+		}
+		entrada->modified = false;
+	}
+	list_iterate(pagsAEscribir, (void*)escribirModificadas);
+}
+
+void actualizarTablaDePaginas(){
+
+	void sacarDeMP(t_TP* entrada){
+		entrada->present = false;
+		entrada->frame = marco_inhabilitado;
+		entrada->accessed = false;
+		entrada->loadedTime = REINIT;
+		entrada->usedTime = REINIT;
+	}
+	list_iterate(tablasDePaginas, (void*)sacarDeMP);
+
+}
+
+void vaciarMemoria(){
+	void vaciarMP(t_MP* entrada){
+		entrada->ocupado = false;
+		memcpy(entrada->contenido, "",configuracion->tamanio_marco);
+	}
+	list_iterate(memoriaPrincipal, (void*)vaciarMP);
+}
+
+
+/* -------------------------------------------------------------------------------------*/
+
+/* Funciones Principales */
+
+
 void finalizacion(){
 	printf("\nSe intentó dar de baja el programa\n");
 	printf("¿Seguro quiere darlo de baja? [S/N]");
@@ -17,6 +64,7 @@ void finalizacion(){
 		exit(1);
 	}
 }
+
 
 void TLBFlush(){
 //	t_TLB* entrada1;
@@ -36,6 +84,18 @@ void TLBFlush(){
 void MPFush(){
 	printf("Tiraste la señal para vaciar la memoria principal! \n No te voy a borrar nada hasta que"
 			"no me digas cómo tiraste esta señal porque no encuentro nada en internet :(");
+
+	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
+	int32_t validationConnection = connect_to_server(clientSocketSwap);
+	if (validationConnection != 0 ){
+		printf("No se ha podido conectar correctamente al Swap\n");
+	} else {
+		printf("Se conectó al Swap\n");
+		escribirPagsModificadas(clientSocketSwap);
+	}
+	actualizarTablaDePaginas();
+	TLBFlush();
+	vaciarMemoria();
 }
 
 void MPDump(){

@@ -48,6 +48,7 @@
 #define FIFO "FIFO"
 #define CLOCKM "CLOCK-M"
 #define LRU "LRU"
+#define REINIT -1
 
 //Estructuras
 typedef struct
@@ -164,7 +165,7 @@ int32_t getLoadedTimeForProc(int32_t);
 int32_t getMinLoadedTime(t_list* );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
-bool escribirEnSwap(t_TP* , int32_t , sock_t* );
+bool escribirEnSwap(t_TP* , sock_t* );
 
 
 /* de Signals.c */
@@ -173,6 +174,10 @@ void finalizacion();
 void MPFush();
 void MPDump();
 void TLBFush();
+
+void escribirPagsModificadas(sock_t*);
+void actualizarTablaDePaginas();
+void vaciarMemoria();
 
 /* de busquedas.c*/
 t_TLB* buscarEnTLB(int32_t , int32_t );
