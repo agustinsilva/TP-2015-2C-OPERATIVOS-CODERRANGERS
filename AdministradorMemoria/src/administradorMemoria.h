@@ -172,7 +172,7 @@ void vaciarMarcosOcupados(int32_t );
 void eliminarSwappedOutDeTLB(int32_t );
 t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
 t_TP* buscarEnTablaDePaginasByMarco(int32_t );
-void escribirEnSwap(t_TP* , int32_t );
+void escribirEnSwap(t_TP* , int32_t , sock_t* );
 void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
 
 /* de Signals.c */
