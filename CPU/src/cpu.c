@@ -17,7 +17,6 @@ int main(void)
 
 /**
  * CREA EL NUMERO DE HILOS QUE DICE EL ARCHIVO DE CONFIG
- * 		para checkpoint 2 creamos solo 1 hilo
  * */
 //void crearHilosCPU()
 //{
@@ -59,7 +58,7 @@ void crearHilosCPU()
 	}
 }
 
-int abrirArchivoYValidar(t_pcb* pcb){
+int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador){
 	char* resultadosDeEjecuciones =  string_new();
 	int QUANTUMRESTANTE = configCPUPadre.quantum;
 	char **lista;
@@ -87,7 +86,7 @@ int abrirArchivoYValidar(t_pcb* pcb){
 		while (QUANTUMRESTANTE > 0) {
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 				lista = string_split(instruccion," ");
-				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones);
+				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador);
 				if(string_equals_ignore_case(rta, "FIN")){
 					break;//Termina la ejecucion porque:bloqueo de E/S, terminó el archivo
 				}else{
@@ -102,13 +101,13 @@ int abrirArchivoYValidar(t_pcb* pcb){
 			//actualizamos el puntero del pcb
 			pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas;
 			//enviamos el pcb al planificador ya que terminó de ejecutar su quantum
-			informarPlanificadorLiberacionCPU(pcb,resultadosDeEjecuciones);
+			informarPlanificadorLiberacionCPU(pcb,resultadosDeEjecuciones,socketPlanificador);
 		}
 	}else{//FIFO
 		printf("Es FIFO\n");
 		while(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 			lista = string_split(instruccion," ");
-			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones);
+			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador);
 			if(string_equals_ignore_case(rta, "FIN")){
 				break;//Termina la ejecucion porque: bloqueo de E/S; terminó el archivo
 			}else{
@@ -128,26 +127,23 @@ int abrirArchivoYValidar(t_pcb* pcb){
 void escucharYAtender()
 {
 	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
-
-
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
-	socketPlanificador = socketClientePlanificador;
+	//socketPlanificador = socketClientePlanificador;
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
 	if (conexionPlanificador != 0)
 	{
 		log_error(CPULog,"Error al conectar CPU a Planificador\n","ERROR");
 	}
-	log_info(CPULog,"Se conectó planificador al cpu correctamente. Socket id: %u\n",socketPlanificador->fd);
+	log_info(CPULog,"Se conectó planificador al cpu correctamente. Socket id: %u\n",socketClientePlanificador->fd);
 	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
-	enviarCodigoOperacion(socketPlanificador,NUEVO_HILO);
+	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
 	t_pcb* pcb;
 	while(1)
 	{
 		pthread_mutex_lock( &mutex );
-		pcb = escucharPlanificador();
+		pcb = escucharPlanificador(socketClientePlanificador);
 		printf("El path recibido es: %s \n",pcb->path);
-		abrirArchivoYValidar(pcb);
+		abrirArchivoYValidar(pcb,socketClientePlanificador);
 		free(pcb->path);
 		free(pcb);
 		pthread_mutex_unlock( &mutex );
@@ -169,7 +165,7 @@ int hiloPadre(){
 	return EXIT_SUCCESS;
 }
 
-char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones){
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador){
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")){
 		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
@@ -179,7 +175,7 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 	}else if(string_equals_ignore_case(lista[0], "finalizar")){
 		log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pcb->idProceso));
 		//Informar al AdminMemoria que finalice el proceso
-		rta = informarAdminMemoriaComandoFinalizar(pcb->idProceso,resultadosDeEjecuciones);
+		rta = informarAdminMemoriaComandoFinalizar(pcb->idProceso,resultadosDeEjecuciones,socketPlanificador);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "leer")){
 		log_info(CPULog," [PID:%s] Instruccion: leer",string_itoa(pcb->idProceso));
@@ -198,7 +194,7 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
 		//lista[1] Contiene el tiempo que se debe bloquear.
 		sleep(configuracion->retardo);
-		rta = informarEntradaSalida(pcb,tiempoDeEjec,resultadosDeEjecuciones);
+		rta = informarEntradaSalida(pcb,tiempoDeEjec,resultadosDeEjecuciones,socketPlanificador);
 	}else{
 		log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pcb->idProceso));
 		rta = "Comando no interpretado.\n";

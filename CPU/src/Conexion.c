@@ -71,7 +71,7 @@ void* ConectarAPlanificador()
  *
  * @return estructura deserializada que comparten Planificador y CPU
  */
-t_pcb* escucharPlanificador(){
+t_pcb* escucharPlanificador(sock_t* socketPlanificador){
 	int32_t status = 0;
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
 
@@ -152,7 +152,7 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid){
  * 				0 Fallo
  * 				1 Exito
  */
-char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones){
+char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones, sock_t* socketPlanificador){
 	int32_t status;
 	int32_t entero;
 	//Envia aviso al Adm de Memoria: comando Finalizar.
@@ -397,7 +397,7 @@ char* serializarPCB(t_pcb *pcb,uint32_t offset,char *paqueteSerializado) {
 	return paqueteSerializado;
 }
 
-int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
+int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones,sock_t* socketPlanificador){
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* pcbSerializado = serializarFinQuantum(pcb, totalPaquete, resultadosDeEjecuciones);
 	char* mensaje = malloc(*totalPaquete);
@@ -414,7 +414,7 @@ int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones){
 	return EXIT_SUCCESS;
 }
 
-char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuciones){
+char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuciones,sock_t* socketPlanificador){
 	int32_t status;
 	int32_t cabecera = ENTRADA_SALIDA;
 	uint32_t offset=0;
