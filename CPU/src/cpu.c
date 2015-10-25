@@ -19,21 +19,21 @@ int main(void)
  * CREA EL NUMERO DE HILOS QUE DICE EL ARCHIVO DE CONFIG
  * 		para checkpoint 2 creamos solo 1 hilo
  * */
-void crearHilosCPU()
-{
-int rtaHilo = 0;
-pthread_t hiloCpu;
-rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
-if(rtaHilo)
-{
-fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
-printf("Se cerrara el programa");
-exit(EXIT_FAILURE);
-}
-pthread_join(hiloCpu, NULL);
-}
+//void crearHilosCPU()
+//{
+//int rtaHilo = 0;
+//pthread_t hiloCpu;
+//rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,hiloCpu);
+//if(rtaHilo)
+//{
+//fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
+//printf("Se cerrara el programa");
+//exit(EXIT_FAILURE);
+//}
+////pthread_join(hiloCpu, NULL);
+//}
 
-/*void crearHilosCPU()
+void crearHilosCPU()
 {
 	int rtaHilo = 0;
 	int cantidad = 1;
@@ -48,16 +48,16 @@ pthread_join(hiloCpu, NULL);
 					printf("Se cerrara el programa");
 					exit(EXIT_FAILURE);
 				}
-		list_add(listaCPU, hiloCpu);
+		list_add(listaCPU,(void*) hiloCpu);
 		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",hiloCpu);
 		//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
 		cantidad++;
 	}
 	int i;
 	for( i=0 ; i <= list_size(listaCPU) ; i++){
-		pthread_join(list_get(listaCPU,i),NULL);
+		pthread_join((void*)list_get(listaCPU,i),NULL);
 	}
-}*/
+}
 
 int abrirArchivoYValidar(t_pcb* pcb){
 	char* resultadosDeEjecuciones =  string_new();
@@ -127,6 +127,10 @@ int abrirArchivoYValidar(t_pcb* pcb){
  */
 void escucharYAtender()
 {
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	socketPlanificador = socketClientePlanificador;
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
@@ -140,12 +144,15 @@ void escucharYAtender()
 	t_pcb* pcb;
 	while(1)
 	{
+		pthread_mutex_lock( &mutex );
 		pcb = escucharPlanificador();
 		printf("El path recibido es: %s \n",pcb->path);
 		abrirArchivoYValidar(pcb);
 		free(pcb->path);
 		free(pcb);
+		pthread_mutex_unlock( &mutex );
 	}
+
 }
 
 int hiloPadre(){

@@ -86,7 +86,7 @@ int cargarArchivoDeConfiguracion();
 void* ConectarAPlanificador();
 int conectarCPUPadreAPlanificador();
 t_pcb* escucharPlanificador();
-void escucharYAtender();
+void escucharYAtender(void);
 int abrirArchivoYValidar(t_pcb* pcb);
 void limpiarConfiguracion();
 char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto);
