@@ -38,6 +38,7 @@ void inicializar() {
 	contadorProceso = 0;
 	sem_init(&sincroproc, 0, 0);
 	sem_init(&sincrocpu, 0, 0);
+	sem_init(&sincroBloqueados, 0, 1);
 	sem_init(&mutex, 0, 1);
 	proc_listos = list_create();
 	proc_ejecutados = list_create();

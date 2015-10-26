@@ -55,6 +55,7 @@ t_list *cpu_listos;
 t_list *cpu_ocupados;
 sem_t sincroproc;
 sem_t sincrocpu;
+sem_t sincroBloqueados;
 sem_t mutex;
 t_log* planificadorLog;
 

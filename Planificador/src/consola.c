@@ -74,13 +74,20 @@ void mostrarProcesos() {
 		}
 	} else
 		printf("No hay programas en espera de ejecucion\n");
-
+	if (list_size(proc_bloqueados) > 0) {
+		printf("Los programas en cola de ready son:\n");
+		for (index = 0; index < list_size(proc_bloqueados); ++index) {
+			t_pcb *pcbListo = list_get(proc_bloqueados, index);
+			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_GREEN"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
+					pcbListo->path, convertirNumeroEnString(pcbListo->estadoProceso));
+		}
+	}
 	if (list_size(proc_ejecutados) > 0) {
 
 		printf("Los programas procesados son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
-			if (pcb->estadoProceso == 1) {
+			if (pcb->estadoProceso == 3) {
 				printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_YELLOW"%s\n"ANSI_COLOR_RESET, pcb->idProceso,
 						pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}

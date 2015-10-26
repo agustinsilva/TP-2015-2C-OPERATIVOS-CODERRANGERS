@@ -169,7 +169,7 @@ void replanificar(uint32_t socketCpu) {
 	list_add(cpu_listos, cpuOcupado);
 	list_add(proc_listos, pcbReplanificar);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
-	sem_post(&sincroproc); // Aumento semaforo cpu
+	sem_post(&sincroproc); // Aumento semaforo Proc
 }
 
 void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
@@ -181,22 +181,30 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	free(mensajeALogear);
 	//recibo pcb
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
-	//liberar cpu del proceso
+	//Metodos para buscar
+	int _pcbById(t_pcb *proc_ejecutado) {
+		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
+			return 1;
+		else
+			return 0;
+	}
 	int _cpuById(t_hilosConectados *cpu_ocupado) {
 		if (pcbBloqueado->idProceso == cpu_ocupado->idProceso)
 			return 1;
 		else
 			return 0;
 	}
-	//Modifico lista proc y cpu
-	//t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
+	//Libero CPU ocupada
+	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
 	//Sacar pcb de ejecutados - Meterlo en bloqueados
-	//t_hilosConectados *cpuOcupado = list_remove_by_condition(proc_ejecutados, (void*) _pcbById);
-	pcbBloqueado->estadoProceso = 3;
+	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
+	pcbBloqueado->estadoProceso = 3;//Asigno estado Bloqueado
 	pcbBloqueado->retardo = retardo;
 	list_add(proc_bloqueados, pcbBloqueado);
-	// hacer sleep de t segundos
-	// un solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
+	list_add(cpu_listos, cpuOcupado);
+	sem_post(&sincrocpu); // Aumento semaforo cpu
+	sem_post(&sincroBloqueados);
+	//UN solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
 	pthread_t hiloBloqueados;
 	int respPlanificador = 0;
 	if (!*hiloBloqueado) {
@@ -208,17 +216,28 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
-
-
-
-	// hacerlo en un hilo que cuando se termine el sleep saque la pcb de bloqueados y la ponga en ready
-
-	//
+	//Asigno CPU nuevamente libre
 
 }
 
-void iniciarHiloBloqueados(){
-
+/* Hilo de PCB Bloqueados, hace sleep y vuelve PCB a ready */
+void iniciarHiloBloqueados() {
+	while (1) {
+		sem_wait(&sincroBloqueados);
+		while (list_size(proc_bloqueados) > 0) {
+			//Agarro el primero de cada la cola
+			t_list *proc_bloqueado = list_take_and_remove(proc_bloqueados, 1);
+			t_pcb *pcbBloqueado = list_get(proc_bloqueado, 0);
+			//hago sleep
+			sleep(pcbBloqueado->retardo);
+			//Lo vuelvo a meter en cola de listos
+			sem_wait(&mutex);
+			pcbBloqueado->estadoProceso = 0; //PCB en estado de espera
+			list_add(proc_ejecutados, pcbBloqueado);
+			sem_post(&sincroproc); // Aumento semaforo Proc
+			sem_post(&mutex);
+		}
+	}
 }
 
 void logearResultadoCpu(uint32_t socketCpu) {
