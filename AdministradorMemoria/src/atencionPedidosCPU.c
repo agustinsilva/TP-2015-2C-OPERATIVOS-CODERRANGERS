@@ -150,7 +150,9 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	}
 
 	  if(confirmacionSwap==pedido_exitoso){
+		pthread_mutex_lock(&sem_TP);
 	 	crearTablaDePaginas(idmProc,cantPaginas);
+	 	pthread_mutex_unlock(&sem_TP);
 	  }
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
@@ -207,10 +209,17 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 *		//liberar espacio
 *	}*/
 
+	pthread_mutex_lock(&sem_TP);
+	pthread_mutex_lock(&sem_MP);
 	vaciarMarcosOcupados(idmProc);
 	eliminarTablaDePaginas(idmProc);
+	pthread_mutex_unlock(&sem_MP);
+	pthread_mutex_unlock(&sem_TP);
+
 	if(configuracion->tlb_habilitada){
+		pthread_mutex_lock(&sem_TLB);
 		eliminarDeTLBPorPID(idmProc);
+		pthread_mutex_unlock(&sem_TLB);
 	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
@@ -239,16 +248,22 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 												/* SI HAY TLB */
 	if(configuracion->tlb_habilitada==1){
 
+		pthread_mutex_lock(&sem_TLB);
 		t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
+		pthread_mutex_unlock(&sem_TLB);
 
 		if(entradaTLB != NULL){    				/* TLB HIT */
 			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
+			pthread_mutex_lock(&sem_MP);
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
 			manejarMemoriaPrincipalLectura(hit, cpuSocket);
+			pthread_mutex_unlock(&sem_MP);
 
 		} else {      							/* TLB MISS */
+			pthread_mutex_lock(&sem_TP);
 			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
+			pthread_mutex_unlock(&sem_TP);
 
 			switch(marco){
 				case -1: {
@@ -257,17 +272,29 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 					break;
 				}
 				case swap_in:{
+					pthread_mutex_lock(&sem_TP);
+					pthread_mutex_lock(&sem_MP);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					pthread_mutex_unlock(&sem_MP);
+					pthread_mutex_unlock(&sem_TP);
+
 					if(marco!=marcos_no_libres && marco!=marcos_insuficientes){
+						pthread_mutex_lock(&sem_TLB);
 						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
+						pthread_mutex_unlock(&sem_TLB);
 					}
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
+					pthread_mutex_lock(&sem_MP);
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					manejarMemoriaPrincipalLectura(miss, cpuSocket);
+					pthread_mutex_unlock(&sem_MP);
+
+					pthread_mutex_lock(&sem_TLB);
 					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
+					pthread_mutex_unlock(&sem_TLB);
 					break;
 				}
 			}
@@ -278,16 +305,27 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 	}
 	else {         							/* SI NO HAY TLB */
 
+		pthread_mutex_lock(&sem_TP);
 		int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
+		pthread_mutex_unlock(&sem_TP);
 
 		switch(marco){
 			case -1: log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
 			enviarEnteros(cpuSocket, pedido_error);
 			break;
-			case swap_in: swapIN(swapSocket, cpuSocket, idmProc, nroPagina); break;
+			case swap_in:{
+				pthread_mutex_lock(&sem_TP);
+				pthread_mutex_lock(&sem_MP);
+				swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+				pthread_mutex_unlock(&sem_MP);
+				pthread_mutex_unlock(&sem_TP);
+				 break;
+			}
 			default:  /*buscar contenido en memoria principal*/ {
+				pthread_mutex_lock(&sem_MP);
 				t_MP* miss = buscarEnMemoriaPrincipal(marco);
 				manejarMemoriaPrincipalLectura(miss, cpuSocket);
+				pthread_mutex_unlock(&sem_TLB);
 				break;
 			}
 		}
