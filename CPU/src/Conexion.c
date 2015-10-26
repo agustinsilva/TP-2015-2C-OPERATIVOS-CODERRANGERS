@@ -418,6 +418,7 @@ char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuc
 	int32_t status;
 	int32_t cabecera = ENTRADA_SALIDA;
 	uint32_t offset=0;
+	int medidaAMandar;
 	char* mensaje = string_new();
 	string_append(&mensaje,resultadosDeEjecuciones);
 	string_append(&mensaje, "mProc ");
@@ -427,18 +428,58 @@ char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuc
 	string_append(&mensaje, "\n");
 
 	uint32_t longitudMensaje = strlen(mensaje);
-	uint32_t tamanio = sizeof(cabecera) + sizeof(tiempo) + sizeof(uint32_t) + longitudMensaje + sizeof(&pcb);
-	//cabecera + retardo + longMensaje + Mensaje + pcb
-	char* message2 = malloc(tamanio);
-	memcpy(message2, &cabecera, sizeof(cabecera));
-	offset = sizeof(cabecera);
-	memcpy(message2, &tiempo, sizeof(tiempo));
-	offset = offset + sizeof(tiempo);
-	memcpy(message2 + offset, &longitudMensaje, sizeof(uint32_t)); //longitud mensaje
-	offset = offset + sizeof(uint32_t);
-	memcpy(message2 + offset, mensaje, longitudMensaje);
-	/*nuevo envio de pcb*/
-	status = send(socketPlanificador->fd,serializarPCB(pcb, offset, message2),tamanio,0);
-	free(message2);
+	uint32_t tamanioenteros, tamaniopath, path;
+	tamanioenteros = 4 * sizeof(uint32_t); //codigo+4 int de pcb
+	tamaniopath = sizeof(uint32_t);
+	path = strlen(pcb->path);
+	uint32_t tamanio = sizeof(cabecera) + sizeof(tiempo) + sizeof(uint32_t) + longitudMensaje + tamanioenteros + tamaniopath + path;
+
+	char* paqueteSerializado = malloc(tamanio);
+	/* Envio Cabecera-Retardo-MensajeALog */
+	medidaAMandar = sizeof(int32_t);
+	memcpy(paqueteSerializado, &cabecera,medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(tiempo);
+	memcpy(paqueteSerializado + offset, &tiempo, medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(uint32_t);
+	memcpy(paqueteSerializado + offset, &longitudMensaje, medidaAMandar); //longitud mensaje
+	offset += medidaAMandar;
+
+	medidaAMandar = longitudMensaje;
+	memcpy(paqueteSerializado + offset, mensaje, medidaAMandar);
+	offset += medidaAMandar;
+	/* Envio PCB */
+	medidaAMandar = sizeof(pcb->idProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->idProceso),medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(pcb->estadoProceso);
+	memcpy(paqueteSerializado + offset, &(pcb->estadoProceso), medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(pcb->contadorPuntero);
+	memcpy(paqueteSerializado + offset, &(pcb->contadorPuntero), medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(pcb->cantidadInstrucciones);
+	memcpy(paqueteSerializado + offset, &(pcb->cantidadInstrucciones),
+			medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = sizeof(uint32_t);
+	memcpy(paqueteSerializado + offset, &path, medidaAMandar);
+	offset += medidaAMandar;
+
+	medidaAMandar = path;
+	memcpy(paqueteSerializado + offset, pcb->path, medidaAMandar);
+	offset += medidaAMandar;
+	char* mensajeEnviar = malloc(tamanio);
+	memcpy(mensajeEnviar, paqueteSerializado, tamanio);
+	status = send(socketPlanificador->fd,mensajeEnviar,tamanio,0);
+
+	free(paqueteSerializado);
 	return "FIN";
 }
