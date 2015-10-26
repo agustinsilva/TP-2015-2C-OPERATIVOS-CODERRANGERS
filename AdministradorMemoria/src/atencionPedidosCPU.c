@@ -267,7 +267,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				default:  /*buscar contenido en memoria principal*/ {
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					manejarMemoriaPrincipalLectura(miss, cpuSocket);
-					actualizarTLB(idmProc, nroPagina, marco);
+					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
 					break;
 				}
 			}
