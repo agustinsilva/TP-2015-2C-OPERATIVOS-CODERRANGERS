@@ -140,8 +140,6 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 bool escribirEnSwap(t_TP* entradaARemoverDeMP, sock_t* swapSocket){
 
-	//TODO
-
 	t_MP* mp = buscarEnMemoriaPrincipal(entradaARemoverDeMP->frame);
 
 	enviarEnteros(swapSocket, codigo_escribir);

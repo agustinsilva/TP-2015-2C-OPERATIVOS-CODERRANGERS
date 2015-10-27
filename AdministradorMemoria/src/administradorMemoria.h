@@ -117,6 +117,7 @@ t_list* tablasDePaginas; /* de t_TP */
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;
 pthread_mutex_t sem_MP;
+pthread_mutex_t sem_swap;
 
 //Firma de funciones
 

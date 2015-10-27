@@ -131,4 +131,5 @@ void initializeMutex(){
 	pthread_mutex_init(&sem_TLB, NULL);
 	pthread_mutex_init(&sem_TP, NULL);
 	pthread_mutex_init(&sem_MP, NULL);
+	pthread_mutex_init(&sem_swap, NULL);
 }

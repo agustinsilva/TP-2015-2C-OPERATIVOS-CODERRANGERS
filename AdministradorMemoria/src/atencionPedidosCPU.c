@@ -131,11 +131,14 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 	{
 		log_info(MemoriaLog, "Se recibió de la CPU: PID: %d, Cant Paginas: %d\n", idmProc, cantPaginas);
 	}
+
+	pthread_mutex_lock(&sem_swap);
 	enviarEnteros(swapSocket, codigo_iniciar);
 	enviarEnteros(swapSocket, idmProc);
 	enviarEnteros(swapSocket, cantPaginas);
 	int32_t confirmacionSwap;
 	int32_t recibidoSwap = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t),0);
+	pthread_mutex_unlock(&sem_swap);
 /*	if(recibidoSwap!=sizeof(int32_t))
  * {
 			printf("No se recibió correctamente la confirmación del Swap\n");
@@ -188,10 +191,13 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		enviarEnteros(cpuSocket, pedido_error);
 		return;
 	}
+
+	pthread_mutex_lock(&sem_swap);
 	enviarEnteros(swapSocket, codigo_finalizar);
 	enviarEnteros(swapSocket, idmProc);
 	int32_t confirmacionSwap;
 	int32_t recibidoSwap = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t),0);
+	pthread_mutex_unlock(&sem_swap);
 /*	if(recibidoSwap!=sizeof(int32_t))
  *  {
 		printf("No se recibió correctamente la confirmación del Swap\n");
@@ -278,7 +284,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				case swap_in:{
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
+					pthread_mutex_lock(&sem_swap);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
 
@@ -323,7 +331,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 			case swap_in:{
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
+				pthread_mutex_lock(&sem_swap);
 				swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
 				 break;
@@ -400,7 +410,9 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
+					pthread_mutex_lock(&sem_swap);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
 
@@ -448,7 +460,9 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			case swap_in:{
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
+				pthread_mutex_lock(&sem_swap);
 				swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
 				break;
@@ -503,18 +517,13 @@ t_LecturaSwap* pedirPagina(sock_t* swapSocket, int32_t idmProc, int32_t nroPagin
 *		return NULL;
 *	}
 */
-	if(recibidoEncontro <= 0)
-	{
-	printf("No se recibió correctamente la confirmación del Swap\n");
-	return NULL;
+	if(recibidoEncontro <= 0){
+		printf("No se recibió correctamente la confirmación del Swap\n");
+		return NULL;
 	}
-	if(pedido->encontro==false)
-	{
+	if(pedido->encontro==false)	{
 		return pedido;
-
-	}
-	else
-	{
+	} else {
 		int32_t recibidoCantidad = recv(swapSocket->fd, &(pedido->longitud), sizeof(int32_t), 0);
 /*		if(recibidoCantidad!=sizeof(int32_t))
  * 		{
@@ -539,9 +548,8 @@ t_LecturaSwap* pedirPagina(sock_t* swapSocket, int32_t idmProc, int32_t nroPagin
 			return NULL;
 		}*/
 		//Si pedido longitud es 1 es el caracter null es decir  \0.
-		if(pedido->longitud > 1)
-		{
-		pedido->contenido[pedido->longitud-1] = '\0';
+		if(pedido->longitud > 1) {
+			pedido->contenido[pedido->longitud-1] = '\0';
 		}
 		return pedido;
 	}
