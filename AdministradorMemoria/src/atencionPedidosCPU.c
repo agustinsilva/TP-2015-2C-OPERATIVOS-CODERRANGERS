@@ -59,15 +59,13 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 //	free(respuesta);
 	int32_t codigoOperacion;
 	codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
-	if(codigoOperacion==-1)
-	{
-		printf("No se recibió correctamente el código de operación\n");
+	if(codigoOperacion==-1)	{
+		log_error(MemoriaLog, RED"No se recibió correctamente el código de operación\n"RESET);
 		return EXIT_FAILURE;
 	}
-	while(codigoOperacion!=0)
-	{
-		switch(codigoOperacion)
-		{
+	while(codigoOperacion!=0) 	{
+
+		switch(codigoOperacion)	{
 		case codigo_iniciar:
 			iniciar(paramsCPU->cpuSocket, paramsCPU->swapSocket);
 			break;
@@ -81,16 +79,20 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 			escritura(paramsCPU->cpuSocket, paramsCPU->swapSocket);
 			break;
 		}
+
 		codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
-		if(codigoOperacion==-1)
-		{
-			printf("No se recibió correctamente el código de operación\n");
+		if(codigoOperacion==-1) {
+			log_error(MemoriaLog, RED"No se recibió correctamente el código de operación\n"RESET);
 			return EXIT_FAILURE;
 		}
+	}
 
+	if(codigoOperacion==0){
+		log_info(MemoriaLog, "Se desconectó un CPU\n");
 	}
 	return 0;
 }
+
 
 int32_t recibirCodigoOperacion(sock_t* cpu)
 {

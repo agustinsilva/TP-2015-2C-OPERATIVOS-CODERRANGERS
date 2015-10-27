@@ -16,13 +16,13 @@ int main(void)
 	/*conecta con swap*/
 	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
-	if (validationConnection != 0 )
-	{
-		printf("No se ha podido conectar correctamente al Swap\n");
+	if (validationConnection != 0 ) {
+		log_error(MemoriaLog, RED"No se ha podido conectar correctamente al Swap\n"RESET);
+		clean_socket(clientSocketSwap);
 	}
 	else
 	{
-		printf("Se conectó al Swap\n");
+		log_info(MemoriaLog,"Se conectó al Swap\n");
 		sock_t* servidor = create_server_socket(configuracion->puerto_escucha);
 		listen_connections(servidor);
 		int32_t accept=1;
@@ -35,18 +35,15 @@ int main(void)
 				t_HiloCPU* paramsCPU = malloc(sizeof(t_HiloCPU));
 				paramsCPU->cpuSocket = cpuSocket;
 				paramsCPU->swapSocket = clientSocketSwap;
-				if (pthread_create(&hiloCPU, NULL,(void*)hiloEjecucionCPU,(void*)paramsCPU))
-				{
+				if (pthread_create(&hiloCPU, NULL,(void*)hiloEjecucionCPU,(void*)paramsCPU)) {
 					log_error(MemoriaLog,RED"Error al crear el hilo de CPU\n"RESET);
-					EXIT_FAILURE;
+					return EXIT_FAILURE;
 				}
-				else
-				{
+				else {
 					log_info(MemoriaLog,"Conectado al hilo CPU de socket %d", cpuSocket->fd);
 				}
 			}
-			else
-			{
+			else {
 				accept=0;
 			}
 
@@ -54,16 +51,18 @@ int main(void)
 		clean_socket(servidor);
 	}
 	limpiarRecursos();
-	printf("Finaliza Administrador de Memoria\n");
+	log_info(MemoriaLog, "Finaliza Administrador de Memoria\n");
+	log_destroy(MemoriaLog);
 	return EXIT_SUCCESS;
 }
 
 void limpiarRecursos()
 {
+	if(configuracion->tlb_habilitada){
+		limpiarTLB();
+	}
 	limpiarConfiguracion();
-	limpiarTLB();
 	limpiarMemoriaPrincipal();
-	log_destroy(MemoriaLog);
 }
 
 void setUp()
