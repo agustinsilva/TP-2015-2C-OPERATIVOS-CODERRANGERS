@@ -201,6 +201,7 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	pcbBloqueado->estadoProceso = 3;//Asigno estado Bloqueado
 	pcbBloqueado->retardo = retardo;
 	list_add(proc_bloqueados, pcbBloqueado);
+	//Asigno CPU nuevamente libre
 	list_add(cpu_listos, cpuOcupado);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	sem_post(&sincroBloqueados);
@@ -216,8 +217,6 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 		printf("Se cerrara el programa");
 		exit(EXIT_FAILURE);
 	}
-	//Asigno CPU nuevamente libre
-
 }
 
 /* Hilo de PCB Bloqueados, hace sleep y vuelve PCB a ready */
@@ -226,14 +225,14 @@ void iniciarHiloBloqueados() {
 		sem_wait(&sincroBloqueados);
 		while (list_size(proc_bloqueados) > 0) {
 			//Agarro el primero de cada la cola
-			t_list *proc_bloqueado = list_take_and_remove(proc_bloqueados, 1);
-			t_pcb *pcbBloqueado = list_get(proc_bloqueado, 0);
+			t_pcb *pcbBloqueado = list_get(proc_bloqueados, 0);
 			//hago sleep
 			sleep(pcbBloqueado->retardo);
+			list_remove(proc_bloqueados, 0);
 			//Lo vuelvo a meter en cola de listos
 			sem_wait(&mutex);
 			pcbBloqueado->estadoProceso = 0; //PCB en estado de espera
-			list_add(proc_ejecutados, pcbBloqueado);
+			list_add(proc_listos, pcbBloqueado);
 			sem_post(&sincroproc); // Aumento semaforo Proc
 			sem_post(&mutex);
 		}

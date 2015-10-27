@@ -83,7 +83,6 @@ void mostrarProcesos() {
 		}
 	}
 	if (list_size(proc_ejecutados) > 0) {
-
 		printf("Los programas procesados son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
