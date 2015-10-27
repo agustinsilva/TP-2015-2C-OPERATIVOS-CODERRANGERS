@@ -184,13 +184,14 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "escribir")){
 		char* textoEscribir = string_from_format("%s",lista[2]);
-		int32_t numeroPagina=*lista[1];
-		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),numeroPagina,textoEscribir);
+		//int32_t numeroPagina=*lista[1];
+		int32_t numeroPagina = (int32_t)strtol(lista[1],NULL,10);
+		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),string_itoa(numeroPagina),textoEscribir);
 		//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
 		rta = informarAdminMemoriaComandoEscribir(pcb->idProceso,numeroPagina,textoEscribir);
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
-		int32_t tiempoDeEjec=*lista[1];
+		int32_t tiempoDeEjec = (int32_t)strtol(lista[1],NULL,10);
 		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
 		//lista[1] Contiene el tiempo que se debe bloquear.
 		sleep(configuracion->retardo);
