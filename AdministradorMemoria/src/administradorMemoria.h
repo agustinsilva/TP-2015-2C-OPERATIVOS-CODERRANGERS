@@ -20,6 +20,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <semaphore.h>
+#include <sys/wait.h>
 
 // Constantes
 #define RESET "\x1B[0m"
@@ -113,6 +114,7 @@ t_log* MemoriaLog;
 t_list* TLB; /* de t_TLB */
 t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
+sock_t* clientSocketSwap;
 
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;

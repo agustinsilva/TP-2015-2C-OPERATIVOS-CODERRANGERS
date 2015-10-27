@@ -4,17 +4,18 @@
 
 int main(void)
 {
-	saludoInicial();
-	puts("Cargo archivo de configuración de Administrador Memoria\n");
 	MemoriaLog = log_create("MemoriaLog", "AdministradorMemoria", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
+	initializeMutex();
+	signalHandler();
+	saludoInicial();
+
 	setUp();
 
-	signalHandler();
-	initializeMutex();
+	sleep(126);
 
 	/*conecta con swap*/
-	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
+	clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
 	if (validationConnection != 0 ) {
 		log_error(MemoriaLog, RED"No se ha podido conectar correctamente al Swap\n"RESET);

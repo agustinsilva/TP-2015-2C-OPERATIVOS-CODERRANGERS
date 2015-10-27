@@ -52,16 +52,22 @@ int cargarArchivoDeConfiguracion()
 			return -1;
 	}
 
-	printf("PUERTO_ESCUCHA: %d\n", configuracion->puerto_escucha);
-	printf("IP_SWAP: %s\n", configuracion->ip_swap);
-	printf("PUERTO_SWAP: %d\n", configuracion->puerto_swap);
-	printf("MAXIMO_MARCOS_POR_PROCESO: %d\n", configuracion->maximo_marcos_por_proceso);
-	printf("CANTIDAD_MARCOS: %d\n", configuracion->cantidad_marcos);
-	printf("TAMANIO_MARCO: %d\n", configuracion->tamanio_marco);
-	printf("ENTRADAS_TLB: %d\n", configuracion->entradas_tlb);
-	printf("TLB_HABILITADA: %d\n", configuracion->tlb_habilitada);
-	printf("RETARDO_MEMORIA: %d\n", configuracion->retardo_memoria);
-	printf("ALGORITMO_REEMPLAZO: %s\n", configuracion->algoritmo_reemplazo);
+	log_info(MemoriaLog,
+	"\nPUERTO_ESCUCHA: %d\n"
+	"IP_SWAP: %s\n"
+	"PUERTO_SWAP: %d\n"
+	"MAXIMO_MARCOS_POR_PROCESO: %d\n"
+	"CANTIDAD_MARCOS: %d\n"
+	"TAMANIO_MARCO: %d\n"
+	"ENTRADAS_TLB: %d\n"
+	"TLB_HABILITADA: %d\n"
+	"RETARDO_MEMORIA: %d\n"
+	"ALGORITMO_REEMPLAZO: %s\n" ,
+	configuracion->puerto_escucha, configuracion->ip_swap , configuracion->puerto_swap ,
+	configuracion->maximo_marcos_por_proceso, configuracion->cantidad_marcos , configuracion->tamanio_marco,
+	configuracion->entradas_tlb , configuracion->tlb_habilitada , configuracion->retardo_memoria,
+	configuracion->algoritmo_reemplazo);
+
 	return 0;
 }
 

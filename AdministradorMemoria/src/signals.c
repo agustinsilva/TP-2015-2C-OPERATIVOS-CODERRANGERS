@@ -51,33 +51,39 @@ void vaciarMemoria(){
 
 void doMPFlush(sock_t* socketSwap){
 
-	sock_t* clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
-	int32_t validationConnection = connect_to_server(clientSocketSwap);
-	if (validationConnection != 0 ){
-		printf("No se ha podido conectar correctamente al Swap\n");
+	if (clientSocketSwap != 0 ){
+		log_info(MemoriaLog, "No se ha podido conectar correctamente al Swap\n");
+		return;
 	} else {
-		printf("Se conectó al Swap\n");
+		log_info(MemoriaLog,"Se escribirán las páginas modificadas\n");
 		escribirPagsModificadas(socketSwap);
 	}
 
 	actualizarTablaDePaginas();
-	TLBFlush();
+	if(configuracion->tlb_habilitada){
+		TLBFlush();
+	}
 	vaciarMemoria();
 }
 
 void doTLBFlush(){
 
-//	t_TLB* entrada1 = malloc(sizeof(t_TLB));
-//	t_TLB* entrada2 = malloc(sizeof(t_TLB));
-//	t_TLB* entrada3 = malloc(sizeof(t_TLB));
-//	list_add(TLB, entrada1);
-//	list_add(TLB, entrada2);
-//	list_add(TLB, entrada3);
-	printf("Tamaño TLB antes del flush: %d\n", list_size(TLB));
+	if(configuracion->tlb_habilitada){
+//		t_TLB* entrada1 = malloc(sizeof(t_TLB));
+//		t_TLB* entrada2 = malloc(sizeof(t_TLB));
+//		t_TLB* entrada3 = malloc(sizeof(t_TLB));
+//		list_add(TLB, entrada1);
+//		list_add(TLB, entrada2);
+//		list_add(TLB, entrada3);
+		printf("Tamaño TLB antes del flush: %d\n", list_size(TLB));
 
-	list_clean_and_destroy_elements(TLB, (void*)TLBDestroyer);
-	printf("Tamaño TLB después del flush: %d\n", list_size(TLB));
-	log_info(MemoriaLog, "Se vació completamente la TLB \n");
+		list_clean_and_destroy_elements(TLB, (void*)TLBDestroyer);
+		printf("Tamaño TLB después del flush: %d\n", list_size(TLB));
+		log_info(MemoriaLog, "Se vació completamente la TLB \n");
+	}else{
+		log_info(MemoriaLog, "No se puede realizar TLB Flush: La TLB no está habilitada\n");
+	}
+
 }
 
 /* -------------------------------------------------------------------------------------*/
@@ -105,9 +111,6 @@ void TLBFlush(){
 }
 
 void MPFlush(){
-	printf("Tiraste la señal para vaciar la memoria principal! \n No te voy a borrar nada hasta que"
-			"no me digas cómo tiraste esta señal porque no encuentro nada en internet :(");
-
 	pthread_t hiloMPFlush;
 	if (pthread_create(&hiloMPFlush, NULL,(void*)doMPFlush,NULL)){
 		log_error(MemoriaLog,RED"Error al crear el hilo para realizar MemFlush\n"RESET);
@@ -116,16 +119,39 @@ void MPFlush(){
 }
 
 void MPDump(){
-	printf("Tiraste la señal para dumpear la memoria principal! \n No te voy a copiar nada hasta que"
-			"no me digas cómo tiraste esta señal porque no encuentro nada en internet :(");
+
+	  int pid;
+	pid = fork();
+	if (pid < 0) {
+		log_error(MemoriaLog,RED"Error al crear proceso hijo para realizar Dump de Memoria Principal\n"RESET);
+		return;
+	}
+	else if (pid == 0) {
+		/* Inicio de código de Proceso Hijo */
+		sleep(5);
+		printf("Soy un hijo de frula\n");
+		sleep(5);
+		/* Fin de código de Proceso Hijo */
+	}
+	else {
+		/* Inicio de código de Proceso Padre */
+		printf("Tiraste la señal para dumpear la memoria principal! \n ");
+
+		/* Esperar finalización del Hijo */
+		wait(NULL);
+		printf("Terminó mi hijo \n");
+		/* Fin de código de Proceso Padre */
+	}
+
 }
+
 
 void signalHandler(){
 	if(signal(SIGINT, finalizacion) == SIG_ERR ) {
 		printf("No se pudo atrapar la señal de finalización \n");
 	}
 
-	if(signal(SIGUSR1, TLBFlush) == SIG_ERR ) {
+	if(signal(SIGUSR1, MPDump) == SIG_ERR ) {
 		printf("No se pudo atrapar la señal para limpiar la TLB \n");
 	}
 
