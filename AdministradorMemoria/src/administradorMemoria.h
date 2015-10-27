@@ -49,6 +49,8 @@
 #define CLOCKM "CLOCK-M"
 #define LRU "LRU"
 #define REINIT -1
+#define tabla_paginas 1
+#define memoria_principal 2
 
 //Estructuras
 typedef struct
@@ -166,6 +168,7 @@ int32_t getMinLoadedTime(t_list* );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );
+void retardo(int32_t, int32_t );
 
 
 /* de Signals.c */

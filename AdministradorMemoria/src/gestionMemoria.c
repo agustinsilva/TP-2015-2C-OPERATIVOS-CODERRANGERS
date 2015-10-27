@@ -337,3 +337,13 @@ int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	int32_t cantidad = list_count_satisfying(tablasDePaginas, (void*) porPIDyPresente);
 	return cantidad;
 }
+
+void retardo(int32_t cantidad, int32_t donde){
+	if(donde==tabla_paginas){
+		printf("Buscando en la tabla de páginas... \n");
+	}
+	if(donde==memoria_principal){
+		printf("Buscando en memoria... \n");
+	}
+	sleep(cantidad);
+}
