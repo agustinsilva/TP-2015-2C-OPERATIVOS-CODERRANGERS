@@ -94,7 +94,7 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid);
 char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones,sock_t* socketPlanificador);
 char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina);
 int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones,sock_t* socketPlanificador);
-char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador);
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,int32_t cantInstruccionesEjecutadas);
 void crearHilosCPU (void);
 int hiloPadre();
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);

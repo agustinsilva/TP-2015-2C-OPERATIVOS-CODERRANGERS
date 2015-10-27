@@ -81,12 +81,11 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador){
 		numeroInstruccion ++;
 	}
 	if (configCPUPadre.tipoPlanificacion==1) {//RR
-		printf("Es RR\n");
 		int32_t cantInstruccionesEjecutadas = 0;
 		while (QUANTUMRESTANTE > 0) {
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 				lista = string_split(instruccion," ");
-				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador);
+				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador,cantInstruccionesEjecutadas);
 				if(string_equals_ignore_case(rta, "FIN")){
 					break;//Termina la ejecucion porque:bloqueo de E/S, terminó el archivo
 				}else{
@@ -104,15 +103,16 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador){
 			informarPlanificadorLiberacionCPU(pcb,resultadosDeEjecuciones,socketPlanificador);
 		}
 	}else{//FIFO
-		printf("Es FIFO\n");
+		int32_t cantInstruccionesEjecutadas = 0;
 		while(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 			lista = string_split(instruccion," ");
-			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador);
+			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador,cantInstruccionesEjecutadas);
 			if(string_equals_ignore_case(rta, "FIN")){
 				break;//Termina la ejecucion porque: bloqueo de E/S; terminó el archivo
 			}else{
 				string_append(&resultadosDeEjecuciones,rta);
 			}
+			cantInstruccionesEjecutadas++;
 		}
 	}
 	fclose(entrada);
@@ -165,7 +165,7 @@ int hiloPadre(){
 	return EXIT_SUCCESS;
 }
 
-char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador){
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,int32_t cantInstruccionesEjecutadas){
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")){
 		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
@@ -195,6 +195,8 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
 		//lista[1] Contiene el tiempo que se debe bloquear.
 		sleep(configuracion->retardo);
+		//actualizamos el puntero del pcb
+		pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas + 1;
 		rta = informarEntradaSalida(pcb,tiempoDeEjec,resultadosDeEjecuciones,socketPlanificador);
 	}else{
 		log_warning(CPULog," [PID:%s] Instruccion: comando no interpretado",string_itoa(pcb->idProceso));
