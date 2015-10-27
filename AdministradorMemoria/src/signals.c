@@ -86,6 +86,20 @@ void doTLBFlush(){
 
 }
 
+
+void printearTabla(){
+	int32_t index=0;
+	void printear(t_MP* entrada){
+		if(index==0){
+			printf(" Marco \t| Contenido\t\n");
+			printf("---------------------------------------\n");
+		}
+		printf("   %d\t| %s\t|\n", entrada->marco, entrada->contenido);
+		index++;
+	}
+	list_iterate(memoriaPrincipal, (void*)printear);
+}
+
 /* -------------------------------------------------------------------------------------*/
 
 /* Funciones Principales */
@@ -120,7 +134,7 @@ void MPFlush(){
 
 void MPDump(){
 
-	  int pid;
+	int pid;
 	pid = fork();
 	if (pid < 0) {
 		log_error(MemoriaLog,RED"Error al crear proceso hijo para realizar Dump de Memoria Principal\n"RESET);
@@ -131,6 +145,8 @@ void MPDump(){
 		sleep(5);
 		printf("Soy un hijo de frula\n");
 		sleep(5);
+
+		printearTabla();
 		/* Fin de código de Proceso Hijo */
 	}
 	else {
@@ -151,7 +167,7 @@ void signalHandler(){
 		printf("No se pudo atrapar la señal de finalización \n");
 	}
 
-	if(signal(SIGUSR1, MPDump) == SIG_ERR ) {
+	if(signal(SIGUSR1, TLBFlush) == SIG_ERR ) {
 		printf("No se pudo atrapar la señal para limpiar la TLB \n");
 	}
 

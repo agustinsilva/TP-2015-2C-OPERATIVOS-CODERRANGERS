@@ -91,7 +91,7 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 	int32_t marcoAReemplazar;
 	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP(idmProc);
-	if(cantMarcosOtorgados>=configuracion->cantidad_marcos) {
+	if(cantMarcosOtorgados>=configuracion->maximo_marcos_por_proceso) {
 		/* Swap Out con reemplazo local */
 		marcoAReemplazar = reemplazarMP(idmProc, configuracion->algoritmo_reemplazo);
 	} else {
@@ -260,6 +260,8 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 	if(entradaMP!=NULL){
 		strcpy(entradaMP->contenido, contenidoAEscribir);
 
+		llenarDeNulos(entradaMP->contenido,configuracion->tamanio_marco,string_length(contenidoAEscribir));
+
 		t_TP* tablaPag = buscarEntradaEnTablaDePaginas(idmProc,nroPagina);
 		if(tablaPag!=NULL){
 			tablaPag->modified=true;
@@ -344,4 +346,11 @@ void retardo(int32_t cantidad, int32_t donde){
 		printf("Buscando en memoria... \n");
 	}
 	sleep(cantidad);
+}
+
+void llenarDeNulos(char* destino, int32_t total, int32_t desfazaje){
+	int32_t index;
+	for(index=0; index<(total-desfazaje); index++){
+		memcpy(destino+index+desfazaje, "\0", sizeof(char));
+	}
 }

@@ -172,6 +172,7 @@ t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );
 void retardo(int32_t, int32_t );
+void llenarDeNulos(char* , int32_t ,int32_t);
 
 
 /* de Signals.c */
@@ -184,6 +185,7 @@ void TLBFlush();
 void escribirPagsModificadas(sock_t*);
 void actualizarTablaDePaginas();
 void vaciarMemoria();
+void printearTabla();
 
 /* de busquedas.c*/
 t_TLB* buscarEnTLB(int32_t , int32_t );
