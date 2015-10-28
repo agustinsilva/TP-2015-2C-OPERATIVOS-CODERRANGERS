@@ -78,7 +78,7 @@ void mostrarProcesos() {
 		printf("Los programas en cola de ready son:\n");
 		for (index = 0; index < list_size(proc_bloqueados); ++index) {
 			t_pcb *pcbListo = list_get(proc_bloqueados, index);
-			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_GREEN"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
+			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_BLUE"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
 					pcbListo->path, convertirNumeroEnString(pcbListo->estadoProceso));
 		}
 	}
@@ -107,36 +107,45 @@ void mostrarProcesos() {
 	getchar();
 }
 
-void finalizarProceso(uint32_t *pid){
+void finalizarProceso(uint32_t *pid) {
+	pthread_t hiloPlanificador;
 	int _pcbByPid(t_pcb *proc_ejecutado) {
 		if (*pid == proc_ejecutado->idProceso)
 			return 1;
 		else
 			return 0;
 	}
-	//TODO: Revisar esta implementacion...
-	//Que pasa si el proceso no esta en la cola de listos y esta ejecutando:
-	//1- le cambio su contador a la ultima instruccion
-	//( cuidado si el cpu me devuelve el pcb con el contador modificado)
-	//2- Creo un hilo que espere hasta que el proceso se encuentre en la cola de listos y ahi cambio su contador
-	t_pcb *pcbFinalizar = list_find(proc_listos, (void*) _pcbByPid);
-	if(pcbFinalizar == NULL){ // ver si esto funca asi
-		t_pcb *pcbFinalizar = list_find(proc_ejecutados, (void*) _pcbByPid);
-		pcbFinalizar->contadorPuntero = pcbFinalizar->cantidadInstrucciones;
+	/* Si el proceso esta en la cola de ready cambiarle el PC
+	 * Si el proceso estaba ejecutando, settearle un flag para cambiarlo en ready.
+	 * si es entrada y salida, lo mismo.
+	 */
+	t_pcb *pcbFinListo = list_find(proc_listos, (void*) _pcbByPid);
+	t_pcb *pcbFinEjecutados = list_find(proc_ejecutados, (void*) _pcbByPid);
+	t_pcb *pcbFinBloqueados = list_find(proc_ejecutados, (void*) _pcbByPid);
+	//Si el pcb esta en la cola de listos, le cambio el PC y listo
+	if (pcbFinListo != NULL) {
+		pcbFinListo->contadorPuntero = pcbFinListo->cantidadInstrucciones;
 	}
-	else
-		pcbFinalizar->contadorPuntero = pcbFinalizar->cantidadInstrucciones;
+	//Si el pcb esta en la cola ejecutados, le agrego un flag
+	//Para que antes de ponerse en ready, se cambie el pc a la ultima instruccion.
+	if (pcbFinEjecutados != NULL) {
+		pcbFinEjecutados->flagFin = 1;
+	}
+	if (pcbFinBloqueados != NULL) {
+		pcbFinBloqueados->contadorPuntero =
+				pcbFinBloqueados->cantidadInstrucciones;
+	}
 
 }
 
 void killThemAll(){
-	close(socketCpuPadre);
-	int index;
-	for (index = 0; index <= list_size(cpu_listos); ++index) {
-		t_hilosConectados *cpu = list_get(cpu_listos,index);
-		if(cpu->socketHilo != NULL)
-			close(cpu->socketHilo);
-	}
+//	close(socketCpuPadre);
+//	int index;
+//	for (index = 0; index <= list_size(cpu_listos); ++index) {
+//		t_hilosConectados *cpu = list_get(cpu_listos,index);
+//		if(cpu->socketHilo != NULL)
+//			close(cpu->socketHilo);
+//	}
 }
 
 char* convertirNumeroEnString(uint32_t estado){

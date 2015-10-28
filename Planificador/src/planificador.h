@@ -34,6 +34,7 @@ typedef struct {
 	uint32_t tamaniopath;
 	char* path;
 	uint32_t retardo;
+	uint32_t flagFin;
 }t_pcb;
 
 typedef struct {
