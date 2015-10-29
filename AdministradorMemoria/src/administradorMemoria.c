@@ -12,8 +12,6 @@ int main(void)
 
 	setUp();
 
-	sleep(126);
-
 	/*conecta con swap*/
 	clientSocketSwap = create_client_socket(configuracion->ip_swap,configuracion->puerto_swap);
 	int32_t validationConnection = connect_to_server(clientSocketSwap);
