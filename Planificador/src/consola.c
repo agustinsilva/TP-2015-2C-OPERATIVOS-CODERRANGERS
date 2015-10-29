@@ -75,7 +75,7 @@ void mostrarProcesos() {
 	} else
 		printf("No hay programas en espera de ejecucion\n");
 	if (list_size(proc_bloqueados) > 0) {
-		printf("Los programas en cola de ready son:\n");
+		printf("Los programas en cola de bloqueados son:\n");
 		for (index = 0; index < list_size(proc_bloqueados); ++index) {
 			t_pcb *pcbListo = list_get(proc_bloqueados, index);
 			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_BLUE"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
@@ -86,18 +86,16 @@ void mostrarProcesos() {
 		printf("Los programas procesados son:\n");
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
-			if (pcb->estadoProceso == 3) {
+			if (pcb->estadoProceso == 1) {
 				printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_YELLOW"%s\n"ANSI_COLOR_RESET, pcb->idProceso,
 						pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}
-
 		}
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
 			if (pcb->estadoProceso == 2) {
 				printf("   PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_RED"%s\n"ANSI_COLOR_RESET, pcb->idProceso, pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}
-
 		}
 	} else
 		printf("No hay programas finalizados\n");
@@ -107,18 +105,17 @@ void mostrarProcesos() {
 	getchar();
 }
 
+/* Si el proceso esta en la cola de ready cambiarle el PC
+ * Si el proceso estaba ejecutando, settearle un flag para cambiarlo en ready.
+ * si es entrada y salida, lo mismo.
+ */
 void finalizarProceso(uint32_t *pid) {
-	pthread_t hiloPlanificador;
 	int _pcbByPid(t_pcb *proc_ejecutado) {
 		if (*pid == proc_ejecutado->idProceso)
 			return 1;
 		else
 			return 0;
 	}
-	/* Si el proceso esta en la cola de ready cambiarle el PC
-	 * Si el proceso estaba ejecutando, settearle un flag para cambiarlo en ready.
-	 * si es entrada y salida, lo mismo.
-	 */
 	t_pcb *pcbFinListo = list_find(proc_listos, (void*) _pcbByPid);
 	t_pcb *pcbFinEjecutados = list_find(proc_ejecutados, (void*) _pcbByPid);
 	t_pcb *pcbFinBloqueados = list_find(proc_ejecutados, (void*) _pcbByPid);
@@ -155,8 +152,10 @@ char* convertirNumeroEnString(uint32_t estado){
 		return "Ejecucion";
 	if(estado==2)
 		return "Finalizado";
-	else
+	if(estado==3)
 		return "Bloqueado";
+	else
+		return "Flashiaste";
 }
 
 void leerComando(uint32_t* comando, char* mensaje) {

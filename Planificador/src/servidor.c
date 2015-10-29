@@ -162,7 +162,7 @@ void replanificar(uint32_t socketCpu) {
 	}
 	//Reviso el Flag de finalizacion
 	t_pcb *pcbFinListo = list_find(proc_listos, (void*) _pcbById);
-	if(pcbFinListo->flagFin == 1)
+	if(pcbFinListo!= NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
 	//Libero CPU y PCB y vuelven a encolarse
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
