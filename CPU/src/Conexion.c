@@ -238,10 +238,12 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	//Envia aviso al Adm de Memoria: comando Escribir.
 
 	int32_t cabecera = ESCRIBIR;
+
 	char*textoAEscribir=texto;
+	uint32_t longitudMensaje= strlen (textoAEscribir);
 
 	uint32_t offset=0;
-	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + sizeof(textoAEscribir);
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + sizeof(textoAEscribir) +  sizeof(uint32_t);
 	char* message = malloc(tamanio);
 	memcpy(message, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
@@ -249,7 +251,9 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	offset = offset + sizeof(pid);
 	memcpy(message + offset, &numeroPagina, sizeof(numeroPagina));
 	offset = offset + sizeof(numeroPagina);
-	memcpy(message + offset, &textoAEscribir, sizeof(numeroPagina));
+	memcpy(message + offset,&longitudMensaje, sizeof(uint32_t));
+	offset = offset + sizeof(uint32_t);
+	memcpy(message + offset, &textoAEscribir, sizeof(textoAEscribir));
 	offset = offset + sizeof(textoAEscribir);
 	status = send(socketMemoria->fd,message,tamanio,0);
 	free(message);
