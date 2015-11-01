@@ -287,7 +287,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
 					pthread_mutex_lock(&sem_swap);
-					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_leer);
 					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
@@ -334,7 +334,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
 				pthread_mutex_lock(&sem_swap);
-				swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+				swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_leer);
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
@@ -413,7 +413,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
 					pthread_mutex_lock(&sem_swap);
-					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
 					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
@@ -463,7 +463,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
 				pthread_mutex_lock(&sem_swap);
-				swapIN(swapSocket, cpuSocket, idmProc, nroPagina);
+				swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);

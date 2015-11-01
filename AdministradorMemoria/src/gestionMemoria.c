@@ -87,7 +87,7 @@ void vaciarMarcosOcupados(int32_t idmProc){
 	list_iterate(paginasPresentes, (void*) vaciarContenidoMP);
 }
 
-int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroPagina){
+int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t nroPagina, int32_t codigo){
 
 	int32_t marcoAReemplazar;
 	int32_t cantMarcosOtorgados = calcularCantPaginasEnMP(idmProc);
@@ -102,7 +102,7 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 		t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
 		pedido->encontro=pedido_error;
-		enviarContenidoPagina(cpuSocket, pedido);
+		enviarEnteros(cpuSocket,pedido->encontro);
 //		free(pedido->contenido);
 		free(pedido);
 
@@ -131,7 +131,11 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
 
-	enviarContenidoPagina(cpuSocket, pedido);
+	if(codigo==codigo_leer){
+		enviarContenidoPagina(cpuSocket, pedido);
+	} else{
+		enviarEnteros(cpuSocket, pedido_exitoso);
+	}
 	free(pedido->contenido);
 	free(pedido);
 
@@ -265,8 +269,10 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 		t_TP* tablaPag = buscarEntradaEnTablaDePaginas(idmProc,nroPagina);
 		if(tablaPag!=NULL){
 			tablaPag->modified=true;
+			enviarEnteros(cpuSocket,pedido_exitoso);
 		} else{
 			log_error(MemoriaLog,RED "No se encontró la página en la tabla de páginas\n"RESET);
+			enviarEnteros(cpuSocket,pedido_error);
 		}
 	}
 }

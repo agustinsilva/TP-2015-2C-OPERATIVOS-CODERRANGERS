@@ -156,7 +156,7 @@ void limpiarRecursos();
 t_TLB* actualizarTLB(int32_t, int32_t , int32_t );
 void eliminarDeTLBPorPID(int32_t );
 void eliminarDeTLBPorMarco(int32_t );
-int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t );
+int32_t swapIN(sock_t* , sock_t* , int32_t , int32_t , int32_t);
 void manejarMemoriaPrincipalLectura(t_MP* , sock_t* );
 void manejarMemoriaPrincipalEscritura(t_MP* , sock_t* , char* , int32_t , int32_t);
 int32_t calcularCantPaginasEnMP(int32_t );
