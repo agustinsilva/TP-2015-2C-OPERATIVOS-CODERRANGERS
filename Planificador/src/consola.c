@@ -78,7 +78,7 @@ void mostrarProcesos() {
 		printf("Los programas en cola de bloqueados son:\n");
 		for (index = 0; index < list_size(proc_bloqueados); ++index) {
 			t_pcb *pcbListo = list_get(proc_bloqueados, index);
-			printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_BLUE"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
+			printf("   PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_BLUE"%s\n"ANSI_COLOR_RESET, pcbListo->idProceso,
 					pcbListo->path, convertirNumeroEnString(pcbListo->estadoProceso));
 		}
 	}
@@ -87,7 +87,7 @@ void mostrarProcesos() {
 		for (index = 0; index < list_size(proc_ejecutados); ++index) {
 			t_pcb *pcb = list_get(proc_ejecutados, index);
 			if (pcb->estadoProceso == 1) {
-				printf("    PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_YELLOW"%s\n"ANSI_COLOR_RESET, pcb->idProceso,
+				printf("   PId: %d -- Nombre: %s -- Estado: "ANSI_COLOR_YELLOW"%s\n"ANSI_COLOR_RESET, pcb->idProceso,
 						pcb->path, convertirNumeroEnString(pcb->estadoProceso));
 			}
 		}
@@ -118,7 +118,7 @@ void finalizarProceso(uint32_t *pid) {
 	}
 	t_pcb *pcbFinListo = list_find(proc_listos, (void*) _pcbByPid);
 	t_pcb *pcbFinEjecutados = list_find(proc_ejecutados, (void*) _pcbByPid);
-	t_pcb *pcbFinBloqueados = list_find(proc_ejecutados, (void*) _pcbByPid);
+	t_pcb *pcbFinBloqueados = list_find(proc_bloqueados, (void*) _pcbByPid);
 	//Si el pcb esta en la cola de listos, le cambio el PC y listo
 	if (pcbFinListo != NULL) {
 		pcbFinListo->contadorPuntero = pcbFinListo->cantidadInstrucciones;
@@ -129,8 +129,7 @@ void finalizarProceso(uint32_t *pid) {
 		pcbFinEjecutados->flagFin = 1;
 	}
 	if (pcbFinBloqueados != NULL) {
-		pcbFinBloqueados->contadorPuntero =
-				pcbFinBloqueados->cantidadInstrucciones;
+		pcbFinEjecutados->flagFin = 1;
 	}
 
 }

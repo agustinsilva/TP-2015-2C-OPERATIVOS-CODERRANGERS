@@ -161,8 +161,8 @@ void replanificar(uint32_t socketCpu) {
 			return 0;
 	}
 	//Reviso el Flag de finalizacion
-	t_pcb *pcbFinListo = list_find(proc_listos, (void*) _pcbById);
-	if(pcbFinListo!= NULL && pcbFinListo->flagFin == 1)
+	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
+	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
 	//Libero CPU y PCB y vuelven a encolarse
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
@@ -200,14 +200,18 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	}
 	//Libero CPU ocupada
 	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
+	//Antes me fijo si tenia Flag de finalizar
+	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
+	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
+		pcbBloqueado->flagFin = 1;
 	//Sacar pcb de ejecutados - Meterlo en bloqueados
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
-	pcbBloqueado->estadoProceso = 3;//Asigno estado Bloqueado
+	pcbBloqueado->estadoProceso = 3; //Asigno estado Bloqueado
 	pcbBloqueado->retardo = retardo;
 	list_add(proc_bloqueados, pcbBloqueado);
 	//Asigno CPU nuevamente libre
 	list_add(cpu_listos, cpuOcupado);
-	sem_post(&sincrocpu); // Aumento semaforo cpu
+	sem_post(&sincrocpu); //Aumento semaforo cpu
 	sem_post(&sincroBloqueados);
 	//UN solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
 	pthread_t hiloBloqueados;
@@ -232,12 +236,16 @@ void iniciarHiloBloqueados() {
 			t_pcb *pcbBloqueado = list_get(proc_bloqueados, 0);
 			//hago sleep
 			sleep(pcbBloqueado->retardo);
+			//Reviso el Flag de finalizacion
+			if(pcbBloqueado != NULL && pcbBloqueado->flagFin == 1)
+				pcbBloqueado->contadorPuntero = pcbBloqueado->cantidadInstrucciones;
+
 			list_remove(proc_bloqueados, 0);
 			//Lo vuelvo a meter en cola de listos
 			sem_wait(&mutex);
 			pcbBloqueado->estadoProceso = 0; //PCB en estado de espera
 			list_add(proc_listos, pcbBloqueado);
-			sem_post(&sincroproc); // Aumento semaforo Proc
+			sem_post(&sincroproc); //Aumento semaforo Proc
 			sem_post(&mutex);
 		}
 	}
