@@ -161,6 +161,7 @@ void replanificar(uint32_t socketCpu) {
 			return 0;
 	}
 	//Reviso el Flag de finalizacion
+	sem_wait(&mutex);
 	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
 	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
@@ -172,6 +173,7 @@ void replanificar(uint32_t socketCpu) {
 	cpuOcupado->path = "";
 	list_add(cpu_listos, cpuOcupado);
 	list_add(proc_listos, pcbReplanificar);
+	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	sem_post(&sincroproc); // Aumento semaforo Proc
 }
@@ -185,6 +187,7 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	free(mensajeALogear);
 	//recibo pcb
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
+	sem_wait(&mutex);
 	//Metodos para buscar
 	int _pcbById(t_pcb *proc_ejecutado) {
 		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
@@ -211,6 +214,7 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	list_add(proc_bloqueados, pcbBloqueado);
 	//Asigno CPU nuevamente libre
 	list_add(cpu_listos, cpuOcupado);
+	sem_post(&mutex);
 	sem_post(&sincrocpu); //Aumento semaforo cpu
 	sem_post(&sincroBloqueados);
 	//UN solo hilo que se cree con la primer E/S y luego siga esperando pcbs bloqueados
@@ -237,16 +241,16 @@ void iniciarHiloBloqueados() {
 			//hago sleep
 			sleep(pcbBloqueado->retardo);
 			//Reviso el Flag de finalizacion
+			sem_wait(&mutex);
 			if(pcbBloqueado != NULL && pcbBloqueado->flagFin == 1)
 				pcbBloqueado->contadorPuntero = pcbBloqueado->cantidadInstrucciones;
 
 			list_remove(proc_bloqueados, 0);
 			//Lo vuelvo a meter en cola de listos
-			sem_wait(&mutex);
 			pcbBloqueado->estadoProceso = 0; //PCB en estado de espera
 			list_add(proc_listos, pcbBloqueado);
-			sem_post(&sincroproc); //Aumento semaforo Proc
 			sem_post(&mutex);
+			sem_post(&sincroproc); //Aumento semaforo Proc
 		}
 	}
 }
@@ -297,8 +301,8 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	pcb->estadoProceso = 2;
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
 	list_add_all(cpu_listos, cpuPlanificado);
-	sem_post(&sincrocpu); // Aumento semaforo cpu
 	sem_post(&mutex);
+	sem_post(&sincrocpu); // Aumento semaforo cpu
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
@@ -349,7 +353,6 @@ t_pcb* recibirPcb(uint32_t socketCpu){
 	t_pcb* pcbRecibido = malloc(sizeof(t_pcb));
 
 	//Recibe mensaje de Planificador: PCB
-
 	status = recv(socketCpu,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
 	if (status <= 0) log_error(planificadorLog,"Error al recibir PCB.","ERROR");
 	status = recv(socketCpu,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
@@ -400,6 +403,8 @@ char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
 	uint32_t codigo, tipoPlanificacion, quantum;
 	codigo = 0;
 	quantum = configuracion->quantum;
+	string_trim(&(configuracion->algoritmoPlanificacion));
+
 	if(!strcmp(configuracion->algoritmoPlanificacion,"FIFO")){ //si es fifo
 		*totalPaquete = 2 * sizeof(uint32_t);
 		tipoPlanificacion = 0; //Tipo FIFO
