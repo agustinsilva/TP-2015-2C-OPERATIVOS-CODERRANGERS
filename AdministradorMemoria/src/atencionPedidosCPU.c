@@ -476,6 +476,11 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
+
+				pthread_mutex_lock(&sem_MP);
+				t_MP* entrada = buscarEnMemoriaPrincipal(marco);
+				manejarMemoriaPrincipalEscritura(entrada, cpuSocket, contenido, idmProc, nroPagina);
+				pthread_mutex_unlock(&sem_MP);
 				break;
 			}
 			default:  /*buscar contenido en memoria principal*/ {
