@@ -181,6 +181,8 @@ void finalizacion();
 void MPFush();
 void MPDump();
 void TLBFlush();
+void doTLBFlush();
+void doMPFlush(sock_t*);
 
 void escribirPagsModificadas(sock_t*);
 void actualizarTablaDePaginas();

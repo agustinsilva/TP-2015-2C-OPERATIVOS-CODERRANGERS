@@ -51,8 +51,15 @@ void vaciarMemoria(){
 
 void doMPFlush(sock_t* socketSwap){
 
+	pthread_mutex_lock(&sem_TP);
+	pthread_mutex_lock(&sem_MP);
+	pthread_mutex_lock(&sem_swap);
+
 	if (clientSocketSwap != 0 ){
 		log_info(MemoriaLog, "No se ha podido conectar correctamente al Swap\n");
+		pthread_mutex_unlock(&sem_swap);
+		pthread_mutex_unlock(&sem_MP);
+		pthread_mutex_unlock(&sem_TP);
 		return;
 	} else {
 		log_info(MemoriaLog,"Se escribirán las páginas modificadas\n");
@@ -60,25 +67,27 @@ void doMPFlush(sock_t* socketSwap){
 	}
 
 	actualizarTablaDePaginas();
+
 	if(configuracion->tlb_habilitada){
-		TLBFlush();
+		doTLBFlush();
 	}
+
 	vaciarMemoria();
+
+	pthread_mutex_unlock(&sem_swap);
+	pthread_mutex_unlock(&sem_MP);
+	pthread_mutex_unlock(&sem_TP);
 }
 
 void doTLBFlush(){
 
 	if(configuracion->tlb_habilitada){
-//		t_TLB* entrada1 = malloc(sizeof(t_TLB));
-//		t_TLB* entrada2 = malloc(sizeof(t_TLB));
-//		t_TLB* entrada3 = malloc(sizeof(t_TLB));
-//		list_add(TLB, entrada1);
-//		list_add(TLB, entrada2);
-//		list_add(TLB, entrada3);
+		pthread_mutex_lock(&sem_TLB);
 		printf("Tamaño TLB antes del flush: %d\n", list_size(TLB));
-
 		list_clean_and_destroy_elements(TLB, (void*)TLBDestroyer);
 		printf("Tamaño TLB después del flush: %d\n", list_size(TLB));
+		pthread_mutex_unlock(&sem_TLB);
+
 		log_info(MemoriaLog, "Se vació completamente la TLB \n");
 	}else{
 		log_info(MemoriaLog, "No se puede realizar TLB Flush: La TLB no está habilitada\n");
@@ -88,6 +97,7 @@ void doTLBFlush(){
 
 
 void printearTabla(){
+	pthread_mutex_lock(&sem_MP);
 	int32_t index=0;
 	void printear(t_MP* entrada){
 		if(index==0){
@@ -98,6 +108,7 @@ void printearTabla(){
 		index++;
 	}
 	list_iterate(memoriaPrincipal, (void*)printear);
+	pthread_mutex_unlock(&sem_MP);
 }
 
 /* -------------------------------------------------------------------------------------*/
@@ -121,7 +132,7 @@ void TLBFlush(){
 	if (pthread_create(&hiloTLBFlush, NULL,(void*)doTLBFlush,NULL)){
 		log_error(MemoriaLog,RED"Error al crear el hilo para realizar TLBFlush\n"RESET);
 	}
-	pthread_join(hiloTLBFlush,NULL);
+//	pthread_join(hiloTLBFlush,NULL);
 }
 
 void MPFlush(){
@@ -129,7 +140,7 @@ void MPFlush(){
 	if (pthread_create(&hiloMPFlush, NULL,(void*)doMPFlush,NULL)){
 		log_error(MemoriaLog,RED"Error al crear el hilo para realizar MemFlush\n"RESET);
 	}
-	pthread_join(hiloMPFlush,NULL);
+//	pthread_join(hiloMPFlush,NULL);
 }
 
 void MPDump(){
@@ -149,15 +160,15 @@ void MPDump(){
 		printearTabla();
 		/* Fin de código de Proceso Hijo */
 	}
-	else {
-		/* Inicio de código de Proceso Padre */
-		printf("Tiraste la señal para dumpear la memoria principal! \n ");
-
-		/* Esperar finalización del Hijo */
-		wait(NULL);
-		printf("Terminó mi hijo \n");
-		/* Fin de código de Proceso Padre */
-	}
+//	else {
+//		/* Inicio de código de Proceso Padre */
+//		printf("Tiraste la señal para dumpear la memoria principal! \n ");
+//
+//		/* Esperar finalización del Hijo */
+//		wait(NULL);
+//		printf("Terminó mi hijo \n");
+//		/* Fin de código de Proceso Padre */
+//	}
 
 }
 
