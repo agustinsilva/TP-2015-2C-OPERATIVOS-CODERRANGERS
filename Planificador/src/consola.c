@@ -36,8 +36,6 @@ void* mostrarConsola() {
 				//Metodo que ejecuta el finalizar proceso
 				scanf("%d",pid);
 				finalizarProceso(pid);
-				getchar();
-				getchar();
 				break;
 			case 3:
 				//Metodo que ejecuta el PS
@@ -110,6 +108,7 @@ void mostrarProcesos() {
  * si es entrada y salida, lo mismo.
  */
 void finalizarProceso(uint32_t *pid) {
+	sem_wait(&mutex);
 	int _pcbByPid(t_pcb *proc_ejecutado) {
 		if (*pid == proc_ejecutado->idProceso)
 			return 1;
@@ -129,9 +128,9 @@ void finalizarProceso(uint32_t *pid) {
 		pcbFinEjecutados->flagFin = 1;
 	}
 	if (pcbFinBloqueados != NULL) {
-		pcbFinEjecutados->flagFin = 1;
+		pcbFinBloqueados->flagFin = 1;
 	}
-
+	sem_post(&mutex);
 }
 
 void killThemAll(){
