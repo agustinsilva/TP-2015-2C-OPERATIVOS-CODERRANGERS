@@ -215,6 +215,7 @@ char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina, sock_t* socketM
 		return PEDIDO_ERROR;
 		log_error(CPULog,"El pedido de lectura no fue exitoso.","ERROR");
 	}
+
 	char* contenido = recibirMensaje(socketMemoria);
 	log_info(CPULog,"[PID:%s] Lectura realizada. Contenido: %s",string_itoa(pid),contenido);
 
@@ -243,7 +244,7 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	uint32_t longitudMensaje= strlen (textoAEscribir);
 
 	uint32_t offset=0;
-	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + sizeof(textoAEscribir) +  sizeof(uint32_t);
+	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + longitudMensaje +  sizeof(uint32_t);
 	char* message = malloc(tamanio);
 	memcpy(message, &cabecera, sizeof(cabecera));
 	offset = sizeof(cabecera);
@@ -253,9 +254,12 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	offset = offset + sizeof(numeroPagina);
 	memcpy(message + offset,&longitudMensaje, sizeof(uint32_t));
 	offset = offset + sizeof(uint32_t);
-	memcpy(message + offset, &textoAEscribir, sizeof(textoAEscribir));
-	offset = offset + sizeof(textoAEscribir);
+	memcpy(message + offset, textoAEscribir, longitudMensaje);
+	offset = offset + sizeof(longitudMensaje);
 	status = send(socketMemoria->fd,message,tamanio,0);
+
+	printf("%s",textoAEscribir);
+
 	free(message);
 
 	if(!status)	{
@@ -283,7 +287,7 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 		string_append(&mensaje, " escrita: ");
 		string_append(&mensaje, textoAEscribir);
 		string_append(&mensaje, "\n");
-		log_error(CPULog,"Se escribió %s en el Proceso %d, Página %d",textoAEscribir, pid, numeroPagina,"ERROR");
+		log_error(CPULog,"Se escribió %s en el Proceso %s, Página %d",textoAEscribir, string_itoa(pid), numeroPagina,"ERROR");
 	}
 	return mensaje;
 }

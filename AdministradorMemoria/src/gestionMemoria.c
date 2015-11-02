@@ -133,8 +133,6 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 	if(codigo==codigo_leer){
 		enviarContenidoPagina(cpuSocket, pedido);
-	} else{
-		enviarEnteros(cpuSocket, pedido_exitoso);
 	}
 	free(pedido->contenido);
 	free(pedido);
@@ -266,6 +264,10 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 
 		llenarDeNulos(entradaMP->contenido,configuracion->tamanio_marco,string_length(contenidoAEscribir));
 
+		log_info(MemoriaLog, "Se escribió en la página %d del proceso %d  el contenido: %s\n", nroPagina, idmProc, entradaMP->contenido);
+
+		printf ("%s\n", contenidoAEscribir);
+
 		t_TP* tablaPag = buscarEntradaEnTablaDePaginas(idmProc,nroPagina);
 		if(tablaPag!=NULL){
 			tablaPag->modified=true;
@@ -275,6 +277,10 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 			enviarEnteros(cpuSocket,pedido_error);
 		}
 	}
+	else {
+		log_error(MemoriaLog, "Entrada de memoria Nula\n");
+		printf("Error!\n");
+			}
 }
 
 void manejarMemoriaPrincipalLectura(t_MP* entradaMP, sock_t* cpuSocket){

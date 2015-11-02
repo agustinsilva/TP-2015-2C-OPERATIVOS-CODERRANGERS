@@ -368,8 +368,11 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t longitudContenido;
 	int32_t recibidolongitudContenido = recv(cpuSocket->fd, &longitudContenido, sizeof(int32_t), 0);
 
-	char* contenido = malloc(longitudContenido);
+	char* contenido = malloc(longitudContenido+1);
 	int32_t recibidoContenido = recv(cpuSocket->fd, contenido, longitudContenido, 0);
+	contenido[longitudContenido]='\0';
+	printf("%s",contenido);
+
 	if(recibidolongitudContenido <=0 || recibidoContenido<=0){
 		log_error(MemoriaLog, RED"No se recibió correctamente el contenido de la página de CPU\n"RESET);
 		return;
@@ -423,7 +426,13 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 						pthread_mutex_unlock(&sem_TLB);
+
+						pthread_mutex_lock(&sem_MP);
+					    t_MP* miss = buscarEnMemoriaPrincipal(marco);
+					    manejarMemoriaPrincipalEscritura(miss, cpuSocket, contenido, idmProc, nroPagina);
+					    pthread_mutex_unlock(&sem_MP);
 					}
+
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
@@ -501,8 +510,6 @@ void enviarStrings(sock_t* socket, char* string, int32_t longitud)
 	if(enviado!=longitud)
 	{
 		printf("No se envió correctamente el string\n");
-		free(string);
-		return;
 	}
 }
 
