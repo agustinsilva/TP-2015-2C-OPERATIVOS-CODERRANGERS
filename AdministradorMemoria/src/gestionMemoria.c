@@ -115,19 +115,19 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 		}
 	}
 
-	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
-	if(pedido==NULL || pedido->encontro==false) {
-		enviarEnteros(cpuSocket, pedido_error);
-		return -1;
-	}
-	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
-
 	t_TP* entradaARemoverDeMP = buscarEnTablaDePaginasByMarco(marcoAReemplazar);
 	if(entradaARemoverDeMP!=NULL && entradaARemoverDeMP->modified==true){
 		if(escribirEnSwap(entradaARemoverDeMP, swapSocket)){
 			entradaARemoverDeMP->modified=false;
 		}
 	}
+
+	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
+		if(pedido==NULL || pedido->encontro==false) {
+			enviarEnteros(cpuSocket, pedido_error);
+			return -1;
+		}
+		log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
 
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
 
@@ -147,12 +147,13 @@ bool escribirEnSwap(t_TP* entradaARemoverDeMP, sock_t* swapSocket){
 	enviarEnteros(swapSocket, codigo_escribir);
 	enviarEnteros(swapSocket, entradaARemoverDeMP->idProc);
 	enviarEnteros(swapSocket, entradaARemoverDeMP->nroPag);
-	enviarStrings(swapSocket, mp->contenido, string_length(mp->contenido));
+	enviarStrings(swapSocket, mp->contenido, configuracion->tamanio_marco);
 
 	int32_t confirmacionSwap;
 	int32_t recibidoConfirmacion = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t), 0);
 	if(recibidoConfirmacion<=0){
 		log_error(MemoriaLog,RED "No se recibió la confirmación de Swap\n"RESET);
+		return false;
 	}
 	if(confirmacionSwap==pedido_error){
 		log_error(MemoriaLog,RED "No se pudo guardar la página en la partición\n"RESET);
