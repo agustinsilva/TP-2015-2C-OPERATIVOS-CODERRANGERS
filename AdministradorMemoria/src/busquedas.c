@@ -44,9 +44,10 @@ int32_t buscarMarcoEnTablaDePaginas(int32_t idmProc, int32_t nroPagina){
 
 t_TP* buscarEnTablaDePaginasByMarco(int32_t marco){
 	bool porMarco(t_TP* entrada){
-		return (entrada->frame=marco && entrada->present==true);  /* podría no ser necesario*/
+		return (entrada->frame==marco && entrada->present==true);  /* podría no ser necesario*/
 	}
 	t_TP* tablaPagina = list_find(tablasDePaginas, (void*) porMarco);
+
 	return tablaPagina;
 }
 

@@ -328,7 +328,7 @@ int32_t reemplazarFIFO(t_list* tablaDelProceso){
 		bool porMinLoaded(t_TP* entrada){
 			return entrada->loadedTime == minLoaded;
 		}
-		t_TP* aReemplazar = list_find(tablasDePaginas,(void*) porMinLoaded);
+		t_TP* aReemplazar = list_find(tablaDelProceso,(void*) porMinLoaded);
 		return aReemplazar->frame;
 	}
 }
