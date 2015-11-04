@@ -141,6 +141,7 @@ void consumirRecursos() {
 
 /***** Funcion replanifica PCB cuando CPU vuelve por Quantum *****/
 void replanificar(uint32_t socketCpu) {
+	sem_wait(&mutex);
 	//Recibo el Mensaje a logear de ejecucion por Quantum
 	char* mensajeALogear = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeALogear);
@@ -161,7 +162,7 @@ void replanificar(uint32_t socketCpu) {
 			return 0;
 	}
 	//Reviso el Flag de finalizacion
-	sem_wait(&mutex);
+
 	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
 	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
@@ -179,6 +180,7 @@ void replanificar(uint32_t socketCpu) {
 }
 
 void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
+	sem_wait(&mutex);
 	//recibo retardo y mensaje
 	int32_t retardo = deserializarEnteroSinSigno(socketCpu);
 	//Recibo el Mensaje a logear
@@ -187,7 +189,7 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	free(mensajeALogear);
 	//recibo pcb
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
-	sem_wait(&mutex);
+
 	//Metodos para buscar
 	int _pcbById(t_pcb *proc_ejecutado) {
 		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
@@ -276,10 +278,10 @@ char* recibirMensaje(uint32_t socket) {
 }
 
 void logearFinalizacionCpu(uint32_t socketCpu) {
+	sem_wait(&mutex);
 	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
 	free(mensajeCpu);
-	sem_wait(&mutex);
 	int _cpuBySocket(t_hilosConectados *hilosConectados) {
 		if (hilosConectados->socketHilo == socketCpu)
 			return 1;
@@ -296,8 +298,7 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 		else
 			return 0;
 	}
-	t_list *pcbFinalizado = list_filter(proc_ejecutados, (void*) _pcbByCpuPid);
-	t_pcb *pcb = list_get(pcbFinalizado, 0);
+	t_pcb *pcb = list_find(proc_ejecutados, (void*) _pcbByCpuPid);
 	pcb->estadoProceso = 2;
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
 	list_add_all(cpu_listos, cpuPlanificado);
