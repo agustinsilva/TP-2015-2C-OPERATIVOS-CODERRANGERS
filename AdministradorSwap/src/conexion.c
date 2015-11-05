@@ -59,6 +59,7 @@ void iniciarServidor()
 				break;
 			case ESCRIBIR:
 				procesarEscritura(detalle,socketMemoria);
+				free(detalle->contenidoPagina);
 				break;
 			case ANORMAL:
 			printf("Finalizacion anormal de administrador de memoria\n");
@@ -100,21 +101,20 @@ t_mensaje* deserializarDetalle(sock_t* socket, int32_t cabecera)
 		case INICIAR:
 			printf("Se inicio un proceso\n");
 			detalle->PID = deserializarEntero(socket);
-			detalle->paginas = deserializarEntero(socket);
+			detalle->CantidadPaginas = deserializarEntero(socket);
 			break;
 		case FINALIZAR:
 			detalle->PID = deserializarEntero(socket);
 			break;
 		case LEER:
 			detalle->PID = deserializarEntero(socket);
-			detalle->ubicacion = deserializarEntero(socket);
+			detalle->NumeroDePagina = deserializarEntero(socket);
 			break;
 		case ESCRIBIR:
 			detalle->PID = deserializarEntero(socket);
-			detalle->ubicacion = deserializarEntero(socket);
-			detalle->tamanioContenido = deserializarEntero(socket);
-			detalle->contenidoPagina = malloc(sizeof(detalle->tamanioContenido));
-			recv(socket->fd, detalle->contenidoPagina, detalle->tamanioContenido, 0);
+			detalle->NumeroDePagina = deserializarEntero(socket);
+			detalle->contenidoPagina = malloc(configuracion->tamano_pagina);
+			recv(socket->fd, detalle->contenidoPagina, configuracion->tamano_pagina, 0);
 			break;
 		default:
 			// Por si acaso

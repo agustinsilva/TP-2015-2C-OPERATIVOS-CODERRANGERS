@@ -33,7 +33,7 @@ typedef struct {
 
 //id del proceso, comienzo del proceso en particion y paginas ocupadas.
 typedef struct {
-	uint32_t PID;
+	int32_t PID;
 	uint32_t comienzo;
 	uint32_t paginas;
 }t_nodoOcupado;
@@ -45,16 +45,15 @@ typedef struct{
 }t_archivoSwap;
 
 typedef struct{
-	uint32_t PID;
+	int32_t PID;
 	uint32_t lecturas;
 	uint32_t escrituras;
 }t_estadistica;
 
 typedef struct{
-	uint32_t PID;
-	uint32_t paginas;
-	uint32_t ubicacion;
-	uint32_t tamanioContenido;
+	int32_t PID;
+	int32_t CantidadPaginas; //paginas
+	int32_t NumeroDePagina; //ubicacion
 	char* contenidoPagina;
 }t_mensaje;
 
@@ -78,6 +77,7 @@ typedef struct{
 #define RESET_NON_UL "\e[24m"
 #define BLINK "\e[5m"
 #define RESET_NON_BLINK "\e[25m"
+
 //Variables globales
 t_configuracion* configuracion;
 t_config* fd_configuracion;
@@ -85,9 +85,9 @@ t_log* SwapLog;
 t_list* espacioLibre;
 t_list* espacioOcupado;
 t_list* estadisticasProcesos;
-uint32_t paginasCondicion;  //cuidado con esta variable A.S.
-uint32_t ubicacionCondicion;
-uint32_t pidCondicion;
+int32_t CantidadDePaginasCondicion;  //cuidado con esta variable A.S.
+int32_t NumeroDePaginaCondicion;
+int32_t pidCondicion;
 t_archivoSwap* archivoMapeado;
 
 //Firma de funciones
@@ -100,25 +100,25 @@ void crearParticion();
 void eliminarParticion();
 void inicializarParticion();
 uint32_t contarPaginasLibres();
-bool hayEspacio(uint32_t);
-bool hayEspacioSecuencial(uint32_t);
+bool hayEspacio(int32_t);
+bool hayEspacioSecuencial(int32_t);
 bool validarEspacioLibre(void* nodo);
-uint32_t ocuparEspacio(uint32_t,uint32_t);
+uint32_t ocuparEspacio(int32_t,int32_t);
 bool validarUbicacionLibre(void*);
-void liberarProceso(uint32_t);
+void liberarProceso(int32_t);
 bool validarMismoPid(void*);
-char* buscarPagina(uint32_t, uint32_t);
-void escribirPagina(char*,uint32_t,uint32_t);
+char* buscarPagina(int32_t, int32_t);
+void escribirPagina(char*,int32_t,int32_t);
 void iniciarServidor();
 void mappear_archivo();
 int32_t deserializarEntero(sock_t*);
 t_mensaje* deserializarDetalle(sock_t*, int32_t);
 bool asignarProceso(t_mensaje*);
-void agregarAEstadistica(uint32_t);
-void aumentarEscritura(uint32_t);
-void aumentarLectura(uint32_t);
+void agregarAEstadistica(int32_t);
+void aumentarEscritura(int32_t);
+void aumentarLectura(int32_t);
 void procesarInicio(t_mensaje*,sock_t*);
-void* encontrarNodoPorPID(t_list*, uint32_t);
+void* encontrarNodoPorPID(t_list*, int32_t);
 void liberarRecursos();
 void procesarFinalizacion(t_mensaje*,sock_t*);
 void procesarLectura(t_mensaje*,sock_t*);
