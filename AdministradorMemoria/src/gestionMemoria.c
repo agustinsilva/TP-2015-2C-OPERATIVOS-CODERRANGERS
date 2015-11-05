@@ -67,7 +67,7 @@ t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
 void eliminarTablaDePaginas(int32_t idmProc){
 
 	bool porPID(t_TP* entrada){
-		return entrada->idProc;
+		return entrada->idProc==idmProc;
 	}
 	list_remove_and_destroy_by_condition(tablasDePaginas, (void*) porPID, (void*)procesoDestroyer);
 }
@@ -132,6 +132,10 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
 
 	if(codigo==codigo_leer){
+
+		//DEBERIA BUSCAR EN MEMORIA PRINCIPAL ACTUALIZADA...
+		retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marcoAReemplazar);
+
 		enviarContenidoPagina(cpuSocket, pedido);
 	}
 	free(pedido->contenido);
@@ -351,12 +355,12 @@ int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	return cantidad;
 }
 
-void retardo(int32_t cantidad, int32_t donde){
+void retardo(int32_t cantidad, int32_t donde, int32_t idmProc, int32_t pag, int32_t marco){
 	if(donde==tabla_paginas){
 		printf("Buscando en la tabla de páginas... \n");
 	}
 	if(donde==memoria_principal){
-		printf("Buscando en memoria... \n");
+		log_info(MemoriaLog, "- *Acceso a Memoria* PID: %d, Nro. Página: %d, Nro. Marco: %d \n", idmProc, pag, marco);
 	}
 	sleep(cantidad);
 }

@@ -263,7 +263,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 		if(entradaTLB != NULL){    				/* TLB HIT */
 			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
-			retardo(configuracion->retardo_memoria, memoria_principal);
+			retardo(configuracion->retardo_memoria, memoria_principal, idmProc, entradaTLB->pagina, entradaTLB->marco);
 
 			pthread_mutex_lock(&sem_MP);
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
@@ -272,7 +272,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 
 		} else {      							/* TLB MISS */
 
-			retardo(configuracion->retardo_memoria, tabla_paginas);
+			retardo(configuracion->retardo_memoria, tabla_paginas, dummy, dummy, dummy);
 			pthread_mutex_lock(&sem_TP);
 			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
 			pthread_mutex_unlock(&sem_TP);
@@ -301,7 +301,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
-					retardo(configuracion->retardo_memoria, memoria_principal);
+					retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 
 					pthread_mutex_lock(&sem_MP);
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
@@ -321,7 +321,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 	}
 	else {         							/* SI NO HAY TLB */
 
-		retardo(configuracion->retardo_memoria, tabla_paginas);
+		retardo(configuracion->retardo_memoria, tabla_paginas, dummy, dummy, dummy);
 		pthread_mutex_lock(&sem_TP);
 		int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
 		pthread_mutex_unlock(&sem_TP);
@@ -341,7 +341,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket)
 				 break;
 			}
 			default:  /*buscar contenido en memoria principal*/ {
-				retardo(configuracion->retardo_memoria, memoria_principal);
+				retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 				pthread_mutex_lock(&sem_MP);
 				t_MP* miss = buscarEnMemoriaPrincipal(marco);
 				manejarMemoriaPrincipalLectura(miss, cpuSocket);
@@ -390,7 +390,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 		if(entradaTLB != NULL){    				/* TLB HIT */
 			log_info(MemoriaLog, "-" GREEN " *TLB HIT*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, entradaTLB->marco);
 
-			retardo(configuracion->retardo_memoria, memoria_principal);
+			retardo(configuracion->retardo_memoria, memoria_principal, idmProc, entradaTLB->pagina, entradaTLB->marco);
 
 			pthread_mutex_lock(&sem_MP);
 			t_MP* hit = buscarEnMemoriaPrincipal(entradaTLB->marco);
@@ -399,7 +399,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 		} else {      							/* TLB MISS */
 
-			retardo(configuracion->retardo_memoria, tabla_paginas);
+			retardo(configuracion->retardo_memoria, tabla_paginas, dummy, dummy, dummy);
 
 			pthread_mutex_lock(&sem_TP);
 			int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
@@ -427,6 +427,8 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 						pthread_mutex_unlock(&sem_TLB);
 
+						retardo(configuracion->retardo_memoria, memoria_principal, idmProc, entradaTLB->pagina, entradaTLB->marco);
+
 						pthread_mutex_lock(&sem_MP);
 					    t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					    manejarMemoriaPrincipalEscritura(miss, cpuSocket, contenido, idmProc, nroPagina);
@@ -437,7 +439,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				}
 				default:  /*buscar contenido en memoria principal*/ {
 
-					retardo(configuracion->retardo_memoria, memoria_principal);
+					retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 
 					pthread_mutex_lock(&sem_MP);
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
@@ -457,7 +459,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 	}
 	else {         							/* SI NO HAY TLB */
 
-		retardo(configuracion->retardo_memoria, tabla_paginas);
+		retardo(configuracion->retardo_memoria, tabla_paginas, dummy, dummy, dummy);
 
 		pthread_mutex_lock(&sem_TP);
 		int32_t marco = buscarMarcoEnTablaDePaginas(idmProc, nroPagina);
@@ -472,11 +474,13 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
 				pthread_mutex_lock(&sem_swap);
-				swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
+				//CHEQUEAR MARCO DEVUELTO
+				marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
 
+				retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 				pthread_mutex_lock(&sem_MP);
 				t_MP* entrada = buscarEnMemoriaPrincipal(marco);
 				manejarMemoriaPrincipalEscritura(entrada, cpuSocket, contenido, idmProc, nroPagina);
@@ -485,7 +489,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 			default:  /*buscar contenido en memoria principal*/ {
 
-				retardo(configuracion->retardo_memoria, memoria_principal);
+				retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 
 				pthread_mutex_lock(&sem_MP);
 				t_MP* miss = buscarEnMemoriaPrincipal(marco);
