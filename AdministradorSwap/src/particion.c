@@ -208,6 +208,9 @@ void escribirPagina(char* pagina,int32_t PID,int32_t numeroDePagina)
 	uint32_t posicionEnArchivo = (nodo->comienzo + numeroDePagina)*configuracion->tamano_pagina;
 	char* areaMemoriaAEscribir = archivoMapeado->memoria + posicionEnArchivo;
 	memcpy(areaMemoriaAEscribir, pagina,configuracion->tamano_pagina);
+	pagina[configuracion->tamano_pagina] = '\0';
+	int32_t tamanio = strlen(pagina);
+	log_info(SwapLog,"Escritura solicitada por proceso con PID %d, byte inicial %d y tamanio %d y contenido: %s",PID,posicionEnArchivo,tamanio,pagina);
 
 }
 

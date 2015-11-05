@@ -59,7 +59,6 @@ void iniciarServidor()
 				break;
 			case ESCRIBIR:
 				procesarEscritura(detalle,socketMemoria);
-				free(detalle->contenidoPagina);
 				break;
 			case ANORMAL:
 			printf("Finalizacion anormal de administrador de memoria\n");
