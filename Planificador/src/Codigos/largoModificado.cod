@@ -1,0 +1,22 @@
+iniciar 10
+escribir 0 "hola"
+escribir 1 "example"
+escribir 2 "string"
+escribir 3 "usage"
+escribir 4 "declaration"
+escribir 9 "function"
+escribir 8 "character"
+escribir 7 "null"
+escribir 6 "black"
+escribir 5 "soul"
+leer 0
+leer 1
+leer 2
+leer 3
+leer 4
+leer 5
+leer 6
+leer 7
+leer 8
+leer 9
+finalizar

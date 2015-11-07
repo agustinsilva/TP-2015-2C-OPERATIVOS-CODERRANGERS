@@ -18,7 +18,7 @@ int conectarCPUPadreAPlanificador(){
 	}else{
 		configCPUPadre.quantum = 0;
 	}
-	printf("tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
+	printf("Tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
 	return EXIT_SUCCESS;
 }
 
@@ -258,8 +258,6 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	offset = offset + sizeof(longitudMensaje);
 	status = send(socketMemoria->fd,message,tamanio,0);
 
-	printf("%s",textoAEscribir);
-
 	free(message);
 
 	if(!status)	{
@@ -287,7 +285,7 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 		string_append(&mensaje, " escrita: ");
 		string_append(&mensaje, textoAEscribir);
 		string_append(&mensaje, "\n");
-		log_error(CPULog,"Se escribió %s en el Proceso %s, Página %d",textoAEscribir, string_itoa(pid), numeroPagina,"ERROR");
+		log_info(CPULog,"Se escribió %s en el Proceso %s, Página %d",textoAEscribir, string_itoa(pid), numeroPagina);
 	}
 	return mensaje;
 }

@@ -180,11 +180,11 @@ void mappear_archivo()
 	archivoMapeado->tamanio = tamanio;
 }
 
-char* buscarPagina(int32_t PID, int32_t pagina)
+char* buscarPagina(int32_t PID, int32_t numeroDePagina)
 {
 	char* paginaBuscada = malloc(configuracion->tamano_pagina);
 	t_nodoOcupado* nodo = encontrarNodoPorPID(espacioOcupado,PID);
-	uint32_t ubicacionPagina = nodo->comienzo + pagina;
+	int32_t ubicacionPagina = nodo->comienzo + numeroDePagina;
 	memcpy(paginaBuscada,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
 	uint32_t byteInicial = nodo->comienzo * configuracion->tamano_pagina;
 	bool vacio = string_is_empty(paginaBuscada);
@@ -288,7 +288,7 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 	}
 	else
 	{
-		printf("Se intenta eliminar un proceso que no existe en memoria \n");
+		log_error(SwapLog,"Se intenta eliminar un proceso que no existe en memoria.");
 	}
 	//Se envia 1 si salio  bien y 0 en caso contrario.
 	int32_t mensaje = resultado;
