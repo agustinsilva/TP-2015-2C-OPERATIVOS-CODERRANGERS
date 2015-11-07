@@ -122,6 +122,7 @@ void finalizacion(){
 	char respuesta;
 	scanf("%c" ,&respuesta);
 	if(respuesta=='s' || respuesta=='S'){
+		clean_socket(clientSocketSwap);
 		exit(1);
 	}
 }
