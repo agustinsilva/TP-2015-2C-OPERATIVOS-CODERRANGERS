@@ -234,8 +234,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 	log_info(MemoriaLog," - " BOLD "*Fin de proceso*" RESET_NON_BOLD " PID: %d ", idmProc);
 }
 
-void lectura(sock_t* cpuSocket, sock_t* swapSocket)
-{
+void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t idmProc;
 	int32_t nroPagina;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
