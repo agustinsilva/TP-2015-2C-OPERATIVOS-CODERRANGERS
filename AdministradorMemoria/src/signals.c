@@ -55,8 +55,8 @@ void doMPFlush(sock_t* socketSwap){
 	pthread_mutex_lock(&sem_MP);
 	pthread_mutex_lock(&sem_swap);
 
-	if (clientSocketSwap != 0 ){
-		log_info(MemoriaLog, "No se ha podido conectar correctamente al Swap\n");
+	if (clientSocketSwap == 0 ){
+		log_info(MemoriaLog, "Se perdió la conexión con el Administrador de Swap\n");
 		pthread_mutex_unlock(&sem_swap);
 		pthread_mutex_unlock(&sem_MP);
 		pthread_mutex_unlock(&sem_TP);
