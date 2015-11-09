@@ -58,3 +58,11 @@ t_TP* buscarEntradaEnTablaDePaginas(int32_t idmProc, int32_t nroPagina){
 	t_TP* tablaPagina = list_find(tablasDePaginas, (void*) porPIDyPag);
 	return tablaPagina;
 }
+
+t_Stats* buscarEstadisticaPorProceso(int32_t idmProc){
+	bool porPID(t_Stats* entrada){
+		return entrada->idProc==idmProc;
+	}
+	t_Stats* stat = list_find(estadisticas, (void*) porPID);
+	return stat;
+}

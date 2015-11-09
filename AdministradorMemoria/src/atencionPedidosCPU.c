@@ -91,8 +91,7 @@ int32_t recibirCodigoOperacion(sock_t* cpu)
 	}
 }
 
-void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
-{
+void iniciar(sock_t* cpuSocket, sock_t* swapSocket) {
 	int32_t idmProc;
 	int32_t cantPaginas;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
@@ -141,6 +140,17 @@ void iniciar(sock_t* cpuSocket, sock_t* swapSocket)
 		pthread_mutex_lock(&sem_TP);
 	 	crearTablaDePaginas(idmProc,cantPaginas);
 	 	pthread_mutex_unlock(&sem_TP);
+
+	 	if(configuracion->tlb_habilitada == true){
+			pthread_mutex_lock(&sem_stats);
+			t_Stats* nuevo = malloc(sizeof(t_Stats));
+			nuevo->idProc = idmProc;
+			nuevo->pagsTotales = 0;
+			nuevo->pageFaults = 0;
+
+			list_add(estadisticas, nuevo);
+			pthread_mutex_unlock(&sem_stats);
+	 	}
 	  }
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
@@ -211,10 +221,16 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 		pthread_mutex_lock(&sem_TLB);
 		eliminarDeTLBPorPID(idmProc);
 		pthread_mutex_unlock(&sem_TLB);
+
+		pthread_mutex_lock(&sem_stats);
+		t_Stats* estadistica = buscarEstadisticaPorProceso(idmProc);
+		pthread_mutex_unlock(&sem_stats);
+		log_info(MemoriaLog," - " BOLD "*Fin de proceso*\n" RESET_NON_BOLD " PID: %d , Total Páginas Accedidas: %d , Fallos de Página: %d", idmProc, estadistica->pagsTotales, estadistica->pageFaults);
+	} else{
+		log_info(MemoriaLog," - " BOLD "*Fin de proceso*" RESET_NON_BOLD " PID: %d ", idmProc);
 	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
-	log_info(MemoriaLog," - " BOLD "*Fin de proceso*" RESET_NON_BOLD " PID: %d ", idmProc);
 }
 
 void lectura(sock_t* cpuSocket, sock_t* swapSocket){
@@ -227,8 +243,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 		printf("No se recibió correctamente la información de la CPU\n");
 		return;
 	}*/
-	if(recibidoProc <= 0 || recibidoPag <= 0)
-	{
+	if(recibidoProc <= 0 || recibidoPag <= 0) {
 		log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
 		return;
 	}
@@ -237,6 +252,11 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 
 												/* SI HAY TLB */
 	if(configuracion->tlb_habilitada==1){
+
+		pthread_mutex_lock(&sem_stats);
+		t_Stats* estadistica = buscarEstadisticaPorProceso(idmProc);
+		(estadistica->pagsTotales)++;
+		pthread_mutex_unlock(&sem_stats);
 
 		pthread_mutex_lock(&sem_TLB);
 		t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
@@ -298,6 +318,10 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 
 			log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+
+			pthread_mutex_lock(&sem_stats);
+			(estadistica->pageFaults)++;
+			pthread_mutex_unlock(&sem_stats);
 		}
 
 	}
@@ -353,7 +377,6 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 	char* contenido = malloc(longitudContenido+1);
 	int32_t recibidoContenido = recv(cpuSocket->fd, contenido, longitudContenido, 0);
 	contenido[longitudContenido]='\0';
-	printf("%s",contenido);
 
 	if(recibidolongitudContenido <=0 || recibidoContenido<=0){
 		log_error(MemoriaLog, RED"No se recibió correctamente el contenido de la página de CPU\n"RESET);
@@ -364,6 +387,11 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 	/* SI HAY TLB */
 	if(configuracion->tlb_habilitada==1){
+
+		pthread_mutex_lock(&sem_stats);
+		t_Stats* estadistica = buscarEstadisticaPorProceso(idmProc);
+		(estadistica->pagsTotales)++;
+		pthread_mutex_unlock(&sem_stats);
 
 		pthread_mutex_lock(&sem_TLB);
 		t_TLB* entradaTLB = buscarEnTLB(idmProc, nroPagina);
@@ -436,6 +464,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 
 			log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+
+			pthread_mutex_lock(&sem_stats);
+			(estadistica->pageFaults)++;
+			pthread_mutex_unlock(&sem_stats);
 		}
 
 	}

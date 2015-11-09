@@ -9,8 +9,7 @@
 
 /* --- Destroyers --- */
 
-void procesoDestroyer(t_TP* entrada)
-{
+void procesoDestroyer(t_TP* entrada) {
 	free(entrada);
 }
 
@@ -36,19 +35,6 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 	}
 	return pedido_exitoso;
 }
-
-//int32_t getFrame() {
-//	int32_t marcoLibre=-1;
-//	void buscarMarcoLibre(t_MP* entrada)
-//	{
-//		if(entrada->ocupado==0) {
-//			marcoLibre=entrada->marco;
-//			return;
-//		}
-//	}
-//	list_iterate(memoriaPrincipal, (void*)buscarMarcoLibre);
-//	return marcoLibre;
-//}
 
 /* unico reemplazo -> FIFO */
 t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){

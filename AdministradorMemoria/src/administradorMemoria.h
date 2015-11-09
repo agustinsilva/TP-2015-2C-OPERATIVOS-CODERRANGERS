@@ -108,6 +108,12 @@ typedef struct
 	char* contenido;
 }t_LecturaSwap;
 
+typedef struct {
+	int32_t idProc;
+	int32_t pagsTotales;
+	int32_t pageFaults;
+}t_Stats;
+
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
@@ -117,11 +123,13 @@ t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
 sock_t* clientSocketSwap;
 t_list* CPUsConectados; /* de sock_t */
+t_list* estadisticas;
 
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;
 pthread_mutex_t sem_MP;
 pthread_mutex_t sem_swap;
+pthread_mutex_t sem_stats;
 
 //Firma de funciones
 
@@ -139,6 +147,7 @@ void TLBDestroyer(t_TLB* );
 void saludoInicial();
 void initializeMutex();
 void limpiarCPUs();
+void limpiarEstadisticas();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -199,6 +208,7 @@ t_MP* buscarEnMemoriaPrincipal(int32_t);
 t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
 t_TP* buscarEnTablaDePaginasByMarco(int32_t );
 int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
+t_Stats* buscarEstadisticaPorProceso(int32_t );
 
 
 #endif /* ADMINMEMORIA_H_ */
