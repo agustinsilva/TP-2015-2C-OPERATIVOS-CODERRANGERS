@@ -191,7 +191,14 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
-		paginaSwappedIn->loadedTime = getLoadedTimeForProc(idmProc);
+		paginaSwappedIn->loadedTime = setLoadedTimeForProc(idmProc);
+	}
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, LRU)){
+		if(paginaSwappedOut!=NULL){
+			paginaSwappedOut->usedTime = REINIT;
+		}
+		paginaSwappedIn->usedTime = 0;
 	}
 
 	/* por las dudas le pongo el ocupado */
@@ -226,7 +233,8 @@ t_list* getTablaDePaginasPresentes(int32_t idmProc){
 	return tablaDelProceso;
 }
 
-int32_t getLoadedTimeForProc(int32_t idmProc){
+
+int32_t setLoadedTimeForProc(int32_t idmProc){
 
 	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
 
@@ -247,6 +255,17 @@ int32_t getMinLoadedTime(t_list* tablaDelProceso){
 	}
 	list_iterate(tablaDelProceso, (void*) minimo);
 	return min;
+}
+
+int32_t getMaxUsedTime(t_list* tablaDelProceso){
+	int32_t max=REINIT;
+	void maximo(t_TP* entrada){
+		if(entrada->usedTime>max){
+			max=entrada->usedTime;
+		}
+	}
+	list_iterate(tablaDelProceso, (void*) maximo);
+	return max;
 }
 
 int32_t getRandomFrameVacio(){
@@ -313,14 +332,15 @@ int32_t reemplazarMP(int32_t idmProc, char* algoritmo_reemplazo){
 		return reemplazarFIFO(tablaDelProceso);
 	}
 
-	/*no estarían funcionando aún */
+	if(string_equals_ignore_case(algoritmo_reemplazo, LRU)){
+		return reemplazarLRU(tablaDelProceso);
+	}
+
+	/*no estaría funcionando aún */
 	if(string_equals_ignore_case(algoritmo_reemplazo, CLOCKM)){
 		return reemplazarCLOCKM(tablaDelProceso);
 	}
 
-	if(string_equals_ignore_case(algoritmo_reemplazo, LRU)){
-		return reemplazarLRU(tablaDelProceso);
-	}
 	return marcos_insuficientes;
 }
 
@@ -343,7 +363,25 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso){
 }
 
 int32_t reemplazarLRU(t_list* tablaDelProceso){
-	return marcos_insuficientes;
+
+	if(list_size(tablaDelProceso)==0){
+			return marcos_insuficientes;
+	} else{
+		int32_t maxUsed = getMaxUsedTime(tablaDelProceso);
+
+		bool porMaxUsed(t_TP* entrada){
+			return entrada->usedTime == maxUsed;
+		}
+		t_TP* aReemplazar = list_find(tablaDelProceso,(void*) porMaxUsed);
+
+		void pasarTiempo(t_TP* pagina){
+			if(pagina->usedTime!=REINIT){
+				(pagina->usedTime)++;
+			}
+		}
+		list_iterate(tablaDelProceso, (void*) pasarTiempo);
+		return aReemplazar->frame;
+	}
 }
 
 

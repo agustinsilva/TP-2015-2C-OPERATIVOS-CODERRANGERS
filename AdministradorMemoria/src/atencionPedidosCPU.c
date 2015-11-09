@@ -35,28 +35,7 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje)
 int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 {
 	printf("Esperando pedidos de Cpu \n");
-//	char mensajeCpu[1024];
-//	int32_t status;
-//	status = recv(paramsCPU->cpuSocket->fd, (void*)mensajeCpu, 1024, 0);
-//	printf("Mensaje de cpu : %s \n",mensajeCpu);
-//	/* Deberia validar lo que recibio */
-//	/* prepara mensaje para enviar */
-//	/*char* mensaje = "Hola Swap, soy el Admin de Memoria, mucho gusto ";*/
-//	status = enviarMensaje(paramsCPU->swapSocket,mensajeCpu);
-//
-//	/*chequea envío*/
-//	if(!status)
-//	{
-//		printf("No se envió el mensaje al swap\n");
-//	}
-//	else
-//	{
-//		printf("Se envió a Swap: %s\n", mensajeCpu);
-//	}
-//	/*recibe la respuesta*/
-//	char* respuesta = recibirMensaje(paramsCPU->swapSocket);
-//	printf("Recibe respuesta: %s\n", respuesta);
-//	free(respuesta);
+
 	int32_t codigoOperacion;
 	codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
 	if(codigoOperacion==-1)	{
@@ -89,6 +68,10 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 
 	if(codigoOperacion==0){
 		log_info(MemoriaLog, "Se desconectó un CPU\n");
+		bool PorCerrado(sock_t* socket){
+			return socket->fd==0;
+		}
+		list_remove_and_destroy_by_condition(CPUsConectados, (void*)PorCerrado, (void*)clean_socket);
 	}
 	return 0;
 }

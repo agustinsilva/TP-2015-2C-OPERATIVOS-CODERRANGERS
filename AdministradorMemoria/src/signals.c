@@ -123,6 +123,7 @@ void finalizacion(){
 	scanf("%c" ,&respuesta);
 	if(respuesta=='s' || respuesta=='S'){
 		clean_socket(clientSocketSwap);
+		limpiarCPUs();
 		exit(1);
 	}
 }

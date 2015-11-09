@@ -116,6 +116,7 @@ t_list* TLB; /* de t_TLB */
 t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
 sock_t* clientSocketSwap;
+t_list* CPUsConectados; /* de sock_t */
 
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;
@@ -137,6 +138,7 @@ void limpiarTLB();
 void TLBDestroyer(t_TLB* );
 void saludoInicial();
 void initializeMutex();
+void limpiarCPUs();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -167,8 +169,9 @@ int32_t reemplazarMP(int32_t , char* );
 int32_t reemplazarFIFO(t_list*);
 int32_t reemplazarCLOCKM(t_list*);
 int32_t reemplazarLRU(t_list*);
-int32_t getLoadedTimeForProc(int32_t);
+int32_t setLoadedTimeForProc(int32_t);
 int32_t getMinLoadedTime(t_list* );
+int32_t getMaxUsedTime(t_list* );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );

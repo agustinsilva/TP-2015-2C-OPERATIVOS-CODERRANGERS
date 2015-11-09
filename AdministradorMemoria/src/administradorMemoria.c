@@ -39,6 +39,7 @@ int main(void)
 					return EXIT_FAILURE;
 				}
 				else {
+					list_add(CPUsConectados, cpuSocket);
 					log_info(MemoriaLog,"Conectado al hilo CPU de socket %d", cpuSocket->fd);
 				}
 			}
@@ -62,6 +63,7 @@ void limpiarRecursos()
 	}
 	limpiarConfiguracion();
 	limpiarMemoriaPrincipal();
+	limpiarCPUs();
 }
 
 void setUp()
@@ -83,7 +85,9 @@ void setUp()
 		list_add(memoriaPrincipal,entrada);
 	}
 	tablasDePaginas = list_create();
+	CPUsConectados = list_create();
 }
+
 
 static void mpDestroyer(t_MP* entrada)
 {
@@ -94,6 +98,12 @@ static void mpDestroyer(t_MP* entrada)
 void TLBDestroyer(t_TLB* entrada)
 {
     free(entrada);
+}
+
+
+void limpiarCPUs(){
+	list_iterate(CPUsConectados, (void*) clean_socket);
+	list_destroy(CPUsConectados);
 }
 
 void limpiarMemoriaPrincipal()
