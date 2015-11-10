@@ -18,7 +18,8 @@ void* mostrarConsola() {
 			printf("2 - Finalizar PID \n");
 			printf("3 - Estado de procesos \n");
 			printf("4 - Cpu\n");
-			printf("5 - Kill Them All\n");
+			printf("5 - Ver Metricas procesos\n");
+			printf("666 - Kill 'em All\n");
 			printf("-------------------- \n");
 			*comando = 0;
 			leerComando(comando, "Debe ingresar un numero valido de comando\n");
@@ -50,7 +51,12 @@ void* mostrarConsola() {
 				break;
 			case 5:
 				//Metodo que ejecuta el Correr
-				printf("Debera matar a todos los procesos indicando la finalizacion");
+				printf("Las metricas de los procesos finalizados:\n");
+				mostrarMetricas();
+				break;
+			case 6:
+				//Metodo que ejecuta el Correr
+				printf("Todos los procesos deben morir\n");
 				killThemAll();
 				break;
 			default:
@@ -58,6 +64,21 @@ void* mostrarConsola() {
 				break;
 		}
 	}
+}
+
+void mostrarMetricas(){
+	sem_wait(&mutex);
+	int index;
+	if (list_size(proc_metricas) > 0) {
+			for (index = 0; index < list_size(proc_metricas); ++index) {
+				t_proc_metricas *pcbMetrica = list_get(proc_metricas, index);
+				printf("    PId: %d -- Tiempo Ejecucion:"ANSI_COLOR_GREEN" %.f"ANSI_COLOR_RESET" -- Tiempo Respuesta:"ANSI_COLOR_YELLOW" %.f"ANSI_COLOR_RESET" -- Tiempo Espera:"ANSI_COLOR_RED" %.f"ANSI_COLOR_RESET"\n", pcbMetrica->idProceso,
+						pcbMetrica->tiempoEjecucion, pcbMetrica->tiempoRespuesta, pcbMetrica->tiempoEspera);
+			}
+		} else
+			printf("No hay programas finalizados\n");
+
+	sem_post(&mutex);
 }
 
 void mostrarProcesos() {
@@ -134,6 +155,9 @@ void finalizarProceso(uint32_t *pid) {
 }
 
 void killThemAll(){
+	printf("Piuuum Piuuum");
+	getchar();
+	getchar();
 //	close(socketCpuPadre);
 //	int index;
 //	for (index = 0; index <= list_size(cpu_listos); ++index) {
@@ -172,15 +196,21 @@ void encolar(char* path) {
 	if(cantidadInstrucciones){ //Si se abre el archivo, creo pcb
 		t_pcb *pcb = malloc(sizeof(t_pcb));
 		pcb->idProceso = contadorProceso;
-		contadorProceso++;
+
 		pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
 		pcb->contadorPuntero = 1;
 		pcb->cantidadInstrucciones = cantidadInstrucciones;
 		pcb->path = malloc(strlen(path));
 		pcb->path = strdup(path); //TODO: revisar codigo maligno
 		pcb->flagFin = 0;
+		time(&pcb->tiempoCreacion);
 		list_add(proc_listos,pcb);
+		//Creo lista Metrica
+		t_proc_metricas *pcb_metrica = malloc(sizeof(t_proc_metricas));
+		pcb_metrica->idProceso = contadorProceso;
+		list_add(proc_metricas,pcb_metrica);
 		sem_post(&sincroproc);
+		contadorProceso++;
 		printf(ANSI_COLOR_GREEN "Se creo la pcb asociada y se introduce en la cola de ready a la espera de la cpu\n" ANSI_COLOR_RESET);
 	}
 	else{

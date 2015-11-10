@@ -162,16 +162,18 @@ void replanificar(uint32_t socketCpu) {
 			return 0;
 	}
 	//Reviso el Flag de finalizacion
-
 	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
 	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
+	//mantengo el tiempo de creacion
+	pcbReplanificar->tiempoCreacion = pcbFinListo->tiempoCreacion;
 	//Libero CPU y PCB y vuelven a encolarse
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
-	pcbReplanificar->estadoProceso = 0;
+	pcbReplanificar->estadoProceso = 0; //PCB Disponible
 	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
 	cpuOcupado->estadoHilo = 0; //Asigno estado disponible
 	cpuOcupado->path = "";
+	cpuOcupado->idProceso = -1; //Sin id proceso asignado
 	list_add(cpu_listos, cpuOcupado);
 	list_add(proc_listos, pcbReplanificar);
 	sem_post(&mutex);
@@ -289,8 +291,7 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 			return 0;
 	}
 	//Vuelvo a poner el cpu como disponible
-	t_list *cpuPlanificado = list_filter(cpu_ocupados, (void*) _cpuBySocket);
-	t_hilosConectados *cpu = list_get(cpu_ocupados, 0);
+	t_hilosConectados *cpu = list_find(cpu_ocupados, (void*) _cpuBySocket);
 	cpu->estadoHilo = 0; // Ponemos hilo en estado disponible
 	int _pcbByCpuPid(t_pcb *proc_ejecutado) {
 		if (cpu->idProceso == proc_ejecutado->idProceso)
@@ -298,12 +299,32 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 		else
 			return 0;
 	}
+	int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
+		if (cpu->idProceso == proc_metrica->idProceso)
+					return 1;
+				else
+					return 0;
+	}
+
 	t_pcb *pcb = list_find(proc_ejecutados, (void*) _pcbByCpuPid);
 	pcb->estadoProceso = 2;
+
+	double tiempoVida = calculoTiempoRespuesta(pcb->tiempoCreacion);
+	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoVida);
+	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+	pcb_metrica->tiempoRespuesta = tiempoVida;
+
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
-	list_add_all(cpu_listos, cpuPlanificado);
+	list_add(cpu_listos, cpu);
 	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
+}
+
+double calculoTiempoRespuesta(time_t tiempoCreacion){
+	time_t ahora = time(NULL);
+	double segundos;
+
+	return segundos = difftime(ahora,tiempoCreacion);
 }
 
 char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
