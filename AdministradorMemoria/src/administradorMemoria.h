@@ -21,6 +21,7 @@
 #include <signal.h>
 #include <semaphore.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 // Constantes
 #define RESET "\x1B[0m"
@@ -148,6 +149,7 @@ void saludoInicial();
 void initializeMutex();
 void limpiarCPUs();
 void limpiarEstadisticas();
+void iniciarCronTasks();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -201,6 +203,7 @@ void escribirPagsModificadas(sock_t*);
 void actualizarTablaDePaginas();
 void vaciarMemoria();
 void printearTabla();
+void statsPerMinute();
 
 /* de busquedas.c*/
 t_TLB* buscarEnTLB(int32_t , int32_t );

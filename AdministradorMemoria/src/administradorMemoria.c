@@ -88,8 +88,23 @@ void setUp()
 	}
 	tablasDePaginas = list_create();
 	CPUsConectados = list_create();
+
+	iniciarCronTasks();
+
 }
 
+void iniciarCronTasks(){
+	 struct itimerval it;
+
+	 it.it_value.tv_sec = 1;
+
+	 it.it_value.tv_usec = 0;
+	 it.it_interval.tv_sec = 60;
+
+	 it.it_interval.tv_usec = 0;
+	 signal(SIGALRM, statsPerMinute);
+	 setitimer(ITIMER_REAL, &it, NULL);
+}
 
 static void mpDestroyer(t_MP* entrada){
 	free(entrada->contenido);
