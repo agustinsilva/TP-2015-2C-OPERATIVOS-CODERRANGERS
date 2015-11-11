@@ -188,6 +188,7 @@ void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );
 void retardo(int32_t, int32_t, int32_t, int32_t, int32_t);
 void llenarDeNulos(char* , int32_t ,int32_t);
+void abortarProceso(int32_t);
 
 
 /* de Signals.c */

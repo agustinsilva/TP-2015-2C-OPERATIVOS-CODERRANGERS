@@ -289,7 +289,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
 					pthread_mutex_lock(&sem_swap);
+					pthread_mutex_lock(&sem_TLB);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_leer);
+					pthread_mutex_unlock(&sem_TLB);
 					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
@@ -317,11 +319,14 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 				}
 			}
 
-			log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+			if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
+				log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 
-			pthread_mutex_lock(&sem_stats);
-			(estadistica->pageFaults)++;
-			pthread_mutex_unlock(&sem_stats);
+				pthread_mutex_lock(&sem_stats);
+				(estadistica->pageFaults)++;
+				pthread_mutex_unlock(&sem_stats);
+			}
+
 		}
 
 	}

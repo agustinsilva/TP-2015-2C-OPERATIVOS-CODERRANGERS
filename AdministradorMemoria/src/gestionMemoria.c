@@ -94,9 +94,11 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 		if(marcoAReemplazar==marcos_insuficientes){
 			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+			abortarProceso(idmProc);
 			return marcos_insuficientes;
 		}else{
 			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
+			abortarProceso(idmProc);
 			return marcos_no_libres;
 		}
 	}
@@ -370,6 +372,14 @@ int32_t reemplazarLRU(t_list* tablaDelProceso){
 	}
 }
 
+void abortarProceso(int32_t idmProc){
+	vaciarMarcosOcupados(idmProc);
+	eliminarTablaDePaginas(idmProc);
+
+	if(configuracion->tlb_habilitada){
+		eliminarDeTLBPorPID(idmProc);
+	}
+}
 
 int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	bool porPIDyPresente(t_TP* entrada){
