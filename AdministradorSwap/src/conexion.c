@@ -98,7 +98,6 @@ t_mensaje* deserializarDetalle(sock_t* socket, int32_t cabecera)
 	switch (cabecera)
 	{
 		case INICIAR:
-			printf("Se inicio un proceso\n");
 			detalle->PID = deserializarEntero(socket);
 			detalle->CantidadPaginas = deserializarEntero(socket);
 			break;

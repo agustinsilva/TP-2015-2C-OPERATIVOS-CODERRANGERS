@@ -9,8 +9,7 @@
 
 /* --- Destroyers --- */
 
-void procesoDestroyer(t_TP* entrada)
-{
+void procesoDestroyer(t_TP* entrada) {
 	free(entrada);
 }
 
@@ -36,19 +35,6 @@ int32_t crearTablaDePaginas(int32_t idmProc, int32_t cantPaginas)
 	}
 	return pedido_exitoso;
 }
-
-//int32_t getFrame() {
-//	int32_t marcoLibre=-1;
-//	void buscarMarcoLibre(t_MP* entrada)
-//	{
-//		if(entrada->ocupado==0) {
-//			marcoLibre=entrada->marco;
-//			return;
-//		}
-//	}
-//	list_iterate(memoriaPrincipal, (void*)buscarMarcoLibre);
-//	return marcoLibre;
-//}
 
 /* unico reemplazo -> FIFO */
 t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
@@ -108,9 +94,11 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 		if(marcoAReemplazar==marcos_insuficientes){
 			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+			abortarProceso(idmProc);
 			return marcos_insuficientes;
 		}else{
 			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
+			abortarProceso(idmProc);
 			return marcos_no_libres;
 		}
 	}
@@ -191,7 +179,14 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
-		paginaSwappedIn->loadedTime = getLoadedTimeForProc(idmProc);
+		paginaSwappedIn->loadedTime = setLoadedTimeForProc(idmProc);
+	}
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, LRU)){
+		if(paginaSwappedOut!=NULL){
+			paginaSwappedOut->usedTime = REINIT;
+		}
+		paginaSwappedIn->usedTime = 0;
 	}
 
 	/* por las dudas le pongo el ocupado */
@@ -226,7 +221,8 @@ t_list* getTablaDePaginasPresentes(int32_t idmProc){
 	return tablaDelProceso;
 }
 
-int32_t getLoadedTimeForProc(int32_t idmProc){
+
+int32_t setLoadedTimeForProc(int32_t idmProc){
 
 	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
 
@@ -247,6 +243,17 @@ int32_t getMinLoadedTime(t_list* tablaDelProceso){
 	}
 	list_iterate(tablaDelProceso, (void*) minimo);
 	return min;
+}
+
+int32_t getMaxUsedTime(t_list* tablaDelProceso){
+	int32_t max=REINIT;
+	void maximo(t_TP* entrada){
+		if(entrada->usedTime>max){
+			max=entrada->usedTime;
+		}
+	}
+	list_iterate(tablaDelProceso, (void*) maximo);
+	return max;
 }
 
 int32_t getRandomFrameVacio(){
@@ -313,14 +320,15 @@ int32_t reemplazarMP(int32_t idmProc, char* algoritmo_reemplazo){
 		return reemplazarFIFO(tablaDelProceso);
 	}
 
-	/*no estarían funcionando aún */
+	if(string_equals_ignore_case(algoritmo_reemplazo, LRU)){
+		return reemplazarLRU(tablaDelProceso);
+	}
+
+	/*no estaría funcionando aún */
 	if(string_equals_ignore_case(algoritmo_reemplazo, CLOCKM)){
 		return reemplazarCLOCKM(tablaDelProceso);
 	}
 
-	if(string_equals_ignore_case(algoritmo_reemplazo, LRU)){
-		return reemplazarLRU(tablaDelProceso);
-	}
 	return marcos_insuficientes;
 }
 
@@ -343,9 +351,35 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso){
 }
 
 int32_t reemplazarLRU(t_list* tablaDelProceso){
-	return marcos_insuficientes;
+
+	if(list_size(tablaDelProceso)==0){
+			return marcos_insuficientes;
+	} else{
+		int32_t maxUsed = getMaxUsedTime(tablaDelProceso);
+
+		bool porMaxUsed(t_TP* entrada){
+			return entrada->usedTime == maxUsed;
+		}
+		t_TP* aReemplazar = list_find(tablaDelProceso,(void*) porMaxUsed);
+
+		void pasarTiempo(t_TP* pagina){
+			if(pagina->usedTime!=REINIT){
+				(pagina->usedTime)++;
+			}
+		}
+		list_iterate(tablaDelProceso, (void*) pasarTiempo);
+		return aReemplazar->frame;
+	}
 }
 
+void abortarProceso(int32_t idmProc){
+	vaciarMarcosOcupados(idmProc);
+	eliminarTablaDePaginas(idmProc);
+
+	if(configuracion->tlb_habilitada){
+		eliminarDeTLBPorPID(idmProc);
+	}
+}
 
 int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	bool porPIDyPresente(t_TP* entrada){

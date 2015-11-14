@@ -39,6 +39,7 @@ int main(void)
 					return EXIT_FAILURE;
 				}
 				else {
+					list_add(CPUsConectados, cpuSocket);
 					log_info(MemoriaLog,"Conectado al hilo CPU de socket %d", cpuSocket->fd);
 				}
 			}
@@ -59,17 +60,20 @@ void limpiarRecursos()
 {
 	if(configuracion->tlb_habilitada){
 		limpiarTLB();
+		limpiarEstadisticas();
 	}
 	limpiarConfiguracion();
 	limpiarMemoriaPrincipal();
+	limpiarCPUs();
 }
 
 void setUp()
 {
-	if(configuracion->tlb_habilitada)
-	{
+	if(configuracion->tlb_habilitada) {
 		TLB = list_create();
+		estadisticas = list_create();
 	}
+
 	memoriaPrincipal = list_create();
 	int32_t i;
 	for(i=0; i<configuracion->cantidad_marcos; i++)
@@ -83,30 +87,57 @@ void setUp()
 		list_add(memoriaPrincipal,entrada);
 	}
 	tablasDePaginas = list_create();
+	CPUsConectados = list_create();
+
+	iniciarCronTasks();
+
 }
 
-static void mpDestroyer(t_MP* entrada)
-{
+void iniciarCronTasks(){
+	 struct itimerval it;
+
+	 it.it_value.tv_sec = 1;
+
+	 it.it_value.tv_usec = 0;
+	 it.it_interval.tv_sec = 60;
+
+	 it.it_interval.tv_usec = 0;
+	 signal(SIGALRM, statsPerMinute);
+	 setitimer(ITIMER_REAL, &it, NULL);
+}
+
+static void mpDestroyer(t_MP* entrada){
 	free(entrada->contenido);
     free(entrada);
 }
 
-void TLBDestroyer(t_TLB* entrada)
-{
+void TLBDestroyer(t_TLB* entrada) {
     free(entrada);
 }
 
-void limpiarMemoriaPrincipal()
-{
+
+void limpiarCPUs(){
+	list_iterate(CPUsConectados, (void*) clean_socket);
+	list_destroy(CPUsConectados);
+}
+
+void limpiarMemoriaPrincipal(){
 	list_destroy_and_destroy_elements(memoriaPrincipal, (void*)mpDestroyer);
 }
-void limpiarTLB()
-{
+
+void limpiarTLB(){
 	list_destroy_and_destroy_elements(TLB, (void*)TLBDestroyer);
 }
-void limpiarTablasDePaginas()
-{
+
+void limpiarTablasDePaginas(){
 	list_destroy_and_destroy_elements(tablasDePaginas, (void*)procesoDestroyer);
+}
+
+void limpiarEstadisticas() {
+	void statsDestroyer(t_Stats* entrada){
+		free(entrada);
+	}
+	list_destroy_and_destroy_elements(estadisticas, (void*)statsDestroyer);
 }
 void saludoInicial(){
 
@@ -131,4 +162,5 @@ void initializeMutex(){
 	pthread_mutex_init(&sem_TP, NULL);
 	pthread_mutex_init(&sem_MP, NULL);
 	pthread_mutex_init(&sem_swap, NULL);
+	pthread_mutex_init(&sem_stats, NULL);
 }

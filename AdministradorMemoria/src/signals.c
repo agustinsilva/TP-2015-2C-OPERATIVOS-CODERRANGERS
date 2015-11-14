@@ -55,8 +55,8 @@ void doMPFlush(sock_t* socketSwap){
 	pthread_mutex_lock(&sem_MP);
 	pthread_mutex_lock(&sem_swap);
 
-	if (clientSocketSwap != 0 ){
-		log_info(MemoriaLog, "No se ha podido conectar correctamente al Swap\n");
+	if (clientSocketSwap == 0 ){
+		log_info(MemoriaLog, "Se perdió la conexión con el Administrador de Swap\n");
 		pthread_mutex_unlock(&sem_swap);
 		pthread_mutex_unlock(&sem_MP);
 		pthread_mutex_unlock(&sem_TP);
@@ -111,10 +111,34 @@ void printearTabla(){
 	pthread_mutex_unlock(&sem_MP);
 }
 
+void doStats(){
+	pthread_mutex_lock(&sem_stats);
+	int32_t totales = 0;
+	int32_t pf = 0;
+	void tasaAciertos(t_Stats* stats){
+		totales+=(stats->pagsTotales);
+		pf+=(stats->pageFaults);
+	}
+	list_iterate(estadisticas, (void*)tasaAciertos);
+
+	if(totales!=0){
+		int32_t tasa_aciertos = (totales-pf)*100/totales;
+		log_info(MemoriaLog,BOLD "\n*Tasa de aciertos histórica: %d %*\n" RESET_NON_BOLD, tasa_aciertos);
+	}
+	pthread_mutex_unlock(&sem_stats);
+}
+
 /* -------------------------------------------------------------------------------------*/
 
 /* Funciones Principales */
 
+
+void statsPerMinute(){
+	pthread_t hiloStats;
+	if (pthread_create(&hiloStats, NULL,(void*)doStats,NULL)){
+		log_error(MemoriaLog,RED"Error al crear el hilo para mostrar las estadísticas del último minuto \n"RESET);
+	}
+}
 
 void finalizacion(){
 	printf("\nSe intentó dar de baja el programa\n");
@@ -122,6 +146,8 @@ void finalizacion(){
 	char respuesta;
 	scanf("%c" ,&respuesta);
 	if(respuesta=='s' || respuesta=='S'){
+		clean_socket(clientSocketSwap);
+		limpiarCPUs();
 		exit(1);
 	}
 }
@@ -153,9 +179,6 @@ void MPDump(){
 	}
 	else if (pid == 0) {
 		/* Inicio de código de Proceso Hijo */
-		sleep(5);
-		printf("Soy un hijo de frula\n");
-		sleep(5);
 
 		printearTabla();
 		/* Fin de código de Proceso Hijo */
@@ -188,5 +211,9 @@ void signalHandler(){
 
 	if(signal(SIGPOLL, MPDump) == SIG_ERR ) {
 			printf("No se pudo atrapar la señal para dumpear la memoria principal \n");
+	}
+
+	if(signal(SIGALRM, statsPerMinute) == SIG_ERR ) {
+			printf("No se pudo atrapar la señal para mostrar las estadísticas del último minuto \n");
 	}
 }

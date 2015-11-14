@@ -45,6 +45,7 @@ void inicializar() {
 	proc_bloqueados = list_create();
 	cpu_listos = list_create();
 	cpu_ocupados = list_create();
+	proc_metricas = list_create();
 }
 
 void tituloInicial(){

@@ -21,6 +21,7 @@
 #include <signal.h>
 #include <semaphore.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 
 // Constantes
 #define RESET "\x1B[0m"
@@ -108,6 +109,12 @@ typedef struct
 	char* contenido;
 }t_LecturaSwap;
 
+typedef struct {
+	int32_t idProc;
+	int32_t pagsTotales;
+	int32_t pageFaults;
+}t_Stats;
+
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
@@ -116,11 +123,14 @@ t_list* TLB; /* de t_TLB */
 t_list* memoriaPrincipal; /* de t_MP */
 t_list* tablasDePaginas; /* de t_TP */
 sock_t* clientSocketSwap;
+t_list* CPUsConectados; /* de sock_t */
+t_list* estadisticas;
 
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;
 pthread_mutex_t sem_MP;
 pthread_mutex_t sem_swap;
+pthread_mutex_t sem_stats;
 
 //Firma de funciones
 
@@ -137,6 +147,9 @@ void limpiarTLB();
 void TLBDestroyer(t_TLB* );
 void saludoInicial();
 void initializeMutex();
+void limpiarCPUs();
+void limpiarEstadisticas();
+void iniciarCronTasks();
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -167,13 +180,15 @@ int32_t reemplazarMP(int32_t , char* );
 int32_t reemplazarFIFO(t_list*);
 int32_t reemplazarCLOCKM(t_list*);
 int32_t reemplazarLRU(t_list*);
-int32_t getLoadedTimeForProc(int32_t);
+int32_t setLoadedTimeForProc(int32_t);
 int32_t getMinLoadedTime(t_list* );
+int32_t getMaxUsedTime(t_list* );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );
 void retardo(int32_t, int32_t, int32_t, int32_t, int32_t);
 void llenarDeNulos(char* , int32_t ,int32_t);
+void abortarProceso(int32_t);
 
 
 /* de Signals.c */
@@ -189,6 +204,7 @@ void escribirPagsModificadas(sock_t*);
 void actualizarTablaDePaginas();
 void vaciarMemoria();
 void printearTabla();
+void statsPerMinute();
 
 /* de busquedas.c*/
 t_TLB* buscarEnTLB(int32_t , int32_t );
@@ -196,6 +212,7 @@ t_MP* buscarEnMemoriaPrincipal(int32_t);
 t_TP* buscarEntradaEnTablaDePaginas(int32_t , int32_t );
 t_TP* buscarEnTablaDePaginasByMarco(int32_t );
 int32_t buscarMarcoEnTablaDePaginas(int32_t, int32_t);
+t_Stats* buscarEstadisticaPorProceso(int32_t );
 
 
 #endif /* ADMINMEMORIA_H_ */

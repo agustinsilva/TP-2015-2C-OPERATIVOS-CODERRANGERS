@@ -18,6 +18,7 @@
 #include <semaphore.h>
 #include <commons/string.h>
 #include <commons/collections/list.h>
+#include <time.h>
 
 //Estructuras
 typedef struct {
@@ -35,14 +36,22 @@ typedef struct {
 	char* path;
 	uint32_t retardo;
 	uint32_t flagFin;
+	time_t tiempoCreacion;
 }t_pcb;
 
 typedef struct {
 	uint32_t socketHilo;
 	uint32_t estadoHilo; //0-disponible 1-Ejecutando
 	char* path;
-	uint32_t idProceso;
+	int32_t idProceso;
 }t_hilosConectados;
+
+typedef struct{
+	uint32_t idProceso;
+	double tiempoRespuesta;//Tiempo desde que empieza hasta que termina.
+	double tiempoEjecucion;//Tiempo que esta en la CPU.
+	double tiempoEspera;//Tiempo que esa en cola de ready.
+}t_proc_metricas;
 
 //Variables globales
 t_configuracion* configuracion; //Puntero a configuracion
@@ -54,6 +63,7 @@ t_list *proc_ejecutados;
 t_list *proc_bloqueados;
 t_list *cpu_listos;
 t_list *cpu_ocupados;
+t_list *proc_metricas;
 sem_t sincroproc;
 sem_t sincrocpu;
 sem_t sincroBloqueados;
@@ -116,4 +126,6 @@ void inicializar();
 void killThemAll();
 char* recibirMensaje(uint32_t socket);
 void tituloInicial();
+double calculoTiempoRespuesta(time_t tiempoCreacion);
+void mostrarMetricas();
 #endif /* PLANIFICADOR_H_ */

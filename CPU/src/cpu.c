@@ -189,6 +189,8 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		sleep(configuracion->retardo);
 	}else if(string_equals_ignore_case(lista[0], "escribir")){
 		char* textoEscribir = string_from_format("%s",lista[2]);
+		int32_t tamanioTexto = strlen(textoEscribir);
+		textoEscribir[tamanioTexto-1] = '\0';
 		//int32_t numeroPagina=*lista[1];
 		int32_t numeroPagina = (int32_t)strtol(lista[1],NULL,10);
 		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),string_itoa(numeroPagina),textoEscribir);
