@@ -131,6 +131,7 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid,sock
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Iniciado.\n");
+		printf("inicio correctamente\n");
 	}
 	return mensaje;
 }

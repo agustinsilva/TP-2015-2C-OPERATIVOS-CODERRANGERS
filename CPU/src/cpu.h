@@ -19,11 +19,12 @@
 #include <commons/process.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include <time.h>
 
 //Estructuras
 
 typedef struct {
-	uint32_t idCPU;
+	pthread_t idCPU;
 	uint32_t porcentajeProcesado;
 	uint32_t tiempoAcumuladoDeInstrucciones;
 }t_CPUsConectados;
@@ -83,10 +84,10 @@ typedef struct {
 t_configuracion* configuracion;
 t_config * fd_configuracion;
 t_log* CPULog;
-//sock_t* socketAdminMemoria;
-//sock_t* socketPlanificador;
 sock_t* socketPlanificadorPadre;
 t_cpu_padre configCPUPadre;
+t_list* listaCPU;
+pthread_mutex_t mutexListaCpus;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
@@ -111,5 +112,8 @@ char* recibirMensaje(sock_t* socket);
 int conectarCPUPadreAPlanificador();
 char* serializarPCB(t_pcb *pcb,uint32_t offset,char *paqueteSerializado);
 void tituloInicial();
+int32_t getPositionIfExists();
+double initTimes(time_t *tiempo1);
+int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion);
+void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion);
 #endif /* CPU_H_ */
-

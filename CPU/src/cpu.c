@@ -7,6 +7,7 @@ int main(void)
 	CPULog = log_create("CPULog", "CPU", true, LOG_LEVEL_INFO);
 	cargarArchivoDeConfiguracion();
 	tituloInicial();
+	pthread_mutex_init(&mutexListaCpus, NULL);
 	hiloPadre();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
@@ -19,34 +20,41 @@ void crearHilosCPU()
 {
 	int rtaHilo = 0;
 	int cantidad = 1;
-	t_list* listaCPU = list_create();
-	t_CPUsConectados *CPUsConectados = malloc(sizeof(t_CPUsConectados));
-
-	while (cantidad <= configuracion->cantidadHilos){
-		pthread_t hiloCpu;
-		rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,NULL);
+	listaCPU = list_create();
+	pthread_t threads[configuracion->cantidadHilos];
+	uint32_t i ;
+	 for (i=0; i < configuracion->cantidadHilos; i++){
+		t_CPUsConectados *CPUsConectados = malloc(sizeof(t_CPUsConectados));
+		rtaHilo = pthread_create(&threads[i], NULL, (void*)escucharYAtender, NULL);
 		if(rtaHilo!=0)
-				{
-					fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
-					printf("Se cerrara el programa");
-					exit(EXIT_FAILURE);
-				}
-
-		CPUsConectados->idCPU=hiloCpu;
+		{
+			fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
+			printf("Se cerrara el programa");
+			exit(EXIT_FAILURE);
+		}
+		CPUsConectados->idCPU=threads[i];
 		CPUsConectados->porcentajeProcesado=0;
 		CPUsConectados->tiempoAcumuladoDeInstrucciones=0;
 		list_add(listaCPU,CPUsConectados);
-
-		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",hiloCpu);
+		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",threads[i]);
 		//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
 		cantidad++;
 	}
-	int i;
-	for( i=0 ; i <= list_size(listaCPU) ; i++){
-		t_CPUsConectados *posicion = list_get(listaCPU,i);
+	//printf("EL TAMAÑO DE LA LISTA ES %d\n", list_size(listaCPU));
+	/*uint32_t k;
+	t_CPUsConectados *cpu;
+	for( k=0 ; k < list_size(listaCPU) ; k++){
+			cpu = list_get(listaCPU,k);
+			printf("iD de hilo: %u , en la pos: %u \n",cpu->idCPU,k);
+	}*/
+	uint32_t j;
+	t_CPUsConectados *posicion;
+	for( j=0 ; j <= list_size(listaCPU) ; j++){
+		posicion = list_get(listaCPU,j);
 		pthread_join(posicion->idCPU,NULL);
 	}
-//	pthread_join((void*)list_get(listaCPU,i),NULL);
+
+	// pthread_join((void*)list_get(listaCPU,i),NULL);
 }
 
 int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMemoria){
@@ -77,7 +85,13 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		while (QUANTUMRESTANTE > 0) {
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 				lista = string_split(instruccion," ");
+				time_t *tiempo1 = malloc(sizeof(time_t));
+				double tiempo_inicio_instruccion = initTimes(tiempo1);
 				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador,socketMemoria,cantInstruccionesEjecutadas);
+				int tiempo_ejecucion_instruccion = calculateTimes(tiempo1,tiempo_inicio_instruccion);
+				pthread_mutex_lock(&mutexListaCpus);
+				actualizarTiempoAcumuladoEjecucion(tiempo_ejecucion_instruccion);
+				pthread_mutex_unlock(&mutexListaCpus);
 				if(string_equals_ignore_case(rta, "FIN")){
 					break;//Termina la ejecucion porque:bloqueo de E/S, terminó el archivo
 				}else{
@@ -98,7 +112,13 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		int32_t cantInstruccionesEjecutadas = 0;
 		while(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 			lista = string_split(instruccion," ");
+			time_t *tiempo1 = malloc(sizeof(time_t));
+			double tiempo_inicio_instruccion = initTimes(tiempo1);
 			char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador,socketMemoria,cantInstruccionesEjecutadas);
+			int tiempo_ejecucion_instruccion = calculateTimes(tiempo1,tiempo_inicio_instruccion);
+			pthread_mutex_lock(&mutexListaCpus);
+			actualizarTiempoAcumuladoEjecucion(tiempo_ejecucion_instruccion);
+			pthread_mutex_unlock(&mutexListaCpus);
 			if(string_equals_ignore_case(rta, "FIN")){
 				break;//Termina la ejecucion porque: bloqueo de E/S; terminó el archivo
 			}else{
