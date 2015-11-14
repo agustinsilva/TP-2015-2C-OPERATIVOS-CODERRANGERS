@@ -21,6 +21,14 @@
 #include <semaphore.h>
 
 //Estructuras
+
+typedef struct {
+	uint32_t idCPU;
+	uint32_t porcentajeProcesado;
+	uint32_t tiempoAcumuladoDeInstrucciones;
+}t_CPUsConectados;
+
+
 typedef struct {
 	char* ipPlanificador;
 	uint32_t puertoPlanificador;

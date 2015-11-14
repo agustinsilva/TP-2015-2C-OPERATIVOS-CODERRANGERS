@@ -10,7 +10,7 @@ int conectarCPUPadreAPlanificador(){
 	}
 	enviarCodigoOperacion(socketPlanificadorPadre,CONEXION_CPU_PADRE);
 	//Recibe respuesta
-	printf("esperando rta de planificador\n");
+	printf("Esperando respuesta de Planificador\n");
 	uint32_t codigo = deserializarEnteroSinSigno(socketPlanificadorPadre);
 	configCPUPadre.tipoPlanificacion = deserializarEnteroSinSigno(socketPlanificadorPadre);//0: FIFO, 1: RR
 	if(configCPUPadre.tipoPlanificacion==1){
@@ -18,7 +18,8 @@ int conectarCPUPadreAPlanificador(){
 	}else{
 		configCPUPadre.quantum = 0;
 	}
-	printf("tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
+	printf("Tipo de planificacion: %d , Quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
+
 	return EXIT_SUCCESS;
 }
 
@@ -38,6 +39,7 @@ void* ConectarAPlanificador()
 	status = recv(socketCliente->fd, (void*)message, PAQUETE, 0);
 	if(status > 0 ) printf("Mensaje de Planificador: %s \n",message);
 	printf("Enviar mensaje a Administrador de memoria \n");
+
 
 	sock_t* socketAAdminMemoria = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(socketAAdminMemoria);

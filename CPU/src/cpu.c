@@ -15,28 +15,12 @@ int main(void)
 	return EXIT_SUCCESS;
 }
 
-/**
- * CREA EL NUMERO DE HILOS QUE DICE EL ARCHIVO DE CONFIG
- * */
-//void crearHilosCPU()
-//{
-//int rtaHilo = 0;
-//pthread_t hiloCpu;
-//rtaHilo = pthread_create(&hiloCpu,NULL,(void*)escucharYAtender,hiloCpu);
-//if(rtaHilo)
-//{
-//fprintf(stderr,"Error - pthread_create() return code: %d\n",rtaHilo);
-//printf("Se cerrara el programa");
-//exit(EXIT_FAILURE);
-//}
-////pthread_join(hiloCpu, NULL);
-//}
-
 void crearHilosCPU()
 {
 	int rtaHilo = 0;
 	int cantidad = 1;
 	t_list* listaCPU = list_create();
+	t_CPUsConectados *CPUsConectados = malloc(sizeof(t_CPUsConectados));
 
 	while (cantidad <= configuracion->cantidadHilos){
 		pthread_t hiloCpu;
@@ -47,18 +31,26 @@ void crearHilosCPU()
 					printf("Se cerrara el programa");
 					exit(EXIT_FAILURE);
 				}
-		list_add(listaCPU,(void*) hiloCpu);
+
+		CPUsConectados->idCPU=hiloCpu;
+		CPUsConectados->porcentajeProcesado=0;
+		CPUsConectados->tiempoAcumuladoDeInstrucciones=0;
+		list_add(listaCPU,CPUsConectados);
+
 		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",hiloCpu);
 		//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
 		cantidad++;
 	}
 	int i;
 	for( i=0 ; i <= list_size(listaCPU) ; i++){
-		pthread_join((void*)list_get(listaCPU,i),NULL);
+		t_CPUsConectados *posicion = list_get(listaCPU,i);
+		pthread_join(posicion->idCPU,NULL);
 	}
+//	pthread_join((void*)list_get(listaCPU,i),NULL);
 }
 
 int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMemoria){
+
 	char* resultadosDeEjecuciones =  string_new();
 	int QUANTUMRESTANTE = configCPUPadre.quantum;
 	char **lista;
@@ -68,15 +60,18 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 	string_append(&src, "../Planificador/src/Codigos/");
 	string_append(&src, pcb->path);
 	FILE* entrada = fopen(src, "r");
+
 	if(entrada==NULL){
 		log_error(CPULog,"No se pudo abrir el archivo de entrada. ","ERROR");
 		return -1;
 	}
-	log_info(CPULog," [PID:%s] El archivo se abrio correctamente: %s\n",string_itoa(pcb->idProceso),pcb->path);
+	log_info(CPULog," [PID:%s] El archivo se abrió correctamente: %s\n",string_itoa(pcb->idProceso),pcb->path);
+
 	while(pcb->contadorPuntero != numeroInstruccion){
 		fgets(instruccion,TAMINSTRUCCION+1, entrada); //TOMA LA LINEA E INCREMENTA Y SIGUE CON LA SIGUIENTE.
 		numeroInstruccion ++;
 	}
+
 	if (configCPUPadre.tipoPlanificacion==1) {//RR
 		int32_t cantInstruccionesEjecutadas = 0;
 		while (QUANTUMRESTANTE > 0) {
@@ -94,9 +89,9 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		}
 		if(QUANTUMRESTANTE == 0){
 			log_info(CPULog," [PID:%s] Finalizó quantum de ejecución.\n",string_itoa(pcb->idProceso));
-			//actualizamos el puntero del pcb
+			//Actualizamos el puntero del PCB
 			pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas;
-			//enviamos el pcb al planificador ya que terminó de ejecutar su quantum
+			//Enviamos el PCB al Planificador ya que terminó de ejecutar su Q.
 			informarPlanificadorLiberacionCPU(pcb,resultadosDeEjecuciones,socketPlanificador);
 		}
 	}else{//FIFO
@@ -123,19 +118,25 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
  */
 void escucharYAtender()
 {
+	t_pcb* pcb;
 	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+
 	sock_t* socketClientePlanificador = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	int32_t conexionPlanificador = connect_to_server(socketClientePlanificador);
+
 	if (conexionPlanificador != 0)
 	{
 		log_error(CPULog,"Error al conectar CPU a Planificador\n","ERROR");
 	}
 	log_info(CPULog,"Se conectó planificador al cpu correctamente. Socket id: %u\n",socketClientePlanificador->fd);
-	//Envia aviso al Plani de que se creó un nuevo hilo cpu.
+
+	//Envia aviso al Planificador de que se creó un nuevo hilo CPU.
 	enviarCodigoOperacion(socketClientePlanificador,NUEVO_HILO);
+
 	//Conexion del Hilo CPU con Memoria
 	sock_t* clientSocketAdmin = create_client_socket(configuracion->ipMemoria,configuracion->puertoMemoria);
 	int32_t conexionAdminMemoria = connect_to_server(clientSocketAdmin);
+
 	if (conexionAdminMemoria != 0) {
 		perror("Error al conectar socket");
 		log_error(CPULog,"Error al conectar CPU a Administrador de Memoria. ","ERROR");
@@ -143,7 +144,7 @@ void escucharYAtender()
 		return;
 	}
 	log_info(CPULog,"Se conectó a Memoria correctamente. Socket id: %u\n",clientSocketAdmin->fd);
-	t_pcb* pcb;
+
 	while(1)
 	{
 		pthread_mutex_lock( &mutex );
