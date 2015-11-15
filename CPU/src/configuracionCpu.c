@@ -45,12 +45,6 @@ int cargarArchivoDeConfiguracion()
 	return 0;
 }
 
-void limpiarConfiguracion()
-{
-	config_destroy(fd_configuracion);
-	free(configuracion);
-}
-
 //***************************FIN********************************//
 //*******************ARCHIVO DE CONFIGURACION*******************//
 //***********************CPU***************************//

@@ -17,9 +17,11 @@
 #include <socket.h>
 #include <commons/log.h>
 #include <commons/process.h>
+#include <commons/temporal.h>
 #include <pthread.h>
 #include <semaphore.h>
-#include <time.h>
+#include <sys/wait.h>
+#include <sys/time.h>
 
 //Estructuras
 
@@ -97,7 +99,7 @@ int conectarCPUPadreAPlanificador();
 t_pcb* escucharPlanificador();
 void escucharYAtender(void);
 int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMemoria);
-void limpiarConfiguracion();
+void limpiarRecursos();
 char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto,sock_t* socketMemoria);
 char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid,sock_t* socketMemoria);
 char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria);

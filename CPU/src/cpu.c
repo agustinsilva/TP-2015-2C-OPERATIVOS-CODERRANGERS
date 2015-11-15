@@ -9,10 +9,10 @@ int main(void)
 	tituloInicial();
 	pthread_mutex_init(&mutexListaCpus, NULL);
 	hiloPadre();
+	iniciarCronTasks();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
-	limpiarConfiguracion();
-	log_destroy(CPULog);
+	limpiarRecursos();
 	return EXIT_SUCCESS;
 }
 
@@ -230,6 +230,20 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		rta = "Comando no interpretado.\n";
 	}
 	return rta;
+}
+
+/***********-----------GESTION-----------**************/
+
+void listaDestroyer(t_CPUsConectados* cpu) {
+	free(cpu);
+}
+
+void limpiarRecursos()
+{
+	list_destroy_and_destroy_elements(listaCPU, (void*)listaDestroyer);
+	config_destroy(fd_configuracion);
+	log_destroy(CPULog);
+	free(configuracion);
 }
 
 void tituloInicial(){

@@ -1,5 +1,22 @@
 #include "cpu.h"
 
+void updatePercentPerMin(){
+	printf("PASARON 60 SEGUNDOS. Hora Actual: %s \n",temporal_get_string_time());
+}
+
+void iniciarCronTasks(){
+	struct itimerval it;
+	if (signal(SIGALRM, (void (*)(int)) updatePercentPerMin) == SIG_ERR) {
+		perror("Unable to catch SIGALRM");
+		exit(1);
+	}
+	it.it_value.tv_sec = 60;
+	it.it_value.tv_usec = 0;
+	it.it_interval=it.it_value;
+	signal(SIGALRM, updatePercentPerMin);
+	setitimer(ITIMER_REAL, &it, NULL);
+}
+
 double initTimes(time_t *tiempo1){
 	double tiempo_inicio_instruccion = 0;
 	tiempo_inicio_instruccion = time(tiempo1);
