@@ -69,7 +69,10 @@ t_pcb* escucharPlanificador(sock_t* socketPlanificador){
 	//Recibe mensaje de Planificador: PCB
 	uint32_t tamanioChar;
 	status = recv(socketPlanificador->fd,&(pcbRecibido->idProceso),sizeof(uint32_t),0);
-	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
+	if (status <= 0){
+		log_error(CPULog,"Error al recibir PCB.","ERROR");
+		return NULL;
+	}
 	status = recv(socketPlanificador->fd,&(pcbRecibido->estadoProceso),sizeof(uint32_t),0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	status = recv(socketPlanificador->fd,&(pcbRecibido->contadorPuntero),sizeof(uint32_t),0);

@@ -104,6 +104,7 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid,sock_t* socketMemoria);
 char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria);
 char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina,sock_t* socketMemoria);
+char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuciones,sock_t* socketPlanificador);
 int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones,sock_t* socketPlanificador);
 char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria,int32_t cantInstruccionesEjecutadas);
 void crearHilosCPU (void);
@@ -118,4 +119,6 @@ int32_t getPositionIfExists();
 double initTimes(time_t *tiempo1);
 int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion);
 void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion);
+void iniciarCronTasks();
+int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones);
 #endif /* CPU_H_ */

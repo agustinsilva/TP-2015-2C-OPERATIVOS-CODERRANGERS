@@ -32,9 +32,9 @@ void crearHilosCPU()
 			printf("Se cerrara el programa");
 			exit(EXIT_FAILURE);
 		}
-		CPUsConectados->idCPU=threads[i];
-		CPUsConectados->porcentajeProcesado=0;
-		CPUsConectados->tiempoAcumuladoDeInstrucciones=0;
+		CPUsConectados->idCPU = threads[i];
+		CPUsConectados->porcentajeProcesado = 0;
+		CPUsConectados->tiempoAcumuladoDeInstrucciones = 0;
 		list_add(listaCPU,CPUsConectados);
 		printf("Se creó nuevo hilo id: %u y se agregó a la lista.\n",threads[i]);
 		//AGREGA EN UNA LISTACPU TODOS LOS HILOS QUE SE CREARON EN BASE A EL ARCHIVO DE CONFIG.
@@ -169,6 +169,10 @@ void escucharYAtender()
 	{
 		pthread_mutex_lock( &mutex );
 		pcb = escucharPlanificador(socketClientePlanificador);
+		if(pcb==NULL){
+			free(pcb);
+			break;
+		}
 		abrirArchivoYValidar(pcb,socketClientePlanificador,clientSocketAdmin);
 		free(pcb->path);
 		free(pcb);
@@ -234,13 +238,13 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 
 /***********-----------GESTION-----------**************/
 
-void listaDestroyer(t_CPUsConectados* cpu) {
+void listaCpuDestroyer(t_CPUsConectados* cpu) {
 	free(cpu);
 }
 
 void limpiarRecursos()
 {
-	list_destroy_and_destroy_elements(listaCPU, (void*)listaDestroyer);
+	list_destroy_and_destroy_elements(listaCPU, (void*)listaCpuDestroyer);
 	config_destroy(fd_configuracion);
 	log_destroy(CPULog);
 	free(configuracion);
