@@ -77,6 +77,7 @@ typedef struct {
 #define RESPUESTA_PLANIFICADOR_FIN_EJECUCION 3
 #define NUEVO_HILO 1
 #define CONEXION_CPU_PADRE 10
+#define PORCENTAJES_CPU 11
 
 //CONSOLA
 #define BOLD "\e[1m"
@@ -121,4 +122,5 @@ int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion);
 void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion);
 void iniciarCronTasks();
 int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones);
+void PorcentajeParaPlanificador();
 #endif /* CPU_H_ */
