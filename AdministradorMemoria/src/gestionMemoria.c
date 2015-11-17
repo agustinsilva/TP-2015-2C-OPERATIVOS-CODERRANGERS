@@ -189,6 +189,44 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 		paginaSwappedIn->usedTime = 0;
 	}
 
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
+			//	TODO;
+		bool porPID(t_Marcos* entrada){
+			return entrada->idProc == idmProc;
+		}
+		t_Marcos* marcoMP = list_find(ordenMarcos, (void*)porPID);
+		if(marcoMP==NULL){
+			crearElementoOrdenMarcos(idmProc, nroPagina, marcoAReemplazar, 0, true);
+
+		} else if(list_size(marcoMP->marcos) < configuracion->maximo_marcos_por_proceso){
+			int32_t orden = list_size(marcoMP->marcos);
+			bool buscarPuntero(t_Orden* entrada){
+				return entrada->puntero == true;
+			}
+			t_Orden* puntero = list_find(marcoMP->marcos, (void*) buscarPuntero);
+			bool punt;
+			if(puntero==NULL){
+				punt=true;
+			} else {
+				punt=false;
+			}
+
+			crearElementoOrden(nroPagina, marcoAReemplazar, orden, punt, marcoMP->marcos);
+		} else{
+			bool porMarco(t_Orden* entrada){
+				return entrada->marco == marcoAReemplazar;
+			}
+			t_Orden* puntero = list_find(marcoMP->marcos, (void*) porMarco);
+			puntero->nroPag = nroPagina;
+		}
+
+
+		if(paginaSwappedOut!=NULL){
+			paginaSwappedOut->accessed = false;
+		}
+		paginaSwappedIn->accessed = true;
+	}
+
 	/* por las dudas le pongo el ocupado */
 	t_MP* mp = buscarEnMemoriaPrincipal(paginaSwappedIn->frame);
 	mp->ocupado = true;
@@ -197,6 +235,25 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	/* actualizar la TLB -> se hace fuera del switch */
 
 	return mp;
+}
+
+t_Marcos* crearElementoOrdenMarcos(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar, int32_t ordenAColocar, bool puntero){
+	t_Marcos* marco = malloc(sizeof(t_Marcos));
+	marco->idProc = idmProc;
+	marco->marcos = list_create();
+	crearElementoOrden(nroPagina,marcoAReemplazar, ordenAColocar, puntero, marco->marcos);
+	list_add(ordenMarcos, marco);
+	return marco;
+}
+
+t_Orden* crearElementoOrden(int32_t nroPagina, int32_t marcoAReemplazar, int32_t ordenAColocar, bool puntero, t_list* marcos){
+	t_Orden* orden = malloc(sizeof(t_Orden));
+	orden->marco = marcoAReemplazar;
+	orden->orden = ordenAColocar;
+	orden->nroPag = nroPagina;
+	orden->puntero = puntero;
+	list_add(marcos, orden);
+	return orden;
 }
 
 void eliminarDeTLBPorMarco(int32_t marco){
@@ -326,7 +383,7 @@ int32_t reemplazarMP(int32_t idmProc, char* algoritmo_reemplazo){
 
 	/*no estaría funcionando aún */
 	if(string_equals_ignore_case(algoritmo_reemplazo, CLOCKM)){
-		return reemplazarCLOCKM(tablaDelProceso);
+		return reemplazarCLOCKM(tablaDelProceso, idmProc);
 	}
 
 	return marcos_insuficientes;
@@ -346,8 +403,139 @@ int32_t reemplazarFIFO(t_list* tablaDelProceso){
 	}
 }
 
-int32_t reemplazarCLOCKM(t_list* tablaDelProceso){
-	return marcos_insuficientes;
+//TODO
+int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
+
+	if(list_size(tablaDelProceso)==0){
+		return marcos_insuficientes;
+	} else {
+		bool porPID(t_Marcos* entrada){
+			return entrada->idProc == idmProc;
+		}
+		t_Marcos* proc = list_find(ordenMarcos, (void*)porPID);
+
+		printf("Tabla de marcos\n");
+		void printear(t_Marcos* entrada){
+			printf("PID %d\n", entrada->idProc);
+		}
+		list_iterate(ordenMarcos, (void*) printear);
+
+		ordenarPorCargaMarcos(proc->marcos);
+
+		int32_t marcoVictima = marco_victima;
+
+		bool buscar00(t_Orden* entrada){
+			bool porPIDyPag(t_TP* entry){
+				return entry->idProc == idmProc && entry->nroPag == entrada->nroPag;
+			}
+			t_TP* pagina = list_find(tablaDelProceso, (void*)porPIDyPag);
+			if(!pagina->accessed && !pagina->modified){
+				marcoVictima = pagina->frame;
+				pagina->accessed = false;
+				return true;
+			}else{
+				return false;
+			}
+		}
+		t_Orden* victima = list_find(proc->marcos, (void*) buscar00);
+
+		if(victima!=NULL && marcoVictima!=marco_victima){
+			adelantarPuntero(proc->marcos);
+			return marcoVictima;
+		}
+
+		bool buscar01(t_Orden* entrada){
+			bool porPIDyPag(t_TP* entry){
+				return entry->idProc == idmProc && entry->nroPag == entrada->nroPag;
+			}
+			t_TP* pagina = list_find(tablaDelProceso, (void*)porPIDyPag);
+			return !pagina->accessed && pagina->modified;
+		}
+		victima = list_find(proc->marcos, (void*) buscar01);
+
+		if(victima!=NULL){
+			adelantarPuntero(proc->marcos);
+			return victima->marco;
+		}
+
+		bool buscar10(t_Orden* entrada){
+			bool porPIDyPag(t_TP* entry){
+				return entry->idProc == idmProc && entry->nroPag == entrada->nroPag;
+			}
+			t_TP* pagina = list_find(tablaDelProceso, (void*)porPIDyPag);
+			return pagina->accessed && !pagina->modified;
+		}
+		victima = list_find(proc->marcos, (void*) buscar10);
+
+		if(victima!=NULL){
+			adelantarPuntero(proc->marcos);
+			return victima->marco;
+		}
+
+		bool buscar11(t_Orden* entrada){
+			bool porPIDyPag(t_TP* entry){
+				return entry->idProc == idmProc && entry->nroPag == entrada->nroPag;
+			}
+			t_TP* pagina = list_find(tablaDelProceso, (void*)porPIDyPag);
+			return pagina->accessed && pagina->modified;
+		}
+		victima = list_find(proc->marcos, (void*) buscar11);
+
+		adelantarPuntero(proc->marcos);
+		return victima->marco;
+	}
+
+}
+
+void adelantarPuntero(t_list* marcos){
+	t_Orden* ord0 = list_get(marcos,0);
+	ord0->puntero = 0;
+
+	t_Orden* ord1 = list_get(marcos,1);
+	ord1->puntero = 1;
+}
+
+/* no se usa */
+void buscarPar(t_TP* pagina, bool accessed, bool modified, int32_t marcoVictima){
+
+	bool condition ;
+
+	if(!accessed && !modified){
+		condition = !pagina->accessed && !pagina->modified;
+	}
+
+	if(accessed && !modified){
+		condition = pagina->accessed && !pagina->modified;
+	}
+
+	if(!accessed && modified){
+		condition = !pagina->accessed && pagina->modified;
+	}
+
+	if(accessed && modified){
+		condition = pagina->accessed && pagina->modified;
+	}
+
+	if(condition){
+		marcoVictima = pagina->frame;
+	}
+}
+
+void ordenarPorCargaMarcos(t_list* marcos){
+
+	bool anterior(t_Orden* ord1, t_Orden* ord2){
+		return ord1->orden < ord2->orden;
+	}
+	list_sort(marcos, (void*) anterior);
+
+	int32_t i;
+	for(i=0; i<list_size(marcos); i++ ){
+		t_Orden* orden = list_get(marcos,i);
+		if(orden->puntero){
+			t_list* ordenados = list_take_and_remove(marcos, i);
+			list_add_all(marcos,ordenados);
+		}
+	}
 }
 
 int32_t reemplazarLRU(t_list* tablaDelProceso){

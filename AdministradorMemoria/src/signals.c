@@ -51,6 +51,8 @@ void vaciarMemoria(){
 
 void doMPFlush(sock_t* socketSwap){
 
+	log_info(MemoriaLog, BOLD"Señal del Usuario 2\n" RESET_NON_BOLD);
+
 	pthread_mutex_lock(&sem_TP);
 	pthread_mutex_lock(&sem_MP);
 	pthread_mutex_lock(&sem_swap);
@@ -80,6 +82,8 @@ void doMPFlush(sock_t* socketSwap){
 }
 
 void doTLBFlush(){
+
+	log_info(MemoriaLog, BOLD"Señal del Usuario 1\n" RESET_NON_BOLD);
 
 	if(configuracion->tlb_habilitada){
 		pthread_mutex_lock(&sem_TLB);
@@ -179,7 +183,7 @@ void MPDump(){
 	}
 	else if (pid == 0) {
 		/* Inicio de código de Proceso Hijo */
-
+		log_info(MemoriaLog, BOLD"Señal SIGPOLL\n" RESET_NON_BOLD);
 		printearTabla();
 		/* Fin de código de Proceso Hijo */
 	}

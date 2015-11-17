@@ -54,6 +54,7 @@
 #define tabla_paginas 1
 #define memoria_principal 2
 #define dummy -5
+#define marco_victima -4
 
 //Estructuras
 typedef struct
@@ -115,6 +116,19 @@ typedef struct {
 	int32_t pageFaults;
 }t_Stats;
 
+typedef struct {
+	int32_t idProc;
+	t_list* marcos; /* de t_Orden*/
+}t_Marcos;
+
+typedef struct{
+	int32_t marco;
+	int32_t orden;
+	int32_t nroPag;
+	bool puntero; // para CM
+}t_Orden;
+
+
 //Variables globales
 t_Memoria_Config* configuracion;
 t_config * fd_configuracion;
@@ -125,12 +139,14 @@ t_list* tablasDePaginas; /* de t_TP */
 sock_t* clientSocketSwap;
 t_list* CPUsConectados; /* de sock_t */
 t_list* estadisticas;
+t_list* ordenMarcos; /* de t_Marcos */
 
 pthread_mutex_t sem_TLB;
 pthread_mutex_t sem_TP;
 pthread_mutex_t sem_MP;
 pthread_mutex_t sem_swap;
 pthread_mutex_t sem_stats;
+pthread_mutex_t sem_order;
 
 //Firma de funciones
 
@@ -150,6 +166,9 @@ void initializeMutex();
 void limpiarCPUs();
 void limpiarEstadisticas();
 void iniciarCronTasks();
+void limpiarOrdenMarcos();
+void marcosDestroyer(t_Marcos* );
+void ordenDestroyer(t_Orden* );
 
 /* de AtencionPedidosCPU */
 int32_t recibirCodigoOperacion(sock_t*);
@@ -178,7 +197,7 @@ t_MP* actualizarMP(int32_t , int32_t , int32_t , t_LecturaSwap* );
 int32_t getRandomFrameVacio();
 int32_t reemplazarMP(int32_t , char* );
 int32_t reemplazarFIFO(t_list*);
-int32_t reemplazarCLOCKM(t_list*);
+int32_t reemplazarCLOCKM(t_list*,int32_t);
 int32_t reemplazarLRU(t_list*);
 int32_t setLoadedTimeForProc(int32_t);
 int32_t getMinLoadedTime(t_list* );
@@ -189,6 +208,11 @@ bool escribirEnSwap(t_TP* , sock_t* );
 void retardo(int32_t, int32_t, int32_t, int32_t, int32_t);
 void llenarDeNulos(char* , int32_t ,int32_t);
 void abortarProceso(int32_t);
+t_Orden* crearElementoOrden(int32_t , int32_t , int32_t , bool , t_list* );
+t_Marcos* crearElementoOrdenMarcos(int32_t , int32_t , int32_t , int32_t , bool );
+void ordenarPorCargaMarcos(t_list*);
+void adelantarPuntero(t_list* );
+
 
 
 /* de Signals.c */

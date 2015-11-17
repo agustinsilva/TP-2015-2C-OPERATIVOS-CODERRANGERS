@@ -210,6 +210,15 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 *		//liberar espacio
 *	}*/
 
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
+		pthread_mutex_lock(&sem_order);
+		bool porPID(t_Marcos* entrada){
+			return entrada->idProc == idmProc;
+		}
+		list_remove_and_destroy_by_condition(ordenMarcos,(void*)porPID, (void*) marcosDestroyer);
+		pthread_mutex_unlock(&sem_order);
+	}
+
 	pthread_mutex_lock(&sem_TP);
 	pthread_mutex_lock(&sem_MP);
 	vaciarMarcosOcupados(idmProc);
@@ -231,6 +240,13 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 	}
 
 	enviarEnteros(cpuSocket, confirmacionSwap);
+
+	void printt(t_TP* entrada){
+		if(entrada->idProc == idmProc){
+			printf("No borre la pag %d del proceso %d\n", entrada->nroPag, entrada->idProc);
+		}
+	}
+	list_iterate(tablasDePaginas, (void*)printt);
 }
 
 void lectura(sock_t* cpuSocket, sock_t* swapSocket){
@@ -290,7 +306,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 					pthread_mutex_lock(&sem_MP);
 					pthread_mutex_lock(&sem_swap);
 					pthread_mutex_lock(&sem_TLB);
+					pthread_mutex_lock(&sem_order);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_leer);
+					pthread_mutex_unlock(&sem_order);
 					pthread_mutex_unlock(&sem_TLB);
 					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
@@ -320,8 +338,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 
 			if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
-				log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
-
+				if(entradaTLB!=NULL){
+					log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+				}
 				pthread_mutex_lock(&sem_stats);
 				(estadistica->pageFaults)++;
 				pthread_mutex_unlock(&sem_stats);
@@ -345,7 +364,9 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
 				pthread_mutex_lock(&sem_swap);
+				pthread_mutex_lock(&sem_order);
 				swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_leer);
+				pthread_mutex_unlock(&sem_order);
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);
@@ -431,7 +452,11 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					pthread_mutex_lock(&sem_TP);
 					pthread_mutex_lock(&sem_MP);
 					pthread_mutex_lock(&sem_swap);
+					pthread_mutex_lock(&sem_TLB);
+					pthread_mutex_lock(&sem_order);
 					marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
+					pthread_mutex_unlock(&sem_order);
+					pthread_mutex_unlock(&sem_TLB);
 					pthread_mutex_unlock(&sem_swap);
 					pthread_mutex_unlock(&sem_MP);
 					pthread_mutex_unlock(&sem_TP);
@@ -462,7 +487,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					pthread_mutex_unlock(&sem_MP);
 
 					pthread_mutex_lock(&sem_TLB);
-					actualizarTLB(idmProc, nroPagina, marco);
+					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
 					pthread_mutex_unlock(&sem_TLB);
 					break;
 				}
@@ -493,8 +518,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 				pthread_mutex_lock(&sem_TP);
 				pthread_mutex_lock(&sem_MP);
 				pthread_mutex_lock(&sem_swap);
+				pthread_mutex_lock(&sem_order);
 				//CHEQUEAR MARCO DEVUELTO
 				marco = swapIN(swapSocket, cpuSocket, idmProc, nroPagina, codigo_escribir);
+				pthread_mutex_unlock(&sem_order);
 				pthread_mutex_unlock(&sem_swap);
 				pthread_mutex_unlock(&sem_MP);
 				pthread_mutex_unlock(&sem_TP);

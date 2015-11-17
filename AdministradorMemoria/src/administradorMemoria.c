@@ -62,6 +62,11 @@ void limpiarRecursos()
 		limpiarTLB();
 		limpiarEstadisticas();
 	}
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)) {
+		limpiarOrdenMarcos();
+	}
+
 	limpiarConfiguracion();
 	limpiarMemoriaPrincipal();
 	limpiarCPUs();
@@ -72,6 +77,10 @@ void setUp()
 	if(configuracion->tlb_habilitada) {
 		TLB = list_create();
 		estadisticas = list_create();
+	}
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
+		ordenMarcos = list_create();
 	}
 
 	memoriaPrincipal = list_create();
@@ -115,6 +124,15 @@ void TLBDestroyer(t_TLB* entrada) {
     free(entrada);
 }
 
+void ordenDestroyer(t_Orden* entrada) {
+    free(entrada);
+}
+
+void marcosDestroyer(t_Marcos* entrada) {
+	list_destroy_and_destroy_elements(entrada->marcos, (void*)ordenDestroyer);
+    free(entrada);
+}
+
 
 void limpiarCPUs(){
 	list_iterate(CPUsConectados, (void*) clean_socket);
@@ -131,6 +149,10 @@ void limpiarTLB(){
 
 void limpiarTablasDePaginas(){
 	list_destroy_and_destroy_elements(tablasDePaginas, (void*)procesoDestroyer);
+}
+
+void limpiarOrdenMarcos(){
+	list_destroy_and_destroy_elements(tablasDePaginas, (void*)marcosDestroyer);
 }
 
 void limpiarEstadisticas() {
@@ -163,4 +185,5 @@ void initializeMutex(){
 	pthread_mutex_init(&sem_MP, NULL);
 	pthread_mutex_init(&sem_swap, NULL);
 	pthread_mutex_init(&sem_stats, NULL);
+	pthread_mutex_init(&sem_order, NULL);
 }
