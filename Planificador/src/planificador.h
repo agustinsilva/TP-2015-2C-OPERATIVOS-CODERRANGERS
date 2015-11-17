@@ -37,6 +37,8 @@ typedef struct {
 	uint32_t retardo;
 	uint32_t flagFin;
 	time_t tiempoCreacion;
+	time_t tiempoEjecucion;
+	time_t tiempoEspera;
 }t_pcb;
 
 typedef struct {
@@ -126,6 +128,6 @@ void inicializar();
 void killThemAll();
 char* recibirMensaje(uint32_t socket);
 void tituloInicial();
-double calculoTiempoRespuesta(time_t tiempoCreacion);
+double calculoDiferenciaTiempoActual(time_t tiempoCreacion);
 void mostrarMetricas();
 #endif /* PLANIFICADOR_H_ */

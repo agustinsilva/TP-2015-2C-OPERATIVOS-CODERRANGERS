@@ -79,6 +79,9 @@ void mostrarMetricas(){
 			printf("No hay programas finalizados\n");
 
 	sem_post(&mutex);
+	printf("Presione enter para volver al menu...\n");
+	getchar();
+	getchar();
 }
 
 void mostrarProcesos() {
@@ -196,7 +199,6 @@ void encolar(char* path) {
 	if(cantidadInstrucciones){ //Si se abre el archivo, creo pcb
 		t_pcb *pcb = malloc(sizeof(t_pcb));
 		pcb->idProceso = contadorProceso;
-
 		pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
 		pcb->contadorPuntero = 1;
 		pcb->cantidadInstrucciones = cantidadInstrucciones;
@@ -208,6 +210,8 @@ void encolar(char* path) {
 		//Creo lista Metrica
 		t_proc_metricas *pcb_metrica = malloc(sizeof(t_proc_metricas));
 		pcb_metrica->idProceso = contadorProceso;
+		pcb_metrica->tiempoEjecucion = 0;
+		pcb_metrica->tiempoEspera = 0;
 		list_add(proc_metricas,pcb_metrica);
 		sem_post(&sincroproc);
 		contadorProceso++;

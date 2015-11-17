@@ -1,5 +1,4 @@
 /***********PLANIFICADOR************/
-
 #include "planificador.h"
 
 int main(void) {

@@ -127,6 +127,20 @@ void consumirRecursos() {
 				log_error(planificadorLog, "Error al enviar el proc/pcb al cpu",
 						"ERROR");
 			}
+			//Asigno Tiempo de Ejecucion
+			pcb->tiempoEjecucion = time(NULL);
+			//Acumulo Tiempo Ejecucion
+			int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
+				if (pcb->idProceso == proc_metrica->idProceso)
+					return 1;
+				else
+					return 0;
+			}
+			t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+			if(pcb_metrica->tiempoEspera == 0)
+				pcb_metrica->tiempoEspera = calculoDiferenciaTiempoActual(pcb->tiempoCreacion);
+			else
+				pcb_metrica->tiempoEspera += calculoDiferenciaTiempoActual(pcb->tiempoEspera);
 			//Asignar los cpu y proc usados en la lista de ocupados y ejecutados.
 			list_add(proc_ejecutados, pcb);
 			list_add(cpu_ocupados, cpu);
@@ -167,6 +181,17 @@ void replanificar(uint32_t socketCpu) {
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
 	//mantengo el tiempo de creacion
 	pcbReplanificar->tiempoCreacion = pcbFinListo->tiempoCreacion;
+	//Acumulo Tiempo Ejecucion
+	int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
+		if (pcbReplanificar->idProceso == proc_metrica->idProceso)
+			return 1;
+		else
+			return 0;
+	}
+	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
+	//Seteo tiempo de espera para calcular en replanificar
+	pcbReplanificar->tiempoEspera = time(NULL);
 	//Libero CPU y PCB y vuelven a encolarse
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
 	pcbReplanificar->estadoProceso = 0; //PCB Disponible
@@ -252,31 +277,12 @@ void iniciarHiloBloqueados() {
 			list_remove(proc_bloqueados, 0);
 			//Lo vuelvo a meter en cola de listos
 			pcbBloqueado->estadoProceso = 0; //PCB en estado de espera
+			pcbBloqueado->tiempoEspera = time(NULL); //Vuelvo a setear tiempo inicio de espera
 			list_add(proc_listos, pcbBloqueado);
 			sem_post(&mutex);
 			sem_post(&sincroproc); //Aumento semaforo Proc
 		}
 	}
-}
-
-void logearResultadoCpu(uint32_t socketCpu) {
-	char* mensajeCpu = recibirMensaje(socketCpu);
-	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
-	free(mensajeCpu);
-}
-
-char* recibirMensaje(uint32_t socket) {
-	/*recibe la cantidad de bytes que va a tener el mensaje*/
-	int32_t longitudMensaje = 0;
-	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	int32_t status = recv(socket, &longitudMensaje, sizeof(int32_t), 0);
-	if(status<0)
-		return "error";
-	char* mensaje = (char*) malloc(longitudMensaje + 1);
-	recv(socket, mensaje, longitudMensaje, 0);
-	mensaje[longitudMensaje] = '\0';
-
-	return mensaje;
 }
 
 void logearFinalizacionCpu(uint32_t socketCpu) {
@@ -301,17 +307,22 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	}
 	int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
 		if (cpu->idProceso == proc_metrica->idProceso)
-					return 1;
-				else
-					return 0;
+			return 1;
+		else
+			return 0;
 	}
 
 	t_pcb *pcb = list_find(proc_ejecutados, (void*) _pcbByCpuPid);
 	pcb->estadoProceso = 2;
 
-	double tiempoVida = calculoTiempoRespuesta(pcb->tiempoCreacion);
-	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoVida);
+	//Logeo tiempo Ejecucion
 	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcb->tiempoEjecucion);
+	double tiempoEjecucion = pcb_metrica->tiempoEjecucion;
+	log_info(planificadorLog, "Tiempo de ejecucion proceso: %d es %.f segundos", pcb->idProceso, tiempoEjecucion);
+	//Logeo Metricas de PCB
+	double tiempoVida = calculoDiferenciaTiempoActual(pcb->tiempoCreacion);
+	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoVida);
 	pcb_metrica->tiempoRespuesta = tiempoVida;
 
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
@@ -320,7 +331,7 @@ void logearFinalizacionCpu(uint32_t socketCpu) {
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 }
 
-double calculoTiempoRespuesta(time_t tiempoCreacion){
+double calculoDiferenciaTiempoActual(time_t tiempoCreacion){
 	time_t ahora = time(NULL);
 	double segundos;
 
@@ -350,8 +361,7 @@ char* serializarPCB(t_pcb *pcb, uint32_t *totalPaquete) {
 	offset += medidaAMandar;
 
 	medidaAMandar = sizeof(pcb->cantidadInstrucciones);
-	memcpy(paqueteSerializado + offset, &(pcb->cantidadInstrucciones),
-			medidaAMandar);
+	memcpy(paqueteSerializado + offset, &(pcb->cantidadInstrucciones), medidaAMandar);
 	offset += medidaAMandar;
 
 	medidaAMandar = sizeof(uint32_t);
@@ -419,7 +429,6 @@ void creoPadre(uint32_t socketProcesado){
 	if (sendByte < 0) {
 		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
 	}
-
 }
 char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
 	uint32_t codigo, tipoPlanificacion, quantum;
@@ -457,6 +466,26 @@ char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
 	return paqueteSerializado;
 }
 
+void logearResultadoCpu(uint32_t socketCpu) {
+	char* mensajeCpu = recibirMensaje(socketCpu);
+	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
+	free(mensajeCpu);
+}
+
+char* recibirMensaje(uint32_t socket) {
+	/*recibe la cantidad de bytes que va a tener el mensaje*/
+	int32_t longitudMensaje = 0;
+	/*recibe el mensaje sabiendo cuánto va a ocupar*/
+	int32_t status = recv(socket, &longitudMensaje, sizeof(int32_t), 0);
+	if(status<0)
+		return "error";
+	char* mensaje = (char*) malloc(longitudMensaje + 1);
+	recv(socket, mensaje, longitudMensaje, 0);
+	mensaje[longitudMensaje] = '\0';
+
+	return mensaje;
+}
+
 uint32_t crearSocketReceptor() {
 	uint32_t socketReceptor;
 	struct addrinfo hints;
@@ -473,8 +502,7 @@ uint32_t crearSocketReceptor() {
 	socketReceptor = socket(serverInfo->ai_family, serverInfo->ai_socktype,
 			serverInfo->ai_protocol);
 	int setOpcion = 1;
-	if (setsockopt(socketReceptor, SOL_SOCKET, SO_REUSEADDR, &setOpcion,
-			sizeof(int)) == -1) {
+	if (setsockopt(socketReceptor, SOL_SOCKET, SO_REUSEADDR, &setOpcion, sizeof(int)) == -1) {
 		perror("setsockopt");
 		exit(1);
 	}
