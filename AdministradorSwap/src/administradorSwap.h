@@ -129,5 +129,9 @@ void limpiarEstadisticas(void*);
 bool buscarNodoComienzo(void*);
 void compactacionBruta();
 bool compararUbicaciones(void*,void*);
+bool compararNodoEstadistica(void*);
+void* buscarEstadisticaPorPID(int32_t);
+t_estadistica* sacarNodoEstadistica(int32_t);
+void mostrarEstadisticas(int32_t);
 void tituloInicial();
 #endif /* ADMINSWAP_H_ */

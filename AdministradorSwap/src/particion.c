@@ -214,6 +214,7 @@ void escribirPagina(char* pagina,int32_t PID,int32_t numeroDePagina)
 
 }
 
+//Refactorizar codigo duplicado.
 bool asignarProceso(t_mensaje* detalle)
 {
 	bool resultado;
@@ -231,30 +232,22 @@ bool asignarProceso(t_mensaje* detalle)
 	}
 	else
 	{
+		resultado = hayEspacio(detalle->CantidadPaginas);
+		if(resultado)
+		{
+			compactacionBruta();
+			posicionInicial = ocuparEspacio(detalle->PID,detalle->CantidadPaginas);
+			agregarAEstadistica(detalle->PID);
+			byteInicial = posicionInicial*configuracion->tamano_pagina;
+			tamanio = detalle->CantidadPaginas * configuracion->tamano_pagina;
+			log_info(SwapLog,"Se asigna proceso con PID %d, byte inicial %d y tamaño %d",detalle->PID,byteInicial,tamanio);
+		}
+		else
+		{
 		log_info(SwapLog,"Proceso rechazado por falta de espacio PID:%d",detalle->PID);
+		}
 	}
 	return resultado;
-}
-
-void agregarAEstadistica(int32_t PID)
-{
-	t_estadistica* nodo = malloc(sizeof(t_estadistica));
-	nodo->PID = PID;
-	nodo->escrituras = 0;
-	nodo->lecturas = 0;
-	list_add(estadisticasProcesos,nodo);
-}
-
-void aumentarEscritura(int32_t PID)
-{
-	t_estadistica* nodo = encontrarNodoPorPID(estadisticasProcesos,PID);
-	nodo->escrituras++;
-}
-
-void aumentarLectura(int32_t PID)
-{
-	t_estadistica* nodo = encontrarNodoPorPID(estadisticasProcesos,PID);
-	nodo->lecturas++;
 }
 
 void* encontrarNodoPorPID(t_list* lista, int32_t PID)
@@ -285,6 +278,7 @@ void procesarFinalizacion(t_mensaje* detalle,sock_t* socketMemoria)
 	if(resultado == 1)
 	{
 	liberarProceso(detalle->PID);
+	mostrarEstadisticas(detalle->PID);
 	}
 	else
 	{
@@ -345,15 +339,27 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 
 void compactacionBruta()
 {
+	log_info(SwapLog,"Inicio de compactacion de espacio en memoria de swap");
 
 	list_sort(espacioOcupado,compararUbicaciones);
 	uint32_t cantidadOcupados = list_size(espacioOcupado);
     uint32_t comienzo = 0;
-	uint32_t indice;
-    t_nodoOcupado* nodoOcupado;
+	uint32_t indice,indiceNodo;
+    int32_t cantidadPaginasNodo;
+	t_nodoOcupado* nodoOcupado;
+	int32_t ubicacionPagina, nuevaUbicacion;
     for(indice = 0;indice < cantidadOcupados;indice++)
     {
     	nodoOcupado = list_get(espacioOcupado,indice);
+    	cantidadPaginasNodo = nodoOcupado->paginas;
+    	for(indiceNodo = 0; indiceNodo < cantidadPaginasNodo; indiceNodo++)
+    	{
+    		ubicacionPagina = nodoOcupado->comienzo + indiceNodo;
+    		nuevaUbicacion = comienzo + indiceNodo;
+    		memcpy(archivoMapeado->memoria + nuevaUbicacion*configuracion->tamano_pagina,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
+    	}
+    	nodoOcupado->comienzo = comienzo;
+    	comienzo = nodoOcupado->comienzo + cantidadPaginasNodo;
 
     }
 	uint32_t totalLibres;
@@ -364,7 +370,8 @@ void compactacionBruta()
 	nodoLibre->paginas = totalLibres;
 	list_destroy_and_destroy_elements(espacioLibre,(void*)limpiarNodosLibres);
 	list_add(espacioLibre,nodoLibre);
-
+	sleep(configuracion->retardo_compactacion);
+	log_info(SwapLog,"Finalizacion de compactacion en memoria de swap");
 }
 
 void procesarEscritura(t_mensaje* detalle,sock_t* socketMemoria)
@@ -398,4 +405,51 @@ bool compararUbicaciones(void* nodoAnterior,void* nodo)
 	t_nodoOcupado* anterior = nodoAnterior;
 	t_nodoOcupado* actual = nodo;
 	return anterior->comienzo < actual->comienzo;
+}
+
+void agregarAEstadistica(int32_t PID)
+{
+	t_estadistica* nodo = malloc(sizeof(t_estadistica));
+	nodo->PID = PID;
+	nodo->escrituras = 0;
+	nodo->lecturas = 0;
+	list_add(estadisticasProcesos,nodo);
+}
+
+void aumentarEscritura(int32_t PID)
+{
+	t_estadistica* nodo = buscarEstadisticaPorPID(PID);
+	nodo->escrituras++;
+}
+
+void aumentarLectura(int32_t PID)
+{
+	t_estadistica* nodo = buscarEstadisticaPorPID(PID);
+	nodo->lecturas++;
+}
+
+void mostrarEstadisticas(int32_t pid)
+{
+	t_estadistica* estadistica = sacarNodoEstadistica(pid);
+	log_info(SwapLog,"El proceso con PID %d, realizo %d lecturas y %d escrituras.",estadistica->PID,estadistica->lecturas,estadistica->escrituras);
+	free(estadistica);
+}
+
+void* buscarEstadisticaPorPID(int32_t PID)
+{
+	pidCondicion = PID;
+	return list_find(estadisticasProcesos,compararNodoEstadistica);
+}
+
+t_estadistica* sacarNodoEstadistica(int32_t PID)
+{
+	pidCondicion = PID;
+	t_estadistica* nodo = list_remove_by_condition(estadisticasProcesos,compararNodoEstadistica);
+	return nodo;
+}
+
+bool compararNodoEstadistica(void* nodo)
+{
+	t_estadistica* nodoEstadistica = nodo;
+	return nodoEstadistica->PID == pidCondicion;
 }
