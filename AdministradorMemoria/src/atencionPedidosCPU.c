@@ -71,7 +71,11 @@ int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 		bool PorCerrado(sock_t* socket){
 			return socket->fd==0;
 		}
-		list_remove_and_destroy_by_condition(CPUsConectados, (void*)PorCerrado, (void*)clean_socket);
+		int32_t veces = list_count_satisfying(CPUsConectados,(void*)PorCerrado);
+		int32_t it;
+		for(it=0; it<veces; it++){
+			list_remove_and_destroy_by_condition(CPUsConectados, (void*)PorCerrado, (void*)clean_socket);
+		}
 	}
 	return 0;
 }
@@ -212,10 +216,7 @@ void finalizar(sock_t* cpuSocket, sock_t* swapSocket)
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
 		pthread_mutex_lock(&sem_order);
-		bool porPID(t_Marcos* entrada){
-			return entrada->idProc == idmProc;
-		}
-		list_remove_and_destroy_by_condition(ordenMarcos,(void*)porPID, (void*) marcosDestroyer);
+		eliminarOrdenMarcos(idmProc);
 		pthread_mutex_unlock(&sem_order);
 	}
 

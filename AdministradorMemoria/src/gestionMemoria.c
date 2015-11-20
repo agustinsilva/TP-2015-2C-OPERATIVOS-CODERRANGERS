@@ -50,12 +50,27 @@ t_TLB* actualizarTLB(int32_t idmProc, int32_t nroPagina, int32_t marco){
 	return nuevaEntrada;
 }
 
+void eliminarOrdenMarcos(int32_t idmProc){
+	bool porPID(t_Marcos* entrada){
+		return entrada->idProc == idmProc;
+	}
+	int32_t veces = list_count_satisfying(ordenMarcos, (void*)porPID);
+	int32_t iterador;
+	for(iterador=0; iterador<veces; iterador++){
+		list_remove_and_destroy_by_condition(ordenMarcos,(void*)porPID, (void*) marcosDestroyer);
+	}
+}
+
 void eliminarTablaDePaginas(int32_t idmProc){
 
 	bool porPID(t_TP* entrada){
 		return entrada->idProc==idmProc;
 	}
-	list_remove_and_destroy_by_condition(tablasDePaginas, (void*) porPID, (void*)procesoDestroyer);
+	int32_t veces = list_count_satisfying(tablasDePaginas, (void*) porPID);
+	int32_t it = 0;
+	for(it=0; it<veces;it++){
+		list_remove_and_destroy_by_condition(tablasDePaginas, (void*) porPID, (void*)procesoDestroyer);
+	}
 }
 
 void vaciarMarcosOcupados(int32_t idmProc){
@@ -260,14 +275,22 @@ void eliminarDeTLBPorMarco(int32_t marco){
 	bool porMarco(t_TLB* entrada){
 			return entrada->marco==marco;
 	}
-	list_remove_and_destroy_by_condition(TLB, (void*) porMarco, (void*) TLBDestroyer);
+	int32_t veces = list_count_satisfying(TLB, (void*) porMarco);
+	int32_t it = 0;
+	for(it=0; it<veces;it++){
+		list_remove_and_destroy_by_condition(TLB, (void*) porMarco, (void*) TLBDestroyer);
+	}
 }
 
 void eliminarDeTLBPorPID(int32_t idmProc){
 	bool porPID(t_TLB* entrada){
 		return entrada->idProc==idmProc;
 	}
-	list_remove_and_destroy_by_condition(TLB, (void*) porPID, (void*) TLBDestroyer);
+	int32_t veces = list_count_satisfying(TLB, (void*) porPID);
+	int32_t it = 0;
+	for(it=0; it<veces;it++){
+		list_remove_and_destroy_by_condition(TLB, (void*) porPID, (void*) TLBDestroyer);
+	}
 }
 
 t_list* getTablaDePaginasPresentes(int32_t idmProc){
@@ -334,8 +357,6 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 		llenarDeNulos(entradaMP->contenido,configuracion->tamanio_marco,string_length(contenidoAEscribir));
 
 		log_info(MemoriaLog, "Se escribió en la página %d del proceso %d  el contenido: %s\n", nroPagina, idmProc, entradaMP->contenido);
-
-		printf ("%s\n", contenidoAEscribir);
 
 		t_TP* tablaPag = buscarEntradaEnTablaDePaginas(idmProc,nroPagina);
 		if(tablaPag!=NULL){
@@ -413,12 +434,6 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 			return entrada->idProc == idmProc;
 		}
 		t_Marcos* proc = list_find(ordenMarcos, (void*)porPID);
-
-		printf("Tabla de marcos\n");
-		void printear(t_Marcos* entrada){
-			printf("PID %d\n", entrada->idProc);
-		}
-		list_iterate(ordenMarcos, (void*) printear);
 
 		ordenarPorCargaMarcos(proc->marcos);
 
