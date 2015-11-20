@@ -240,6 +240,8 @@ void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
 	pcbBloqueado->estadoProceso = 3; //Asigno estado Bloqueado
 	pcbBloqueado->retardo = retardo;
+	//Mantengo el tiempo de creacion
+	pcbBloqueado->tiempoCreacion = pcbFinListo->tiempoCreacion;
 	list_add(proc_bloqueados, pcbBloqueado);
 	//Asigno CPU nuevamente libre
 	list_add(cpu_listos, cpuOcupado);
