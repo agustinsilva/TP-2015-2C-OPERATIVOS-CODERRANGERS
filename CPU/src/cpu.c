@@ -76,7 +76,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 	log_info(CPULog," [PID:%s] El archivo se abrió correctamente: %s\n",string_itoa(pcb->idProceso),pcb->path);
 
 	while(pcb->contadorPuntero != numeroInstruccion){
-		fgets(instruccion,string_length(instruccion)+1, entrada);
+		fgets(instruccion,TAMINSTRUCCION+1, entrada);
 		instruccion = depurarInstruccion(instruccion);
 		numeroInstruccion ++;
 	}
@@ -280,7 +280,7 @@ char* depurarInstruccion(char* instruccion){
 	string_trim_right(&instruccion);
 	if(string_ends_with(instruccion,";")){
 		char* new = string_new();
-		new = string_substring_until(instruccion, string_length(instruccion));
+		new = string_substring_until(instruccion, string_length(instruccion)-1);
 		return new;
 	}
 	return instruccion;
