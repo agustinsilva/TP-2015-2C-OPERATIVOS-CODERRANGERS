@@ -77,7 +77,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 
 	while(pcb->contadorPuntero != numeroInstruccion){
 		fgets(instruccion,string_length(instruccion)+1, entrada);
-		char* instruccion = depurarInstruccion(instruccion);
+		instruccion = depurarInstruccion(instruccion);
 		numeroInstruccion ++;
 	}
 
@@ -85,6 +85,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		int32_t cantInstruccionesEjecutadas = 0;
 		while (QUANTUMRESTANTE > 0) {
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
+				instruccion = depurarInstruccion(instruccion);
 				lista = string_split(instruccion," ");
 				time_t *tiempo1 = malloc(sizeof(time_t));
 				double tiempo_inicio_instruccion = initTimes(tiempo1);
@@ -112,6 +113,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 	}else{//FIFO
 		int32_t cantInstruccionesEjecutadas = 0;
 		while(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
+			instruccion = depurarInstruccion(instruccion);
 			lista = string_split(instruccion," ");
 			time_t *tiempo1 = malloc(sizeof(time_t));
 			double tiempo_inicio_instruccion = initTimes(tiempo1);
