@@ -5,5 +5,5 @@
 .project
 
 #Carpeta de debug
-Debug/
+#Debug/
 CPULog
