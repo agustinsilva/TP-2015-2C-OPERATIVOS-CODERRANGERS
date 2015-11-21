@@ -63,7 +63,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 	int QUANTUMRESTANTE = configCPUPadre.quantum;
 	char **lista;
 	uint32_t numeroInstruccion=1;
-	char instruccion[TAMINSTRUCCION];
+	char* instruccion = string_new();
 	char* src = string_new();
 	string_append(&src, "../Planificador/src/Codigos/");
 	string_append(&src, pcb->path);
@@ -76,7 +76,8 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 	log_info(CPULog," [PID:%s] El archivo se abrió correctamente: %s\n",string_itoa(pcb->idProceso),pcb->path);
 
 	while(pcb->contadorPuntero != numeroInstruccion){
-		fgets(instruccion,TAMINSTRUCCION+1, entrada); //TOMA LA LINEA E INCREMENTA Y SIGUE CON LA SIGUIENTE.
+		fgets(instruccion,string_length(instruccion)+1, entrada);
+		char* instruccion = depurarInstruccion(instruccion);
 		numeroInstruccion ++;
 	}
 
@@ -200,17 +201,20 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
 		//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 		rta = informarAdminMemoriaComandoIniciar(lista[1],pcb->idProceso,socketMemoria);
-		sleep(configuracion->retardo);
+		//sleep(configuracion->retardo);
+		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 	}else if(string_equals_ignore_case(lista[0], "finalizar")){
 		log_info(CPULog," [PID:%s] Instruccion: finalizar",string_itoa(pcb->idProceso));
 		//Informar al AdminMemoria que finalice el proceso
 		rta = informarAdminMemoriaComandoFinalizar(pcb->idProceso,resultadosDeEjecuciones,socketPlanificador,socketMemoria);
-		sleep(configuracion->retardo);
+		//sleep(configuracion->retardo);
+		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 	}else if(string_equals_ignore_case(lista[0], "leer")){
 		log_info(CPULog," [PID:%s] Instruccion: leer pág: %s",string_itoa(pcb->idProceso),lista[1]);
 		//lista[1] contiene el nro de pagina
 		rta = informarAdminMemoriaComandoLeer(pcb->idProceso,lista[1],socketMemoria);
-		sleep(configuracion->retardo);
+		//sleep(configuracion->retardo);
+		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 	}else if(string_equals_ignore_case(lista[0], "escribir")){
 		char* textoEscribir = string_from_format("%s",lista[2]);
 		int32_t tamanioTexto = strlen(textoEscribir);
@@ -220,12 +224,14 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),string_itoa(numeroPagina),textoEscribir);
 		//lista[1] Contiene numero de página, lista[2] contiene el texto que se quiere a escribir en esa pagina.
 		rta = informarAdminMemoriaComandoEscribir(pcb->idProceso,numeroPagina,textoEscribir,socketMemoria);
-		sleep(configuracion->retardo);
+		//sleep(configuracion->retardo);
+		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 	}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
 		int32_t tiempoDeEjec = (int32_t)strtol(lista[1],NULL,10);
 		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
 		//lista[1] Contiene el tiempo que se debe bloquear.
-		sleep(configuracion->retardo);
+		//sleep(configuracion->retardo);
+		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 		//actualizamos el puntero del pcb
 		pcb->contadorPuntero = pcb->contadorPuntero + cantInstruccionesEjecutadas + 1;
 		rta = informarEntradaSalida(pcb,tiempoDeEjec,resultadosDeEjecuciones,socketPlanificador);
@@ -266,4 +272,18 @@ void tituloInicial(){
 	}
 
 	printf("\n\n");
+}
+
+char* depurarInstruccion(char* instruccion){
+	string_trim_right(&instruccion);
+	if(string_ends_with(instruccion,";")){
+		char* new = string_new();
+		new = string_substring_until(instruccion, string_length(instruccion));
+		return new;
+	}
+	return instruccion;
+}
+
+int fromSecondstoMicroSeconds(uint32_t seconds){
+	return seconds*1000000;
 }

@@ -123,4 +123,6 @@ void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion);
 void iniciarCronTasks();
 int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones);
 void PorcentajeParaPlanificador();
+char* depurarInstruccion(char* instruccion);
+int fromSecondstoMicroSeconds(uint32_t seconds);
 #endif /* CPU_H_ */
