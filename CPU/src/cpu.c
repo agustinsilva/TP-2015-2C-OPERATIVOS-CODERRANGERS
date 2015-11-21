@@ -131,6 +131,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		}
 	}
 	fclose(entrada);
+	//free(instruccion);
 	log_info(CPULog," [PID:%s] Se cerró el archivo.\n",string_itoa(pcb->idProceso));
 	return 0;
 }
@@ -277,11 +278,12 @@ void tituloInicial(){
 }
 
 char* depurarInstruccion(char* instruccion){
-	string_trim_right(&instruccion);
+	//string_trim_right(&instruccion);
+	int len = strlen(instruccion)-1;
+	instruccion[len] = '\0';
 	if(string_ends_with(instruccion,";")){
-		char* new = string_new();
-		new = string_substring_until(instruccion, string_length(instruccion)-1);
-		return new;
+		instruccion = string_substring_until(instruccion, string_length(instruccion)-1);
+		//return ;
 	}
 	return instruccion;
 }
