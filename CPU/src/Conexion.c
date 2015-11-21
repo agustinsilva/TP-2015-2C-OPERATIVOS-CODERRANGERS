@@ -124,7 +124,7 @@ t_pcb* escucharPlanificador(sock_t* socketPlanificador){
 	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
 	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	pcbRecibido->path[tamanioChar] = '\0';
-	printf("PCB RECIBIDO DE PLANIFICADOR\n");
+
 	return pcbRecibido;
 }
 
