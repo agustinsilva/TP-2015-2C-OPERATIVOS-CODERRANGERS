@@ -1,4 +1,5 @@
 iniciar 20;
+leer 1;
 escribir 1 "swap";
 leer 1;
 escribir 2 "el";
