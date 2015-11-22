@@ -122,8 +122,8 @@ t_pcb* escucharPlanificador(sock_t* socketPlanificador){
 	status = recv(socketPlanificador->fd,&(tamanioChar),sizeof(uint32_t),0);
 	pcbRecibido->path = malloc(tamanioChar + 1);
 	status = recv(socketPlanificador->fd,pcbRecibido->path,tamanioChar,0);
-	if (status <= 0) log_error(CPULog,"Error al recibir PCB.","ERROR");
 	pcbRecibido->path[tamanioChar] = '\0';
+	if (status <= 0) {log_error(CPULog,"Error al recibir PCB.","ERROR"); free(pcbRecibido);}
 
 	return pcbRecibido;
 }
@@ -363,9 +363,9 @@ char* recibirMensaje(sock_t* socket){
 	int32_t longitudMensaje;
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
 	recv(socket->fd, &longitudMensaje, sizeof(int32_t), 0);
-	char* mensaje = (char*) malloc(longitudMensaje+1);
+	char* mensaje = malloc(longitudMensaje+1);
 	recv(socket->fd, mensaje, longitudMensaje, 0);
-	mensaje[longitudMensaje]='\0';
+	mensaje[longitudMensaje+1]='\0';
 	return mensaje;
 }
 

@@ -54,7 +54,7 @@ double initTimes(time_t *tiempo1){
  * tiempo transcurrió hasta ahora
 */
 int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion){
-	time_t *tiempo2 = malloc(sizeof(time_t));
+	time_t *tiempo2 =malloc(sizeof(time_t));
 	double tiempo_fin_instruccion = 0;
 	tiempo_fin_instruccion = time(tiempo2);
 	int tiempo_transcurrido_instruccion = tiempo_fin_instruccion - tiempo_inicio_instruccion;

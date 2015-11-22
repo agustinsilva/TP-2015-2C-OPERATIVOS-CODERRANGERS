@@ -87,7 +87,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 			if(fgets(instruccion,TAMINSTRUCCION+1, entrada) != NULL) {
 				instruccion = depurarInstruccion(instruccion);
 				lista = string_split(instruccion," ");
-				time_t *tiempo1 = malloc(sizeof(time_t));
+				time_t *tiempo1 =malloc(sizeof(time_t));
 				double tiempo_inicio_instruccion = initTimes(tiempo1);
 				char* rta = procesarInstruccion(lista,pcb,resultadosDeEjecuciones,socketPlanificador,socketMemoria,cantInstruccionesEjecutadas);
 				int tiempo_ejecucion_instruccion = calculateTimes(tiempo1,tiempo_inicio_instruccion);
@@ -131,7 +131,8 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		}
 	}
 	fclose(entrada);
-	//free(instruccion);
+	free(instruccion);
+
 	log_info(CPULog," [PID:%s] Se cerró el archivo.\n",string_itoa(pcb->idProceso));
 	return 0;
 }
@@ -176,10 +177,10 @@ void escucharYAtender()
 		if(pcb==NULL){
 			free(pcb);
 			break;
-		}
+		} else{
 		abrirArchivoYValidar(pcb,socketClientePlanificador,clientSocketAdmin);
 		free(pcb->path);
-		free(pcb);
+		free(pcb);}
 		pthread_mutex_unlock( &mutex );
 	}
 }
@@ -201,7 +202,7 @@ int hiloPadre(){
 char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria,int32_t cantInstruccionesEjecutadas){
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")){
-		log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
+		//log_info(CPULog," [PID:%s] Instruccion: iniciar",string_itoa(pcb->idProceso));
 		//lista[1] contiene la cantidad de paginas a pedir al AdminMemoria
 		rta = informarAdminMemoriaComandoIniciar(lista[1],pcb->idProceso,socketMemoria);
 		//sleep(configuracion->retardo);
@@ -229,6 +230,7 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 		rta = informarAdminMemoriaComandoEscribir(pcb->idProceso,numeroPagina,textoEscribir,socketMemoria);
 		//sleep(configuracion->retardo);
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
+		free(textoEscribir);
 	}else if(string_equals_ignore_case(lista[0], "entrada-salida")){
 		int32_t tiempoDeEjec = (int32_t)strtol(lista[1],NULL,10);
 		log_info(CPULog,"[PID:%s] Instruccion: entrada-salida de tiempo %s.", string_itoa(pcb->idProceso), string_itoa(tiempoDeEjec));
@@ -279,11 +281,11 @@ void tituloInicial(){
 
 char* depurarInstruccion(char* instruccion){
 	//string_trim_right(&instruccion);
-	int len = strlen(instruccion)-1;
-	instruccion[len] = '\0';
+//	int len = strlen(instruccion)-1;
+//	instruccion[len] = '\0';
 	if(string_ends_with(instruccion,";")){
 		instruccion = string_substring_until(instruccion, string_length(instruccion)-1);
-		//return ;
+		instruccion[string_length(instruccion)+1]= '\0';
 	}
 	return instruccion;
 }
