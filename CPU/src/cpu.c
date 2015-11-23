@@ -77,7 +77,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 
 	while(pcb->contadorPuntero != numeroInstruccion){
 		fgets(instruccion,TAMINSTRUCCION+1, entrada);
-		instruccion = depurarInstruccion(instruccion);
+	//	instruccion = depurarInstruccion(instruccion);
 		numeroInstruccion ++;
 	}
 
@@ -131,7 +131,7 @@ int abrirArchivoYValidar(t_pcb* pcb,sock_t* socketPlanificador,sock_t* socketMem
 		}
 	}
 	fclose(entrada);
-	free(instruccion);
+	//free(instruccion);
 
 	log_info(CPULog," [PID:%s] Se cerró el archivo.\n",string_itoa(pcb->idProceso));
 	return 0;
