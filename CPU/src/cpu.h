@@ -62,7 +62,7 @@ typedef struct {
 
 //Constantes
 #define PAQUETE 1024
-#define TAMINSTRUCCION 80
+#define TAMINSTRUCCION 200
 #define ANORMAL 5
 #define PEDIDO_ERROR 0
 /*con admin de memoria*/

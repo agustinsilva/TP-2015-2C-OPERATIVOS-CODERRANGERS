@@ -1,4 +1,6 @@
 iniciar 2;
 leer 0;
+escribir 0 "maru";
 leer 1;
+entrada-salida 3;
 finalizar;

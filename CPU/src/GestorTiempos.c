@@ -72,7 +72,7 @@ void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion){
 		t_CPUsConectados* cpu = malloc(sizeof(t_CPUsConectados));
 		cpu->idCPU=cpuOld->idCPU;
 		cpu->porcentajeProcesado=cpuOld->porcentajeProcesado;
-		printf("Porcentaje CPU %d\n",cpu->porcentajeProcesado);
+		//printf("Porcentaje CPU %d\n",cpu->porcentajeProcesado);
 		cpu->tiempoAcumuladoDeInstrucciones = cpuOld->tiempoAcumuladoDeInstrucciones + tiempo_ejecucion_instruccion;
 		list_replace_and_destroy_element(listaCPU, (int)pos, (void*)cpu, (void*)cpuDestroyer);
 		/*printf("[ESTADISTICAS] Se actualizó la lista de cpu, tiempo anterior: %d , tiempo transcurrido: %d ,"

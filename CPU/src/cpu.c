@@ -222,7 +222,7 @@ char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecucione
 	}else if(string_equals_ignore_case(lista[0], "escribir")){
 		char* textoEscribir = string_from_format("%s",lista[2]);
 		int32_t tamanioTexto = strlen(textoEscribir);
-		textoEscribir[tamanioTexto-1] = '\0';
+		textoEscribir[tamanioTexto] = '\0';
 		//int32_t numeroPagina=*lista[1];
 		int32_t numeroPagina = (int32_t)strtol(lista[1],NULL,10);
 		log_info(CPULog," [PID:%s] Instruccion: escribir en página %s: %s",string_itoa(pcb->idProceso),string_itoa(numeroPagina),textoEscribir);
@@ -281,8 +281,9 @@ void tituloInicial(){
 
 char* depurarInstruccion(char* instruccion){
 	//string_trim_right(&instruccion);
-//	int len = strlen(instruccion)-1;
-//	instruccion[len] = '\0';
+	//int len = strlen(instruccion)-1;
+	//instruccion[len] = '\0';
+	instruccion = string_substring_until(instruccion, string_length(instruccion)-1);
 	if(string_ends_with(instruccion,";")){
 		instruccion = string_substring_until(instruccion, string_length(instruccion)-1);
 		instruccion[string_length(instruccion)+1]= '\0';
