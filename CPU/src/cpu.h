@@ -107,7 +107,7 @@ char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuci
 char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina,sock_t* socketMemoria);
 char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuciones,sock_t* socketPlanificador);
 int informarPlanificadorLiberacionCPU(t_pcb* pcb,char* resultadosDeEjecuciones,sock_t* socketPlanificador);
-char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria,int32_t cantInstruccionesEjecutadas);
+char* procesarInstruccion(char **lista, t_pcb *pcb, char* resultadosDeEjecuciones,sock_t* socketPlanificador,sock_t* socketMemoria,int32_t cantInstruccionesEjecutadas, char* instruccion);
 void crearHilosCPU (void);
 int hiloPadre();
 void enviarCodigoOperacion(sock_t* socket, int32_t entero);
