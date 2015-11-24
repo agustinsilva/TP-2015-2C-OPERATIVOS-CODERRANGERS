@@ -2,6 +2,7 @@
 
 //falta optimizar con shared library sockets
 void* iniciarServidor() {
+	socketCpuPadre = 0;
 	fd_set set_maestro, set_temporal, socketsHilos;
 	uint32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
@@ -421,7 +422,8 @@ void creoCpu(uint32_t socketCpu){
 
 //Agrego socket Padre y le informo el tipo de planificacion
 void creoPadre(uint32_t socketProcesado){
-	socketCpuPadre = socketProcesado;
+	if (socketCpuPadre == 0)
+		socketCpuPadre = socketProcesado;
 	//Envio el tipo de planificacion al cpu
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
@@ -434,7 +436,7 @@ void creoPadre(uint32_t socketProcesado){
 }
 char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
 	uint32_t codigo, tipoPlanificacion, quantum;
-	codigo = 0;
+	codigo = 26;
 	quantum = configuracion->quantum;
 	string_trim(&(configuracion->algoritmoPlanificacion));
 

@@ -12,15 +12,17 @@ int conectarCPUPadreAPlanificador(){
 	//Recibe respuesta
 	printf("Esperando respuesta de Planificador\n");
 	uint32_t codigo = deserializarEnteroSinSigno(socketPlanificadorPadre);
-	configCPUPadre.tipoPlanificacion = deserializarEnteroSinSigno(socketPlanificadorPadre);//0: FIFO, 1: RR
-	if(configCPUPadre.tipoPlanificacion==1){
-		configCPUPadre.quantum = deserializarEnteroSinSigno(socketPlanificadorPadre);
-	}else{
-		configCPUPadre.quantum = 0;
+	if (codigo == 26 )
+	{
+		configCPUPadre.tipoPlanificacion = deserializarEnteroSinSigno(socketPlanificadorPadre);//0: FIFO, 1: RR
+		if(configCPUPadre.tipoPlanificacion==1){
+			configCPUPadre.quantum = deserializarEnteroSinSigno(socketPlanificadorPadre);
+		}else{
+			configCPUPadre.quantum = 0;
+		}
+
+		printf("Tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
 	}
-
-	printf("Tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
-
 	pthread_t hiloPorcentaje;
 	int32_t hilo;
 	hilo = pthread_create(&hiloPorcentaje, NULL,(void*) enviarPorcentaje, NULL);
@@ -31,7 +33,10 @@ int conectarCPUPadreAPlanificador(){
 	}
 	while(1){
 		uint32_t codigoRecibido = deserializarEnteroSinSigno(socketPlanificadorPadre);
-		sem_post(&semCpuPadre);
+		if (codigoRecibido == PORCENTAJES_CPU)
+			sem_post(&semCpuPadre);
+		else
+			codigoRecibido = 0;
 	}
 
 	return EXIT_SUCCESS;
@@ -474,20 +479,25 @@ void enviarPorcentaje(){
 		uint32_t cabecera = PORCENTAJES_CPU;
 		uint32_t offset = 0;
 		uint32_t status;
-		uint32_t tamanio = sizeof(cabecera) + sizeof(listaCPU);
+		char* listaTemporal = "CPU: 1 Porcentaje uso: 40%/nCPU: 2 Porcentaje uso: 30%/nCPU: 3 Porcentaje uso: 40%";
+		uint32_t tamListaTemp = strlen(listaTemporal);
+		uint32_t tamanio = sizeof(cabecera) + sizeof(tamListaTemp) + tamListaTemp;
 		char* message = malloc(tamanio);
 		memcpy(message, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
-		memcpy(message + offset, &listaCPU, sizeof(listaCPU));
-		offset = offset + sizeof(listaCPU);
-		status = send(socketPlanificadorPadre->fd,message,tamanio,0);
-		pthread_mutex_unlock(&mutexListaCpus);
+
+		memcpy(message + offset, &tamListaTemp, sizeof(tamListaTemp));
+		offset = offset + sizeof(tamListaTemp);
+
+		memcpy(message + offset, listaTemporal, tamListaTemp);
+		offset = offset + tamListaTemp;
+
+		char* mensajeEnviar = malloc(tamanio);
+		memcpy(mensajeEnviar, message, tamanio);
+		status = send(socketPlanificadorPadre->fd,mensajeEnviar,tamanio,0);
+		if (status < 0)
+			printf("error enviando porcentaje a planificador");
 		free(message);
-		if(!status)	{
-			printf("No se enviaron los porcentajes al Planificador.\n");
-		}
-		else {
-			printf("Se enviaron los porcentajes correctamente al Planificador.\n");
-		}
+		pthread_mutex_unlock(&mutexListaCpus);
 	}
 }

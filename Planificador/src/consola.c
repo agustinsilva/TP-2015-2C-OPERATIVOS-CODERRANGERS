@@ -43,9 +43,8 @@ void* mostrarConsola() {
 				mostrarProcesos();
 				break;
 			case 4:
-				//Metodo que ejecuta el Correr
-				printf("Debera mostrar en pantalla del planificador un listado de ls CPUS actuales del sistema indicando para cada una su procentaje de uso del ultimo minuto");
-//				pedirEstadoCpu();
+				//Muestra el estado de los cpus
+				pedirEstadoCpu();
 				getchar();
 				getchar();
 				break;
@@ -225,7 +224,27 @@ void encolar(char* path) {
 
 void pedirEstadoCpu(){
 	enviarCodigoOperacion(ESTADOCPUPADRE);
-	//recibir los datos de los cpus y mostrarlos por consola
+	/*recibe la cantidad de bytes que va a tener el mensaje*/
+	int32_t longitudMensaje = 0;
+	//recibo CodigoOperacion
+	int32_t enteroSinSigno;
+	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(int32_t), 0);
+	if (status == -1 || status == 0) {
+		enteroSinSigno = status;
+	}
+
+	/*recibe el mensaje sabiendo cuánto va a ocupar*/
+	status = recv(socketCpuPadre, &longitudMensaje, sizeof(int32_t), 0);
+	if(status<=0){
+		printf("error al recibir el mensaje %d", socketCpuPadre);
+		printf("socketCpuPadre %d", socketCpuPadre);
+	}
+	char* mensaje = (char*) malloc(longitudMensaje + 1);
+	recv(socketCpuPadre, mensaje, longitudMensaje, 0);
+	mensaje[longitudMensaje] = '\0';
+
+	printf("%s", mensaje);
+	free(mensaje);
 }
 
 void enviarCodigoOperacion(int32_t entero){
