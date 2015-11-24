@@ -7,8 +7,9 @@ int main(void) {
 	cargarArchivoDeConfiguracion();
 	tituloInicial();
 	pthread_mutex_init(&mutexListaCpus, NULL);
+	sem_init(&semCpuPadre, 0, 0);
 	hiloPadre();
-	//iniciarCronTasks();
+	iniciarCronTasks();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
 	limpiarRecursos();
@@ -213,7 +214,6 @@ int hiloPadre() {
 		printf("Se cerrara el programa");
 		return EXIT_FAILURE;
 	}
-	pthread_join(hiloCpuPadre, NULL);
 	return EXIT_SUCCESS;
 }
 

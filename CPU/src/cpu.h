@@ -91,6 +91,7 @@ sock_t* socketPlanificadorPadre;
 t_cpu_padre configCPUPadre;
 t_list* listaCPU;
 pthread_mutex_t mutexListaCpus;
+sem_t semCpuPadre;
 
 //Firma de funciones
 int conf_es_valida(t_config* configuracion);
@@ -122,7 +123,8 @@ int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion);
 void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion);
 void iniciarCronTasks();
 int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones);
-void PorcentajeParaPlanificador();
+//void PorcentajeParaPlanificador();
 char* depurarInstruccion(char* instruccion);
 int fromSecondstoMicroSeconds(uint32_t seconds);
+void enviarPorcentaje();
 #endif /* CPU_H_ */
