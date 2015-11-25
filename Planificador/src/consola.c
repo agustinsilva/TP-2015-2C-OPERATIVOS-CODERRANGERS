@@ -200,7 +200,7 @@ void encolar(char* path) {
 		pcb->idProceso = contadorProceso;
 		pcb->estadoProceso = 0; //0-Espera 1-Ejecucion 2-Finalizado
 		pcb->contadorPuntero = 1;
-		pcb->cantidadInstrucciones = cantidadInstrucciones;
+		pcb->cantidadInstrucciones = cantidadInstrucciones - 1;
 		pcb->path = malloc(strlen(path));
 		pcb->path = strdup(path); //TODO: revisar codigo maligno
 		pcb->flagFin = 0;
@@ -228,23 +228,26 @@ void pedirEstadoCpu(){
 	int32_t longitudMensaje = 0;
 	//recibo CodigoOperacion
 	int32_t enteroSinSigno;
-	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(uint32_t), 0);
+	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
 		enteroSinSigno = status;
+		printf("se recibio mal el codigo %d", enteroSinSigno);
 	}
 
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	status = recv(socketCpuPadre, &longitudMensaje, sizeof(uint32_t), 0);
-	if(status<=0){
-		printf("error al recibir el mensaje %d", socketCpuPadre);
-		printf("socketCpuPadre %d", socketCpuPadre);
+	int32_t status2 = recv(socketCpuPadre, &longitudMensaje, sizeof(int32_t), 0);
+	if(status2<=0){
+		printf("status: %d\n", status2);
+		printf("error al recibir la long mensaje socketcpupadre %d", socketCpuPadre);
+		printf("longMensaje %d", longitudMensaje);
 	}
-	char* mensaje = (char*) malloc(longitudMensaje + 1);
-	recv(socketCpuPadre, mensaje, longitudMensaje, 0);
-	mensaje[longitudMensaje] = '\0';
-
-	printf("%s", mensaje);
-	free(mensaje);
+	else{
+		char* mensaje = (char*) malloc(longitudMensaje + 1);
+		recv(socketCpuPadre, mensaje, longitudMensaje, 0);
+		mensaje[longitudMensaje] = '\0';
+		printf("%s", mensaje);
+		free(mensaje);
+	}
 }
 
 void enviarCodigoOperacion(int32_t entero){

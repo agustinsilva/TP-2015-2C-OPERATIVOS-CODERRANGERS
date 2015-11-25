@@ -4,7 +4,7 @@
 void* iniciarServidor() {
 	socketCpuPadre = 0;
 	fd_set set_maestro, set_temporal, socketsHilos;
-	uint32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
+	int32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
 	FD_ZERO(&set_temporal); //Limpia el set temporal
 	FD_ZERO(&socketsHilos);
@@ -80,7 +80,7 @@ void* iniciarServidor() {
 	return NULL;
 }
 
-int32_t deserializarEnteroSinSigno(uint32_t socket) {
+int32_t deserializarEnteroSinSigno(int32_t socket) {
 	int32_t enteroSinSigno;
 	int32_t status = recv(socket, &enteroSinSigno, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
@@ -155,7 +155,7 @@ void consumirRecursos() {
 }
 
 /***** Funcion replanifica PCB cuando CPU vuelve por Quantum *****/
-void replanificar(uint32_t socketCpu) {
+void replanificar(int32_t socketCpu) {
 	sem_wait(&mutex);
 	//Recibo el Mensaje a logear de ejecucion por Quantum
 	char* mensajeALogear = recibirMensaje(socketCpu);
@@ -207,7 +207,7 @@ void replanificar(uint32_t socketCpu) {
 	sem_post(&sincroproc); // Aumento semaforo Proc
 }
 
-void bloquearProceso(uint32_t socketCpu, uint32_t *hiloBloqueado){
+void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	sem_wait(&mutex);
 	//recibo retardo y mensaje
 	int32_t retardo = deserializarEnteroSinSigno(socketCpu);
@@ -271,7 +271,7 @@ void iniciarHiloBloqueados() {
 			//Agarro el primero de cada la cola
 			t_pcb *pcbBloqueado = list_get(proc_bloqueados, 0);
 			//hago sleep
-			sleep(pcbBloqueado->retardo);
+			usleep(pcbBloqueado->retardo * 1000000);
 			//Reviso el Flag de finalizacion
 			sem_wait(&mutex);
 			if(pcbBloqueado != NULL && pcbBloqueado->flagFin == 1)
@@ -288,7 +288,7 @@ void iniciarHiloBloqueados() {
 	}
 }
 
-void logearFinalizacionCpu(uint32_t socketCpu) {
+void logearFinalizacionCpu(int32_t socketCpu) {
 	sem_wait(&mutex);
 	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
@@ -407,7 +407,7 @@ t_pcb* recibirPcb(uint32_t socketCpu){
 	return pcbRecibido;
 }
 
-void creoCpu(uint32_t socketCpu){
+void creoCpu(int32_t socketCpu){
 	t_hilosConectados *hilosConectados = malloc(sizeof(t_hilosConectados));
 	hilosConectados->socketHilo = socketCpu;
 	hilosConectados->estadoHilo = 0; //0-disponible 1-Ejecutando
@@ -421,9 +421,10 @@ void creoCpu(uint32_t socketCpu){
 }
 
 //Agrego socket Padre y le informo el tipo de planificacion
-void creoPadre(uint32_t socketProcesado){
+void creoPadre(int32_t socketProcesado){
 	if (socketCpuPadre == 0)
 		socketCpuPadre = socketProcesado;
+	printf("socketCpuPadre %d\n", socketCpuPadre);
 	//Envio el tipo de planificacion al cpu
 	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
 	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
@@ -470,13 +471,13 @@ char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
 	return paqueteSerializado;
 }
 
-void logearResultadoCpu(uint32_t socketCpu) {
+void logearResultadoCpu(int32_t socketCpu) {
 	char* mensajeCpu = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeCpu);
 	free(mensajeCpu);
 }
 
-char* recibirMensaje(uint32_t socket) {
+char* recibirMensaje(int32_t socket) {
 	/*recibe la cantidad de bytes que va a tener el mensaje*/
 	int32_t longitudMensaje = 0;
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
@@ -490,8 +491,8 @@ char* recibirMensaje(uint32_t socket) {
 	return mensaje;
 }
 
-uint32_t crearSocketReceptor() {
-	uint32_t socketReceptor;
+int32_t crearSocketReceptor() {
+	int32_t socketReceptor;
 	struct addrinfo hints;
 	struct addrinfo *serverInfo;
 	char* puertoEscuchaString;

@@ -32,13 +32,19 @@ int conectarCPUPadreAPlanificador(){
 		return EXIT_FAILURE;
 	}
 	while(1){
-		uint32_t codigoRecibido = deserializarEnteroSinSigno(socketPlanificadorPadre);
+//		uint32_t codigoRecibido = deserializarEnteroSinSigno(socketPlanificadorPadre);
+		int32_t codigoRecibido;
+		int32_t status = recv(socketPlanificadorPadre->fd, &codigoRecibido, sizeof(int32_t), 0);
+
+		if(status == -1 || status == 0)
+		{
+			codigoRecibido = ANORMAL;
+			printf("error, recibi mal el cod");
+			break;
+		}
 		if (codigoRecibido == PORCENTAJES_CPU)
 			sem_post(&semCpuPadre);
-		else
-			codigoRecibido = 0;
 	}
-
 	return EXIT_SUCCESS;
 }
 
@@ -332,6 +338,7 @@ uint32_t deserializarEnteroSinSigno(sock_t* socket)
 	if(status == -1 || status == 0)
 	{
 		enteroSinSigno = ANORMAL;
+		printf("error, recibi mal el cod");
 	}
 	return enteroSinSigno;
 }
@@ -475,10 +482,10 @@ char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuc
 void enviarPorcentaje(){
 	while (1) {
 		sem_wait(&semCpuPadre);
-		pthread_mutex_lock(&mutexListaCpus);
+//		pthread_mutex_lock(&mutexListaCpus);
 		uint32_t cabecera = PORCENTAJES_CPU;
 		uint32_t offset = 0;
-		uint32_t status;
+		int32_t status;
 
 		char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
 
@@ -497,21 +504,24 @@ void enviarPorcentaje(){
 //			indice++;
 //		}
 
-		uint32_t tamListaTemp = strlen(listaTemporal);
-		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + tamListaTemp;
+		int32_t tamListaTemp = strlen(listaTemporal);
+		int32_t tamanio = sizeof(cabecera) + sizeof(int32_t) + tamListaTemp;
 		char* message = malloc(tamanio);
 		memcpy(message, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
-		memcpy(message + offset, &tamListaTemp, sizeof(uint32_t));
-		offset = offset + sizeof(uint32_t);
+		printf("tam lista %d", tamListaTemp);
+		printf("%s",listaTemporal);
+		memcpy(message + offset, &tamListaTemp, sizeof(int32_t));
+		offset = offset + sizeof(int32_t);
 		memcpy(message + offset, listaTemporal, tamListaTemp);
 		offset = offset + sizeof(tamListaTemp);
 		status = send(socketPlanificadorPadre->fd,message,tamanio,0);
-
-		if (status < 0)
-			printf("Error al enviar el porcentaje a Planificador\n");
-
+		printf("socket plani padre %d \n",socketPlanificadorPadre->fd);
+		printf("status: %d \n", status);
+		if (status < 0) {
+			printf("Error al enviar el porcentaje a Planificador");
+		}
 		free(message);
-		pthread_mutex_unlock(&mutexListaCpus);
+//		pthread_mutex_unlock(&mutexListaCpus);
 	}
 }
