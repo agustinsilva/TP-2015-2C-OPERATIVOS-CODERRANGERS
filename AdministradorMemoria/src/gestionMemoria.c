@@ -303,28 +303,26 @@ t_list* getTablaDePaginasPresentes(int32_t idmProc){
 int32_t setLoadedTimeForProc(int32_t idmProc){
 	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
 
-	void impri(t_TP* entraada){
-		printf("marco %d pagina %d loaded time %d\n", entraada->frame, entraada->nroPag, entraada->loadedTime);
-	}
-	list_iterate(tablaDelProceso, (void*) impri);
-
 	if(list_size(tablaDelProceso)==0){
 		return 0;
 	} else{
-		int32_t minLoadedTime = getMinLoadedTime(tablaDelProceso);
-		return minLoadedTime+1;
+		void avanzarTiempo(t_TP* e){
+			(e->loadedTime)++;
+		}
+		list_iterate(tablaDelProceso, (void*)avanzarTiempo);
+		return 0;
 	}
 }
 
-int32_t getMinLoadedTime(t_list* tablaDelProceso){
-	int32_t min=RAND_MAX;
-	void minimo(t_TP* entrada){
-		if(entrada->loadedTime<min){
-			min=entrada->loadedTime;
+int32_t getMaxLoadedTime(t_list* tablaDelProceso){
+	int32_t max=REINIT;
+	void maximo(t_TP* entrada){
+		if(entrada->loadedTime>max){
+			max=entrada->loadedTime;
 		}
 	}
-	list_iterate(tablaDelProceso, (void*) minimo);
-	return min;
+	list_iterate(tablaDelProceso, (void*) maximo);
+	return max;
 }
 
 int32_t getMaxUsedTime(t_list* tablaDelProceso){
@@ -420,11 +418,11 @@ int32_t reemplazarFIFO(t_list* tablaDelProceso){
 		return marcos_insuficientes;
 	} else{
 
-		int32_t minLoaded = getMinLoadedTime(tablaDelProceso);
-		bool porMinLoaded(t_TP* entrada){
-			return entrada->loadedTime == minLoaded;
+		int32_t maxLoaded = getMaxLoadedTime(tablaDelProceso);
+		bool porMaxLoaded(t_TP* entrada){
+			return entrada->loadedTime == maxLoaded;
 		}
-		t_TP* aReemplazar = list_find(tablaDelProceso,(void*) porMinLoaded);
+		t_TP* aReemplazar = list_find(tablaDelProceso,(void*) porMaxLoaded);
 		return aReemplazar->frame;
 	}
 }
