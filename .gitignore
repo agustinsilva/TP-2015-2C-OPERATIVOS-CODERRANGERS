@@ -40,7 +40,7 @@
 .settings
 
 #Carpeta de debug
-#Debug/
+Debug/
 
 #Archivos de configuracion
 .txt
