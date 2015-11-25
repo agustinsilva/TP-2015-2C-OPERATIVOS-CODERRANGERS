@@ -321,6 +321,10 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
 						pthread_mutex_unlock(&sem_TLB);
 					}
+					void impr(t_MP* entrada){
+							printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
+						}
+						list_iterate(memoriaPrincipal, (void*)impr);
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
@@ -476,6 +480,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					    pthread_mutex_unlock(&sem_MP);
 					}
 
+					void impr(t_MP* entrada){
+							printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
+						}
+						list_iterate(memoriaPrincipal, (void*)impr);
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
@@ -546,8 +554,8 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 		}
 	}
+	free(contenido);
 	printf("Fin operación escribir %d\n", nroPagina);
-
 }
 
 void enviarEnteros(sock_t* socket, int32_t entero)
