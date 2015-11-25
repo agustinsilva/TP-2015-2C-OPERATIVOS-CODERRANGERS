@@ -205,7 +205,6 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	}
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
-			//	TODO;
 		bool porPID(t_Marcos* entrada){
 			return entrada->idProc == idmProc;
 		}
@@ -234,7 +233,6 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 			t_Orden* puntero = list_find(marcoMP->marcos, (void*) porMarco);
 			puntero->nroPag = nroPagina;
 		}
-
 
 		if(paginaSwappedOut!=NULL){
 			paginaSwappedOut->accessed = false;
@@ -303,8 +301,12 @@ t_list* getTablaDePaginasPresentes(int32_t idmProc){
 
 
 int32_t setLoadedTimeForProc(int32_t idmProc){
-
 	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
+
+	void impri(t_TP* entraada){
+		printf("marco %d pagina %d loaded time %d\n", entraada->frame, entraada->nroPag, entraada->loadedTime);
+	}
+	list_iterate(tablaDelProceso, (void*) impri);
 
 	if(list_size(tablaDelProceso)==0){
 		return 0;
@@ -352,8 +354,12 @@ int32_t getRandomFrameVacio(){
 
 void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* contenidoAEscribir, int32_t idmProc, int32_t nroPagina){
 	if(entradaMP!=NULL){
-		strcpy(entradaMP->contenido, contenidoAEscribir);
 
+		if(string_length(contenidoAEscribir)>configuracion->tamanio_marco){
+			log_info(MemoriaLog, "El contenido a escribir excede el tamaño del marco. Se recortará el contenido a la máxima extensión posible\n");
+			contenidoAEscribir[(configuracion->tamanio_marco)-1] = '\0';
+		}
+		strcpy(entradaMP->contenido, contenidoAEscribir);
 		llenarDeNulos(entradaMP->contenido,configuracion->tamanio_marco,string_length(contenidoAEscribir));
 
 		log_info(MemoriaLog, "Se escribió en la página %d del proceso %d  el contenido: %s\n", nroPagina, idmProc, entradaMP->contenido);
@@ -369,8 +375,7 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 	}
 	else {
 		log_error(MemoriaLog, "Entrada de memoria Nula\n");
-		printf("Error!\n");
-			}
+	}
 }
 
 void manejarMemoriaPrincipalLectura(t_MP* entradaMP, sock_t* cpuSocket){
@@ -414,8 +419,8 @@ int32_t reemplazarFIFO(t_list* tablaDelProceso){
 	if(list_size(tablaDelProceso)==0){
 		return marcos_insuficientes;
 	} else{
-		int32_t minLoaded = getMinLoadedTime(tablaDelProceso);
 
+		int32_t minLoaded = getMinLoadedTime(tablaDelProceso);
 		bool porMinLoaded(t_TP* entrada){
 			return entrada->loadedTime == minLoaded;
 		}
@@ -424,7 +429,6 @@ int32_t reemplazarFIFO(t_list* tablaDelProceso){
 	}
 }
 
-//TODO
 int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 
 	if(list_size(tablaDelProceso)==0){
