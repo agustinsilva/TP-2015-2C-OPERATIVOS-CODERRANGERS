@@ -228,13 +228,13 @@ void pedirEstadoCpu(){
 	int32_t longitudMensaje = 0;
 	//recibo CodigoOperacion
 	int32_t enteroSinSigno;
-	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(int32_t), 0);
+	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(uint32_t), 0);
 	if (status == -1 || status == 0) {
 		enteroSinSigno = status;
 	}
 
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	status = recv(socketCpuPadre, &longitudMensaje, sizeof(int32_t), 0);
+	status = recv(socketCpuPadre, &longitudMensaje, sizeof(uint32_t), 0);
 	if(status<=0){
 		printf("error al recibir el mensaje %d", socketCpuPadre);
 		printf("socketCpuPadre %d", socketCpuPadre);
