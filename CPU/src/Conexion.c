@@ -479,7 +479,24 @@ void enviarPorcentaje(){
 		uint32_t cabecera = PORCENTAJES_CPU;
 		uint32_t offset = 0;
 		uint32_t status;
-		char* listaTemporal = "CPU: 1 Porcentaje uso: 40%\nCPU: 2 Porcentaje uso: 30%\nCPU: 3 Porcentaje uso: 40%";
+
+		char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
+
+		 //VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
+//		t_CPUsConectados* temporal;
+//			uint32_t indice= 1;
+//
+//		while (indice <= configuracion->cantidadHilos) {
+//			temporal = list_get(listaCPU, indice);
+//
+//			strcat(listaTemporal, "CPU:");
+//			strcat(listaTemporal, string_itoa(temporal->idCPU));
+//			strcat(listaTemporal, ", Porcentaje de uso:");
+//			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
+//			strcat(listaTemporal, "\n");
+//			indice++;
+//		}
+
 		uint32_t tamListaTemp = strlen(listaTemporal);
 		uint32_t tamanio = sizeof(cabecera) + sizeof(uint32_t) + tamListaTemp;
 		char* message = malloc(tamanio);
@@ -490,8 +507,10 @@ void enviarPorcentaje(){
 		memcpy(message + offset, listaTemporal, tamListaTemp);
 		offset = offset + sizeof(tamListaTemp);
 		status = send(socketPlanificadorPadre->fd,message,tamanio,0);
+
 		if (status < 0)
-			printf("error enviando porcentaje a planificador\n");
+			printf("Error al enviar el porcentaje a Planificador\n");
+
 		free(message);
 		pthread_mutex_unlock(&mutexListaCpus);
 	}
