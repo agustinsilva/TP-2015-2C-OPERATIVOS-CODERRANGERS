@@ -28,9 +28,11 @@ int cargarArchivoDeConfiguracion()
 	configuracion->algoritmoPlanificacion = config_get_string_value(fdConfiguracion, "ALGORITMO_PLANIFICACION");
 	configuracion->quantum = config_get_int_value(fdConfiguracion, "QUANTUM");
 
-	printf("PUERTO_ESCUCHA:%d\n", configuracion->puertoEscucha);
-	printf("ALGORITMO_PLANIFICACION:%s\n", configuracion->algoritmoPlanificacion);
-	printf("QUANTUM:%d\n", configuracion->quantum);
+	log_info(planificadorLog,
+		"\PUERTO_ESCUCHA: %d\n"
+		"ALGORITMO_PLANIFICACION: %s\n"
+		"QUANTUM: %d\n",
+		configuracion->puertoEscucha, configuracion->algoritmoPlanificacion , configuracion->quantum);
 	return 0;
 }
 

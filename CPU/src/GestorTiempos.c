@@ -58,8 +58,7 @@ double initTimes(time_t *tiempo1){
 */
 int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion){
 	time_t *tiempo2 =malloc(sizeof(time_t));
-	double tiempo_fin_instruccion = 0;
-	tiempo_fin_instruccion = time(tiempo2);
+	double tiempo_fin_instruccion = time(tiempo2);
 	int tiempo_transcurrido_instruccion = tiempo_fin_instruccion - tiempo_inicio_instruccion;
 	free(tiempo1);
 	free(tiempo2);
@@ -74,9 +73,6 @@ void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion)
 		t_CPUsConectados *cpu = list_get(listaCPU,pos);
 		//ahora actualizo el tiempo acumulado
 		cpu->tiempoAcumuladoDeInstrucciones = cpu->tiempoAcumuladoDeInstrucciones + tiempo_ejecucion_instruccion;
-		//printf("Porcentaje CPU %d\n",cpu->porcentajeProcesado);
-		/*printf("[ESTADISTICAS] Se actualizó la lista de cpu, tiempo anterior: %d , tiempo transcurrido: %d ,"
-				" ahora tiene: %d \n",cpuOld->tiempoAcumuladoDeInstrucciones,tiempo_ejecucion_instruccion,cpu->tiempoAcumuladoDeInstrucciones);*/
 	}
 }
 
@@ -86,14 +82,12 @@ int32_t getPositionIfExists(){
 	uint32_t tamanio = list_size(listaCPU);
 	t_CPUsConectados *cpu;
 	pthread_t hilo = pthread_self();
-	//printf("Nro de Hilo a buscar: %u\n",hilo);
 	for( i=0 ; i < tamanio ; i++){
 		cpu = list_get(listaCPU,i);
-		//printf("iD de hilo: %u , en la pos: %u \n",cpu->idCPU,i);
 		if(cpu->idCPU== hilo){
 			rta = i;
 		}
 	}
-	//printf("posicion (si es 9999 significa que no existe cpu con ese threadId): %d\n",rta);
+	//posicion (si es 9999 significa que no existe cpu con ese threadId): %d\n",rta);
 	return rta;
 }

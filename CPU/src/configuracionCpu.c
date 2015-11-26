@@ -35,13 +35,15 @@ int cargarArchivoDeConfiguracion()
 	configuracion->cantidadHilos = config_get_int_value(fd_configuracion, "CANTIDAD_HILOS");
 	configuracion->retardo = config_get_int_value(fd_configuracion, "RETARDO");
 	
-	printf("IP_PLANIFICADOR: %s\n", configuracion->ipPlanificador);
-	printf("PUERTO_PLANIFICADOR: %d\n", configuracion->puertoPlanificador);
-	printf("IP_MEMORIA: %s\n", configuracion->ipMemoria);
-	printf("PUERTO_MEMORIA: %d\n", configuracion->puertoMemoria);
-	printf("CANTIDAD_HILOS: %d\n", configuracion->cantidadHilos);
-	printf("RETARDO: %d segundos\n", configuracion->retardo);
-
+	log_info(CPULog,
+		"\IP_PLANIFICADOR: %d\n"
+		"PUERTO_PLANIFICADOR: %s\n"
+		"IP_MEMORIA: %d\n"
+		"PUERTO_MEMORIA: %d\n"
+		"CANTIDAD_HILOS: %d\n"
+		"RETARDO: %d\n",
+		configuracion->ipPlanificador, configuracion->puertoPlanificador , configuracion->ipMemoria ,
+		configuracion->puertoMemoria, configuracion->cantidadHilos , configuracion->retardo);
 	return 0;
 }
 

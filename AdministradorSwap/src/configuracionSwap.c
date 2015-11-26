@@ -30,12 +30,16 @@ int cargarArchivoDeConfiguracion()
 	configuracion->tamano_pagina = config_get_int_value(fd_configuracion, "TAMANO_PAGINA");
 	configuracion->retardo_compactacion = config_get_int_value(fd_configuracion, "RETARDO_COMPACTACION");
 	configuracion->retardo_swap = config_get_int_value(fd_configuracion, "RETARDO_SWAP");
-	printf("PUERTO_ESCUCHA: %d\n", configuracion->puerto_escucha);
-	printf("NOMBRE_SWAP: %s\n", configuracion->nombre_swap);
-	printf("CANTIDAD_PAGINAS: %d\n", configuracion->cantidad_paginas);
-	printf("TAMANO_PAGINA: %d\n", configuracion->tamano_pagina);
-	printf("RETARDO_COMPACTACION: %d\n", configuracion->retardo_compactacion);
-	printf("RETARDO_SWAP: %d\n", configuracion->retardo_swap);
+
+	log_info(SwapLog,
+		"\PUERTO_ESCUCHA: %d\n"
+		"NOMBRE_SWAP: %s\n"
+		"CANTIDAD_PAGINAS: %d\n"
+		"TAMANIO_PAGINA: %d\n"
+		"RETARDO_COMPACTACION: %d\n"
+		"RETARDO_SWAP: %d\n",
+		configuracion->puerto_escucha, configuracion->nombre_swap , configuracion->cantidad_paginas ,
+		configuracion->tamano_pagina, configuracion->retardo_compactacion , configuracion->retardo_swap);
 	return 0;
 }
 
