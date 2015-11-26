@@ -102,7 +102,7 @@ void inicializarParticion();
 uint32_t contarPaginasLibres();
 bool hayEspacio(int32_t);
 bool hayEspacioSecuencial(int32_t);
-bool validarEspacioLibre(void* nodo);
+bool validarEspacioLibre(void*);
 uint32_t ocuparEspacio(int32_t,int32_t);
 bool validarUbicacionLibre(void*);
 void liberarProceso(int32_t);

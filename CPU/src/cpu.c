@@ -57,6 +57,21 @@ void crearHilosCPU() {
 	}
 }
 
+FILE* abrirArchivo(t_pcb* pcb){
+	char* src = string_new();
+	string_append(&src, "../Planificador/src/Codigos/");
+	string_append(&src, pcb->path);
+	FILE* entrada = fopen(src, "r");
+	if (entrada == NULL) {
+		log_error(CPULog, "No se pudo abrir el archivo de entrada. ", "ERROR");
+	}
+	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s\n",
+			string_itoa(pcb->idProceso), pcb->path);
+
+	free(src);
+	return entrada;
+}
+
 int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 		sock_t* socketMemoria) {
 
@@ -65,18 +80,10 @@ int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 	char **lista;
 	uint32_t numeroInstruccion = 1;
 	char* instruccion = malloc(TAMINSTRUCCION);
-	char* src = string_new();
-	string_append(&src, "../Planificador/src/Codigos/");
-	string_append(&src, pcb->path);
-	FILE* entrada = fopen(src, "r");
-
-	if (entrada == NULL) {
-		log_error(CPULog, "No se pudo abrir el archivo de entrada. ", "ERROR");
-		return -1;
+	FILE* entrada = abrirArchivo(pcb);
+	if(entrada == NULL){
+		return 1;
 	}
-	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s\n",
-			string_itoa(pcb->idProceso), pcb->path);
-
 	while (pcb->contadorPuntero != numeroInstruccion) {
 		fgets(instruccion, TAMINSTRUCCION+1, entrada);
 		numeroInstruccion++;
@@ -144,7 +151,7 @@ int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 	}
 	fclose(entrada);
 	free(instruccion);
-	free(src);
+	//free(src);
 
 	log_info(CPULog, " [PID:%s] Se cerró el archivo.\n",
 			string_itoa(pcb->idProceso));
