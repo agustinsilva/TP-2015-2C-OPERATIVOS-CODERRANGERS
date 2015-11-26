@@ -97,27 +97,38 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 		marcoAReemplazar = reemplazarMP(idmProc, configuracion->algoritmo_reemplazo);
 	} else {
 		marcoAReemplazar = getRandomFrameVacio();
-	}
 
-	if(marcoAReemplazar==marcos_insuficientes || marcoAReemplazar==marcos_no_libres){
+		/*Si no hay nuevo marco pero puedo desalojar de los que tengo*/
+		if(marcoAReemplazar == marcos_no_libres && cantMarcosOtorgados>0){
+			marcoAReemplazar = reemplazarMP(idmProc, configuracion->algoritmo_reemplazo);
+			int32_t marco = doSwap(idmProc, nroPagina, marcoAReemplazar, codigo, swapSocket, cpuSocket);
+			return marco;
 
-		t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
-		pedido->encontro=pedido_error;
-		enviarEnteros(cpuSocket,pedido->encontro);
-//		free(pedido->contenido);
-		free(pedido);
+		} else {  /* no tengo para desalojar */
 
-		if(marcoAReemplazar==marcos_insuficientes){
-			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
-			abortarProceso(idmProc);
-			return marcos_insuficientes;
-		}else{
-			log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
-			abortarProceso(idmProc);
-			return marcos_no_libres;
+			if(marcoAReemplazar==marcos_insuficientes || marcoAReemplazar==marcos_no_libres){
+				t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
+				pedido->encontro=pedido_error;
+				enviarEnteros(cpuSocket,pedido->encontro);
+				free(pedido);
+
+				if(marcoAReemplazar==marcos_insuficientes){
+					log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
+					abortarProceso(idmProc);
+					return marcos_insuficientes;
+				}else{
+					log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
+					abortarProceso(idmProc);
+					return marcos_no_libres;
+				}
+			}
 		}
 	}
+	int32_t marco = doSwap(idmProc, nroPagina, marcoAReemplazar, codigo, swapSocket, cpuSocket);
+	return marco;
+}
 
+int32_t doSwap(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar, int32_t codigo, sock_t* swapSocket, sock_t* cpuSocket){
 	t_TP* entradaARemoverDeMP = buscarEnTablaDePaginasByMarco(marcoAReemplazar);
 	if(entradaARemoverDeMP!=NULL && entradaARemoverDeMP->modified==true){
 		if(escribirEnSwap(entradaARemoverDeMP, swapSocket)){
@@ -126,14 +137,13 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 	}
 
 	t_LecturaSwap* pedido = pedirPagina(swapSocket,idmProc, nroPagina);
-		if(pedido==NULL || pedido->encontro==false) {
-			enviarEnteros(cpuSocket, pedido_error);
-			return -1;
-		}
-		log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
+	if(pedido==NULL || pedido->encontro==false) {
+		enviarEnteros(cpuSocket, pedido_error);
+		return -1;
+	}
+	log_info(MemoriaLog, " - *Acceso a SWAP*  PID: %d", idmProc);
 
 	t_MP* mp = actualizarMP(idmProc, nroPagina, marcoAReemplazar, pedido);
-
 	if(codigo==codigo_leer){
 
 		//DEBERIA BUSCAR EN MEMORIA PRINCIPAL ACTUALIZADA...
@@ -141,6 +151,7 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 
 		enviarContenidoPagina(cpuSocket, pedido);
 	}
+
 	free(pedido->contenido);
 	free(pedido);
 
@@ -191,7 +202,6 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	t_TP* paginaSwappedIn = list_find(tablasDePaginas, (void*) porPIDyPag);
 	paginaSwappedIn->present=true;
 	paginaSwappedIn->frame = marcoAReemplazar;
-
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
 		paginaSwappedIn->loadedTime = setLoadedTimeForProc(idmProc);

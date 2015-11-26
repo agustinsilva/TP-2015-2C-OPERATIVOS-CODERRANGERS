@@ -213,6 +213,7 @@ t_Marcos* crearElementoOrdenMarcos(int32_t , int32_t , int32_t , int32_t , bool 
 void ordenarPorCargaMarcos(t_list*);
 void adelantarPuntero(t_list* );
 void eliminarOrdenMarcos(int32_t);
+int32_t doSwap(int32_t , int32_t , int32_t , int32_t , sock_t* , sock_t* );
 
 
 
