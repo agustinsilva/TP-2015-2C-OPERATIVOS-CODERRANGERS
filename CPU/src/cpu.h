@@ -79,6 +79,9 @@ typedef struct {
 #define CONEXION_CPU_PADRE 10
 #define PORCENTAJES_CPU 11
 
+#define PORCENTAJE 100
+#define TIEMPO_MINUTO 60
+
 //CONSOLA
 #define BOLD "\e[1m"
 #define RESET_NON_BOLD "\e[21m"

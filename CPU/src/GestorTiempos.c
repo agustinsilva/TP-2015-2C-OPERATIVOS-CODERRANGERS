@@ -7,27 +7,30 @@ void cpuDestroyer(t_CPUsConectados* cpu) {
 /*Función que actualiza el porcentaje de Uso de todos los cpu's
  * del último minuto. Y vuelve a CERO el acumulador de cada cpu.
 */
-void updatePercentPerMin(){
+void updatePercentPerMin()
+{
 	pthread_mutex_lock(&mutexListaCpus);
 	//Hora Actual: temporal_get_string_time();
 	log_info(CPULog,"Comienza Proceso de Actualización de Porcentajes de Uso de CPU'S.\n");
 	uint32_t i;
-	for( i=0 ; i < list_size(listaCPU) ; i++){
-		t_CPUsConectados* cpuOld = list_get(listaCPU,i);
-		t_CPUsConectados* cpu = malloc(sizeof(t_CPUsConectados));
-		cpu->idCPU = cpuOld->idCPU;
-		cpu->porcentajeProcesado = calculatePercent(cpuOld->tiempoAcumuladoDeInstrucciones);
+	for( i=0 ; i < list_size(listaCPU) ; i++)
+	{
+		t_CPUsConectados* cpu = list_get(listaCPU,i);
+		cpu->porcentajeProcesado = calculatePercent(cpu->tiempoAcumuladoDeInstrucciones);
 		cpu->tiempoAcumuladoDeInstrucciones = 0;
 		log_info(CPULog,"HILO de CPU nro: %u: Uso último min: %u%, Tiempo Acumulado"
 				"(debe ser cero):%u% \n",cpu->idCPU,cpu->porcentajeProcesado,cpu->tiempoAcumuladoDeInstrucciones);
-		list_replace_and_destroy_element(listaCPU, (int)i, (void*)cpu, (void*)cpuDestroyer);
 	}
 	pthread_mutex_unlock(&mutexListaCpus);
 }
 
-int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones){
-	int32_t ejecucionMaxima = 60 / configuracion->retardo;
-	int32_t porcentaje = (tiempoAcumuladoDeInstrucciones * 100) / ejecucionMaxima;
+int32_t calculatePercent(uint32_t tiempoAcumuladoDeInstrucciones)
+{
+	int32_t porcentaje = (tiempoAcumuladoDeInstrucciones * PORCENTAJE) / TIEMPO_MINUTO;
+	if(porcentaje > PORCENTAJE)
+	{
+		porcentaje = PORCENTAJE;
+	}
 	return porcentaje;
 }
 
@@ -37,7 +40,7 @@ void iniciarCronTasks(){
 		perror("Unable to catch SIGALRM");
 		exit(1);
 	}
-	it.it_value.tv_sec = 60;
+	it.it_value.tv_sec = TIEMPO_MINUTO;
 	it.it_value.tv_usec = 0;
 	it.it_interval = it.it_value;
 	//signal(SIGALRM, updatePercentPerMin);
