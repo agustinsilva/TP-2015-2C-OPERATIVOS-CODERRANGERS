@@ -204,7 +204,7 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	paginaSwappedIn->frame = marcoAReemplazar;
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
-		paginaSwappedIn->loadedTime = setLoadedTimeForProc(idmProc);
+		paginaSwappedIn->loadedTime = 0;
 	}
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, LRU)){
@@ -259,6 +259,39 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 
 	return mp;
 }
+void avanzarTiempo(int32_t idmProc, int32_t nroPag){
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, LRU)){
+		avanzarTiempoLRU(idmProc, nroPag);
+	}
+
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, FIFO)){
+		avanzarTiempoFIFO(idmProc);
+	}
+}
+
+void avanzarTiempoFIFO(int32_t idmProc){
+	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
+	if(list_size(tablaDelProceso)!=0){
+		void avanzarTiempoF(t_TP* e){
+			(e->loadedTime)++;
+		}
+		list_iterate(tablaDelProceso, (void*)avanzarTiempoF);
+	}
+}
+void avanzarTiempoLRU(int32_t idmProc, int32_t nroPag){
+	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
+
+	if(list_size(tablaDelProceso)!=0){
+		void avanzarTiempoL(t_TP* e){
+			if(e->nroPag==nroPag){
+				e->usedTime=REINIT;
+			}else{
+				(e->usedTime)++;
+			}
+		}
+		list_iterate(tablaDelProceso, (void*)avanzarTiempoL);
+	}
+}
 
 t_Marcos* crearElementoOrdenMarcos(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar, int32_t ordenAColocar, bool puntero){
 	t_Marcos* marco = malloc(sizeof(t_Marcos));
@@ -307,21 +340,6 @@ t_list* getTablaDePaginasPresentes(int32_t idmProc){
 	}
 	t_list* tablaDelProceso = list_filter(tablasDePaginas, (void*) porPIDYPresent);
 	return tablaDelProceso;
-}
-
-
-int32_t setLoadedTimeForProc(int32_t idmProc){
-	t_list* tablaDelProceso = getTablaDePaginasPresentes(idmProc);
-
-	if(list_size(tablaDelProceso)==0){
-		return 0;
-	} else{
-		void avanzarTiempo(t_TP* e){
-			(e->loadedTime)++;
-		}
-		list_iterate(tablaDelProceso, (void*)avanzarTiempo);
-		return 0;
-	}
 }
 
 int32_t getMaxLoadedTime(t_list* tablaDelProceso){
@@ -604,14 +622,14 @@ int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	return cantidad;
 }
 
-void retardo(int32_t cantidad, int32_t donde, int32_t idmProc, int32_t pag, int32_t marco){
+void retardo(double cantidad, int32_t donde, int32_t idmProc, int32_t pag, int32_t marco){
 	if(donde==tabla_paginas){
 		printf("Buscando en la tabla de páginas... \n");
 	}
 	if(donde==memoria_principal){
 		log_info(MemoriaLog, "- *Acceso a Memoria* PID: %d, Nro. Página: %d, Nro. Marco: %d \n", idmProc, pag, marco);
 	}
-	sleep(cantidad);
+	usleep(cantidad*1000000);
 }
 
 void llenarDeNulos(char* destino, int32_t total, int32_t desfazaje){

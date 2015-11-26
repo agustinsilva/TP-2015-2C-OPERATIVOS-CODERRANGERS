@@ -67,7 +67,7 @@ typedef struct
 	int32_t tamanio_marco;
 	int32_t entradas_tlb;
 	int32_t tlb_habilitada;
-	int32_t retardo_memoria;
+	double retardo_memoria;
 	char* algoritmo_reemplazo;
 } t_Memoria_Config;
 
@@ -205,7 +205,7 @@ int32_t getMaxUsedTime(t_list* );
 t_list* getTablaDePaginasPresentes(int32_t );
 void vaciarMarcosOcupados(int32_t );
 bool escribirEnSwap(t_TP* , sock_t* );
-void retardo(int32_t, int32_t, int32_t, int32_t, int32_t);
+void retardo(double, int32_t, int32_t, int32_t, int32_t);
 void llenarDeNulos(char* , int32_t ,int32_t);
 void abortarProceso(int32_t);
 t_Orden* crearElementoOrden(int32_t , int32_t , int32_t , bool , t_list* );
@@ -214,6 +214,9 @@ void ordenarPorCargaMarcos(t_list*);
 void adelantarPuntero(t_list* );
 void eliminarOrdenMarcos(int32_t);
 int32_t doSwap(int32_t , int32_t , int32_t , int32_t , sock_t* , sock_t* );
+void avanzarTiempoLRU(int32_t , int32_t);
+void avanzarTiempoFIFO(int32_t );
+void avanzarTiempo(int32_t , int32_t );
 
 
 

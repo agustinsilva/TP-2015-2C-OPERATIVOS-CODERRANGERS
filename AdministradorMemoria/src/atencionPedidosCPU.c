@@ -325,6 +325,10 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 							printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
 						}
 					list_iterate(memoriaPrincipal, (void*)impr);
+
+					pthread_mutex_lock(&sem_stats);
+					(estadistica->pageFaults)++;
+					pthread_mutex_unlock(&sem_stats);
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
@@ -346,9 +350,6 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 				if(entradaTLB!=NULL){
 					log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 				}
-				pthread_mutex_lock(&sem_stats);
-				(estadistica->pageFaults)++;
-				pthread_mutex_unlock(&sem_stats);
 			}
 
 		}
@@ -387,6 +388,11 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 		}
 	}
+
+	pthread_mutex_lock(&sem_TP);
+	avanzarTiempo(idmProc, nroPagina);
+	pthread_mutex_unlock(&sem_TP);
+
 	printf("Fin operación leer %d\n", nroPagina);
 }
 
@@ -484,6 +490,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 						printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
 					}
 					list_iterate(memoriaPrincipal, (void*)impr);
+
+					pthread_mutex_lock(&sem_stats);
+					(estadistica->pageFaults)++;
+					pthread_mutex_unlock(&sem_stats);
 					break;
 				}
 				default:  /*buscar contenido en memoria principal*/ {
@@ -504,9 +514,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
 				log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 			}
-			pthread_mutex_lock(&sem_stats);
-			(estadistica->pageFaults)++;
-			pthread_mutex_unlock(&sem_stats);
+
 		}
 
 	}
@@ -554,6 +562,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 			}
 		}
 	}
+	pthread_mutex_lock(&sem_TP);
+	avanzarTiempo(idmProc, nroPagina);
+	pthread_mutex_unlock(&sem_TP);
+
 	free(contenido);
 	printf("Fin operación escribir %d\n", nroPagina);
 }
