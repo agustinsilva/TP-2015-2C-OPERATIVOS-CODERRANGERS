@@ -32,12 +32,12 @@ int cargarArchivoDeConfiguracion()
 	configuracion->retardo_swap = config_get_int_value(fd_configuracion, "RETARDO_SWAP");
 
 	log_info(SwapLog,
-		"\PUERTO_ESCUCHA: %d\n"
+		"\nPUERTO_ESCUCHA: %d\n"
 		"NOMBRE_SWAP: %s\n"
 		"CANTIDAD_PAGINAS: %d\n"
 		"TAMANIO_PAGINA: %d\n"
 		"RETARDO_COMPACTACION: %d\n"
-		"RETARDO_SWAP: %d\n",
+		"RETARDO_SWAP: %d\n" ,
 		configuracion->puerto_escucha, configuracion->nombre_swap , configuracion->cantidad_paginas ,
 		configuracion->tamano_pagina, configuracion->retardo_compactacion , configuracion->retardo_swap);
 	return 0;

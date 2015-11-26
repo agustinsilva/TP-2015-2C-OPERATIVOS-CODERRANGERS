@@ -29,7 +29,7 @@ int cargarArchivoDeConfiguracion()
 	configuracion->quantum = config_get_int_value(fdConfiguracion, "QUANTUM");
 
 	log_info(planificadorLog,
-		"\PUERTO_ESCUCHA: %d\n"
+		"\nPUERTO_ESCUCHA: %d\n"
 		"ALGORITMO_PLANIFICACION: %s\n"
 		"QUANTUM: %d\n",
 		configuracion->puertoEscucha, configuracion->algoritmoPlanificacion , configuracion->quantum);
