@@ -26,6 +26,7 @@
 //Estructuras
 
 typedef struct {
+	uint32_t numeroCPU;
 	pthread_t idCPU;
 	uint32_t porcentajeProcesado;
 	uint32_t tiempoAcumuladoDeInstrucciones;

@@ -32,6 +32,7 @@ void crearHilosCPU() {
 			printf("Se cerrara el programa");
 			exit(EXIT_FAILURE);
 		}
+		CPUsConectados->numeroCPU = i;
 		CPUsConectados->idCPU = threads[i];
 		CPUsConectados->porcentajeProcesado = 0;
 		CPUsConectados->tiempoAcumuladoDeInstrucciones = 0;

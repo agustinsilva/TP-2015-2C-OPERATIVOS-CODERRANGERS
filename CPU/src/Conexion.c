@@ -497,7 +497,7 @@ void enviarPorcentaje(){
 		while (indice < configuracion->cantidadHilos) {
 			temporal = list_get(listaCPU, indice);
 			strcat(listaTemporal, "CPU:");
-			strcat(listaTemporal, string_itoa(temporal->idCPU));
+			strcat(listaTemporal, string_itoa(temporal->numeroCPU));
 			strcat(listaTemporal, ", Porcentaje de uso:");
 			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
 			strcat(listaTemporal, "\n");
@@ -524,15 +524,15 @@ void enviarPorcentaje(){
 		char* message = malloc(tamanio);
 		memcpy(message, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
-		printf("tam lista %d", tamListaTemp);
-		printf("%s",listaTemporal);
+//		printf("tam lista %d", tamListaTemp);
+//		printf("%s",listaTemporal);
 		memcpy(message + offset, &tamListaTemp, sizeof(int32_t));
 		offset = offset + sizeof(int32_t);
 		memcpy(message + offset, listaTemporal, tamListaTemp);
 		offset = offset + sizeof(tamListaTemp);
 		status = send(socketPlanificadorPadre->fd,message,tamanio,0);
-		printf("socket plani padre %d \n",socketPlanificadorPadre->fd);
-		printf("status: %d \n", status);
+//		printf("socket plani padre %d \n",socketPlanificadorPadre->fd);
+//		printf("status: %d \n", status);
 		if (status < 0) {
 			printf("Error al enviar el porcentaje a Planificador");
 		}
