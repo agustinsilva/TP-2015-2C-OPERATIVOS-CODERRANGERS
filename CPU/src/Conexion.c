@@ -487,22 +487,22 @@ void enviarPorcentaje(){
 		uint32_t offset = 0;
 		int32_t status;
 
-		char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
+		//char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
 
-		 //VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
-//		t_CPUsConectados* temporal;
-//			uint32_t indice= 1;
-//
-//		while (indice <= configuracion->cantidadHilos) {
-//			temporal = list_get(listaCPU, indice);
-//
-//			strcat(listaTemporal, "CPU:");
-//			strcat(listaTemporal, string_itoa(temporal->idCPU));
-//			strcat(listaTemporal, ", Porcentaje de uso:");
-//			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
-//			strcat(listaTemporal, "\n");
-//			indice++;
-//		}
+//VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
+		char* listaTemporal = malloc (configuracion->cantidadHilos*100);
+		t_CPUsConectados* temporal;
+		uint32_t indice= 0;
+
+		while (indice <= configuracion->cantidadHilos) {
+			temporal = list_get(listaCPU, indice);
+			strcat(listaTemporal, "CPU:");
+			strcat(listaTemporal, string_itoa(temporal->idCPU));
+			strcat(listaTemporal, ", Porcentaje de uso:");
+			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
+			strcat(listaTemporal, "\n");
+			indice++;
+		}
 
 		int32_t tamListaTemp = strlen(listaTemporal);
 		int32_t tamanio = sizeof(cabecera) + sizeof(int32_t) + tamListaTemp;
