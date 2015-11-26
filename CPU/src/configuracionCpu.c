@@ -36,9 +36,9 @@ int cargarArchivoDeConfiguracion()
 	configuracion->retardo = config_get_int_value(fd_configuracion, "RETARDO");
 	
 	log_info(CPULog,
-		"\nIP_PLANIFICADOR: %d\n"
-		"PUERTO_PLANIFICADOR: %s\n"
-		"IP_MEMORIA: %d\n"
+		"\nIP_PLANIFICADOR: %s\n"
+		"PUERTO_PLANIFICADOR: %d\n"
+		"IP_MEMORIA: %s\n"
 		"PUERTO_MEMORIA: %d\n"
 		"CANTIDAD_HILOS: %d\n"
 		"RETARDO: %d\n",
