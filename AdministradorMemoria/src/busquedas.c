@@ -30,7 +30,7 @@ int32_t buscarMarcoEnTablaDePaginas(int32_t idmProc, int32_t nroPagina){
 	}
 	t_TP* tablaPagina = list_find(tablasDePaginas, (void*) porPIDyPag);
 	if(tablaPagina==NULL){
-		log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+	//	log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
 		return -1;
 	}else{
 		if(tablaPagina->present==1){

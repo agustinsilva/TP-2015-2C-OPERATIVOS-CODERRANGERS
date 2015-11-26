@@ -66,18 +66,15 @@ int calculateTimes(time_t *tiempo1, double tiempo_inicio_instruccion){
 	return tiempo_transcurrido_instruccion;
 }
 
-void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion){
+void actualizarTiempoAcumuladoEjecucion(int tiempo_ejecucion_instruccion)
+{
 	int32_t pos = getPositionIfExists();
-	if(pos!=-1){
-		t_CPUsConectados *cpuOld = list_get(listaCPU,pos);
-		//printf("va a remover el hilo nro: %u \n",cpuOld->idCPU);
-		//ahora tengo q actualizarle el tiempo acumulado y volverlo a agregar a la lista
-		t_CPUsConectados* cpu = malloc(sizeof(t_CPUsConectados));
-		cpu->idCPU=cpuOld->idCPU;
-		cpu->porcentajeProcesado=cpuOld->porcentajeProcesado;
+	if(pos!=-1)
+	{
+		t_CPUsConectados *cpu = list_get(listaCPU,pos);
+		//ahora actualizo el tiempo acumulado
+		cpu->tiempoAcumuladoDeInstrucciones = cpu->tiempoAcumuladoDeInstrucciones + tiempo_ejecucion_instruccion;
 		//printf("Porcentaje CPU %d\n",cpu->porcentajeProcesado);
-		cpu->tiempoAcumuladoDeInstrucciones = cpuOld->tiempoAcumuladoDeInstrucciones + tiempo_ejecucion_instruccion;
-		list_replace_and_destroy_element(listaCPU, (int)pos, (void*)cpu, (void*)cpuDestroyer);
 		/*printf("[ESTADISTICAS] Se actualizó la lista de cpu, tiempo anterior: %d , tiempo transcurrido: %d ,"
 				" ahora tiene: %d \n",cpuOld->tiempoAcumuladoDeInstrucciones,tiempo_ejecucion_instruccion,cpu->tiempoAcumuladoDeInstrucciones);*/
 	}
