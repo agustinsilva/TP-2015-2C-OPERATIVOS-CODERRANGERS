@@ -224,21 +224,14 @@ void encolar(char* path) {
 
 void pedirEstadoCpu(){
 	 enviarEnteros(socketCpuPadre, ESTADOCPUPADRE);
-	/*recibe la cantidad de bytes que va a tener el mensaje*/
-	int32_t longitudMensaje;
+	int32_t longitudMensaje,CodigoOperacion;
 	//recibo CodigoOperacion
-	int32_t entero;
-	int32_t status = recv(socketCpuPadre, &entero, sizeof(int32_t), 0);
-	if (status == -1 || status == 0) {
-		entero = status;
-		printf("se recibio mal el codigo %d", entero);
-	}
-
+	CodigoOperacion = deserializarEntero(socketCpuPadre);
+	longitudMensaje = deserializarEntero(socketCpuPadre);
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
-	int32_t status2 = recv(socketCpuPadre, &longitudMensaje, sizeof(int32_t), 0);
-	if(status2<=0){
+	if(longitudMensaje == -1 || longitudMensaje == 0){
 		perror("recv longitud");
-		printf("status: %d\n", status2);
+		printf("status: %d\n", longitudMensaje);
 		printf("error al recibir la long mensaje socketcpupadre %d\n", socketCpuPadre);
 		printf("longMensaje %d\n", longitudMensaje);
 	}else{

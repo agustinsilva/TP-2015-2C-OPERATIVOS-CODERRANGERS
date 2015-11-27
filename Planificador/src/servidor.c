@@ -84,6 +84,7 @@ int32_t deserializarEntero(int32_t socket) {
 	int32_t status = recv(socket, &entero, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
 		entero = status;
+		perror("Error al recibir mensaje del socket");
 	}
 	return entero;
 }
