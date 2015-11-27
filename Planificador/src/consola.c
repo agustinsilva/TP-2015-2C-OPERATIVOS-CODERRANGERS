@@ -223,15 +223,15 @@ void encolar(char* path) {
 }
 
 void pedirEstadoCpu(){
-	enviarCodigoOperacion(ESTADOCPUPADRE);
+	 enviarEnteros(socketCpuPadre, ESTADOCPUPADRE);
 	/*recibe la cantidad de bytes que va a tener el mensaje*/
 	int32_t longitudMensaje;
 	//recibo CodigoOperacion
-	int32_t enteroSinSigno;
-	int32_t status = recv(socketCpuPadre, &enteroSinSigno, sizeof(int32_t), 0);
+	int32_t entero;
+	int32_t status = recv(socketCpuPadre, &entero, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
-		enteroSinSigno = status;
-		printf("se recibio mal el codigo %d", enteroSinSigno);
+		entero = status;
+		printf("se recibio mal el codigo %d", entero);
 	}
 
 	/*recibe el mensaje sabiendo cuánto va a ocupar*/
@@ -247,15 +247,6 @@ void pedirEstadoCpu(){
 		mensaje[longitudMensaje] = '\0';
 		printf("%s", mensaje);
 		free(mensaje);
-	}
-}
-
-void enviarCodigoOperacion(int32_t entero){
-	int32_t enviado = send(socketCpuPadre, &entero, sizeof(int32_t), 0);
-	if(enviado==0 || enviado==-1){
-		printf("No se envió correctamente la información entera\n");
-		log_error(planificadorLog,"Error al enviar codigo de operacion a CPU Padre.","ERROR");
-		return;
 	}
 }
 

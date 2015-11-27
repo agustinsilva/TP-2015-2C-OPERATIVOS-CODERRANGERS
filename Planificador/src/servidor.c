@@ -3,11 +3,10 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor() {
 	socketCpuPadre = 0;
-	fd_set set_maestro, set_temporal; //, socketsHilos;
+	fd_set set_maestro, set_temporal;
 	int32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
 	FD_ZERO(&set_temporal); //Limpia el set temporal
-	//FD_ZERO(&socketsHilos);
 	struct sockaddr_storage remoteaddr; //dirección del cliente
 	socklen_t addrlen;
 	socketReceptor = crearSocketReceptor();
@@ -46,7 +45,7 @@ void* iniciarServidor() {
 					}
 				} else //Aca se ejecuta el socket procesado
 				{
-					cabecera = deserializarEnteroSinSigno(socketProcesado);
+					cabecera = deserializarEntero(socketProcesado);
 					switch (cabecera) {
 					case AGREGARPADRECPU:
 						creoPadre(socketProcesado);
@@ -80,13 +79,13 @@ void* iniciarServidor() {
 	return NULL;
 }
 
-int32_t deserializarEnteroSinSigno(int32_t socket) {
-	int32_t enteroSinSigno;
-	int32_t status = recv(socket, &enteroSinSigno, sizeof(int32_t), 0);
+int32_t deserializarEntero(int32_t socket) {
+	int32_t entero;
+	int32_t status = recv(socket, &entero, sizeof(int32_t), 0);
 	if (status == -1 || status == 0) {
-		enteroSinSigno = status;
+		entero = status;
 	}
-	return enteroSinSigno;
+	return entero;
 }
 
 void generoHiloPlanificador(uint32_t *hilo) {
@@ -193,7 +192,7 @@ void replanificar(int32_t socketCpu) {
 	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
 	//Seteo tiempo de espera para calcular en replanificar
 	pcbReplanificar->tiempoEspera = time(NULL);
-	//Libero CPU y PCB y vuelven a encolarse
+	//Libero CPU y PCB y vuelven a encolarse como FIFO
 	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
 	pcbReplanificar->estadoProceso = 0; //PCB Disponible
 	t_hilosConectados *cpuOcupado = list_remove_by_condition(cpu_ocupados, (void*) _cpuById);
@@ -210,7 +209,7 @@ void replanificar(int32_t socketCpu) {
 void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	sem_wait(&mutex);
 	//recibo retardo y mensaje
-	int32_t retardo = deserializarEnteroSinSigno(socketCpu);
+	int32_t retardo = deserializarEntero(socketCpu);
 	//Recibo el Mensaje a logear
 	char* mensajeALogear = recibirMensaje(socketCpu);
 	log_info(planificadorLog, "Mensaje de cpu: %s", mensajeALogear);
