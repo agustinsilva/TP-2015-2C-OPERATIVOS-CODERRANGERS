@@ -10,16 +10,48 @@
 
 /* Funciones Secundarias */
 
+void sacarSiEstaEnClock(t_TP* e){
+	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
+		bool porPID(t_Marcos* entrada){
+			return entrada->idProc == e->idProc;
+		}
+		t_Marcos* marcoMP = list_find(ordenMarcos, (void*)porPID);
+		if(marcoMP!=NULL){
+
+			bool pagina(t_Orden* p){
+				return p->nroPag == e->nroPag;
+			}
+			t_Orden* orden = list_find(marcoMP->marcos, (void*) pagina);
+			if(orden!=NULL){
+				list_remove_and_destroy_by_condition(marcoMP->marcos,(void*)pagina,(void*)ordenDestroyer);
+				if(orden==NULL){
+					printf("se borro bien\n");
+				}
+			} else{
+				printf("No se encontro el orden para sacar... \n");
+			}
+
+		}else{
+			printf("No hay marcos para sacar...\n");
+		}
+	}
+}
+
 void escribirPagsModificadas(sock_t* socketSwap){
 
+	printf("Entra\n");
 	bool modificadasEnMP(t_TP* entrada){
 		return entrada->present==true && entrada->modified==true;
 	}
 	t_list* pagsAEscribir = list_filter(tablasDePaginas, (void*) modificadasEnMP);
 
+	printf("Filtra\n");
 	void escribirModificadas(t_TP* entrada){
 		if(escribirEnSwap(entrada, socketSwap)){
 			log_info(MemoriaLog, "Se escribió la página %d del proceso %d antes de limpiar la memoria.\n", entrada->nroPag, entrada->idProc);
+
+			sacarSiEstaEnClock(entrada);
+
 		} else {
 			log_error(MemoriaLog,RED "No se pudo guardar la página %d del proceso %d en la partición antes de vaciar la memoria. Se perderá el contenido.\n"RESET, entrada->nroPag, entrada->idProc);
 		}
