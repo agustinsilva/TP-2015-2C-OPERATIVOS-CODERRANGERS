@@ -433,7 +433,6 @@ int32_t reemplazarMP(int32_t idmProc, char* algoritmo_reemplazo){
 		return reemplazarLRU(tablaDelProceso);
 	}
 
-	/*no estaría funcionando aún */
 	if(string_equals_ignore_case(algoritmo_reemplazo, CLOCKM)){
 		return reemplazarCLOCKM(tablaDelProceso, idmProc);
 	}
@@ -467,6 +466,11 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 
 		ordenarPorCargaMarcos(proc->marcos);
 
+		void printearr(t_Orden* ord){
+			printf("marco: %d, orden %d, puntero %d \n", ord->marco, ord->orden, ord->puntero);
+		}
+		list_iterate(proc->marcos, (void*) printearr);
+
 		int32_t marcoVictima = marco_victima;
 
 		bool buscar00(t_Orden* entrada){
@@ -478,7 +482,11 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 				marcoVictima = pagina->frame;
 				pagina->accessed = false;
 				return true;
+
 			}else{
+				if(pagina->accessed){
+					pagina->accessed = false;
+				}
 				return false;
 			}
 		}
