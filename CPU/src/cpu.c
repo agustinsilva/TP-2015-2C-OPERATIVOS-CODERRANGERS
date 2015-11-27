@@ -68,8 +68,8 @@ FILE* abrirArchivo(t_pcb* pcb){
 	if (entrada == NULL) {
 		log_error(CPULog, "No se pudo abrir el archivo de entrada. ", "ERROR");
 	}
-	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s\n",
-			string_itoa(pcb->idProceso), pcb->path);
+	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s, PC es %u\n",
+			string_itoa(pcb->idProceso), pcb->path,pcb->contadorPuntero);
 
 	free(src);
 	return entrada;
@@ -254,7 +254,6 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 				socketMemoria);
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 		if(string_equals_ignore_case(rta, "ABORTAR")){
-			//TODO MOVER PUNTERO DE INSTRUCCION
 			abortarPCB(pcb,entrada);
 		}
 	} else if (string_equals_ignore_case(lista[0], "escribir")) {
@@ -271,7 +270,6 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 		free(textoEscribir);
 		if(string_equals_ignore_case(rta, "ABORTAR")){
-					//TODO MOVER PUNTERO DE INSTRUCCION
 			abortarPCB(pcb,entrada);
 		}
 	} else if (string_equals_ignore_case(lista[0], "entrada-salida")) {
@@ -303,9 +301,9 @@ void abortarPCB(t_pcb* pcb, FILE* entrada){
 		fgets(instruccion, TAMINSTRUCCION+1, entrada);
 		numeroInstruccion++;
 	}
-	pcb->contadorPuntero=pcb->cantidadInstrucciones;
+	pcb->contadorPuntero=(pcb->cantidadInstrucciones -1);
 	free(instruccion);
-	log_info(CPULog, "[PID:%s]ABORTO - Debería ir a finalizar\n",string_itoa(pcb->idProceso));
+	//log_info(CPULog, "[PID:%s]ABORTO - Debería ir a finalizar, el PC ahora es %u\n",string_itoa(pcb->idProceso),pcb->contadorPuntero);
 }
 
 /***********-----------GESTION-----------**************/
