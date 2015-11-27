@@ -28,16 +28,16 @@ int cargarArchivoDeConfiguracion()
 	configuracion->nombre_swap = config_get_string_value(fd_configuracion, "NOMBRE_SWAP");
 	configuracion->cantidad_paginas = config_get_int_value(fd_configuracion, "CANTIDAD_PAGINAS");
 	configuracion->tamano_pagina = config_get_int_value(fd_configuracion, "TAMANO_PAGINA");
-	configuracion->retardo_compactacion = config_get_int_value(fd_configuracion, "RETARDO_COMPACTACION");
-	configuracion->retardo_swap = config_get_int_value(fd_configuracion, "RETARDO_SWAP");
+	configuracion->retardo_compactacion = config_get_double_value(fd_configuracion, "RETARDO_COMPACTACION");
+	configuracion->retardo_swap = config_get_double_value(fd_configuracion, "RETARDO_SWAP");
 
 	log_info(SwapLog,
 		"\nPUERTO_ESCUCHA: %d\n"
 		"NOMBRE_SWAP: %s\n"
 		"CANTIDAD_PAGINAS: %d\n"
 		"TAMANIO_PAGINA: %d\n"
-		"RETARDO_COMPACTACION: %d\n"
-		"RETARDO_SWAP: %d\n" ,
+		"RETARDO_COMPACTACION: %f\n"
+		"RETARDO_SWAP: %f\n" ,
 		configuracion->puerto_escucha, configuracion->nombre_swap , configuracion->cantidad_paginas ,
 		configuracion->tamano_pagina, configuracion->retardo_compactacion , configuracion->retardo_swap);
 	return 0;
