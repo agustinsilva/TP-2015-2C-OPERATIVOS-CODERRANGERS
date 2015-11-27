@@ -340,7 +340,6 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 void compactacionBruta()
 {
 	log_info(SwapLog,"Inicio de compactacion de espacio en memoria de swap");
-
 	list_sort(espacioOcupado,compararUbicaciones);
 	uint32_t cantidadOcupados = list_size(espacioOcupado);
     uint32_t comienzo = 0;
@@ -348,6 +347,8 @@ void compactacionBruta()
     int32_t cantidadPaginasNodo;
 	t_nodoOcupado* nodoOcupado;
 	int32_t ubicacionPagina, nuevaUbicacion;
+	char* espacioViejo;
+	char* espacioNuevo;
     for(indice = 0;indice < cantidadOcupados;indice++)
     {
     	nodoOcupado = list_get(espacioOcupado,indice);
@@ -356,7 +357,9 @@ void compactacionBruta()
     	{
     		ubicacionPagina = nodoOcupado->comienzo + indiceNodo;
     		nuevaUbicacion = comienzo + indiceNodo;
-    		memcpy(archivoMapeado->memoria + nuevaUbicacion*configuracion->tamano_pagina,archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina,configuracion->tamano_pagina);
+    		espacioViejo = archivoMapeado->memoria + ubicacionPagina*configuracion->tamano_pagina;
+    		espacioNuevo = archivoMapeado->memoria + nuevaUbicacion*configuracion->tamano_pagina;
+    		memcpy(espacioNuevo,espacioViejo,configuracion->tamano_pagina);
     	}
     	nodoOcupado->comienzo = comienzo;
     	comienzo = nodoOcupado->comienzo + cantidadPaginasNodo;
@@ -368,7 +371,7 @@ void compactacionBruta()
 	t_nodoLibre* nodoLibre = malloc(sizeof(t_nodoLibre));
 	nodoLibre->comienzo = comienzoLibre;
 	nodoLibre->paginas = totalLibres;
-	list_destroy_and_destroy_elements(espacioLibre,(void*)limpiarNodosLibres);
+	list_clean(espacioLibre);
 	list_add(espacioLibre,nodoLibre);
 	usleep(deSegundoAMicroSegundos(configuracion->retardo_compactacion));
 	log_info(SwapLog,"Finalizacion de compactacion en memoria de swap");

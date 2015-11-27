@@ -68,8 +68,8 @@ FILE* abrirArchivo(t_pcb* pcb){
 	if (entrada == NULL) {
 		log_error(CPULog, "No se pudo abrir el archivo de entrada. ", "ERROR");
 	}
-	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s\n",
-			string_itoa(pcb->idProceso), pcb->path);
+	log_info(CPULog, " [PID:%s] El archivo se abrió correctamente: %s, PC es %u\n",
+			string_itoa(pcb->idProceso), pcb->path,pcb->contadorPuntero);
 
 	free(src);
 	return entrada;
@@ -103,7 +103,7 @@ int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 				char* rta = procesarInstruccion(lista, pcb,
 						resultadosDeEjecuciones, socketPlanificador,
 						socketMemoria, cantInstruccionesEjecutadas,
-						instruccion);
+						instruccion,entrada);
 				int tiempo_ejecucion_instruccion = calculateTimes(tiempo1,
 						tiempo_inicio_instruccion);
 				pthread_mutex_lock(&mutexListaCpus);
@@ -138,7 +138,7 @@ int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 			double tiempo_inicio_instruccion = initTimes(tiempo1);
 			char* rta = procesarInstruccion(lista, pcb, resultadosDeEjecuciones,
 					socketPlanificador, socketMemoria,
-					cantInstruccionesEjecutadas, instruccion);
+					cantInstruccionesEjecutadas, instruccion,entrada);
 			int tiempo_ejecucion_instruccion = calculateTimes(tiempo1,
 					tiempo_inicio_instruccion);
 			pthread_mutex_lock(&mutexListaCpus);
@@ -231,7 +231,7 @@ int hiloPadre() {
 char* procesarInstruccion(char **lista, t_pcb *pcb,
 		char* resultadosDeEjecuciones, sock_t* socketPlanificador,
 		sock_t* socketMemoria, int32_t cantInstruccionesEjecutadas,
-		char *instruccion) {
+		char *instruccion, FILE* entrada) {
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")) {
 		log_info(CPULog, " [PID:%s] Instruccion: iniciar",
@@ -253,6 +253,9 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 		rta = informarAdminMemoriaComandoLeer(pcb->idProceso, lista[1],
 				socketMemoria);
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
+		if(string_equals_ignore_case(rta, "ABORTAR")){
+			abortarPCB(pcb,entrada);
+		}
 	} else if (string_equals_ignore_case(lista[0], "escribir")) {
 		char* textoEscribir = string_substring(instruccion, string_length("escribir k"),string_length(instruccion));
 		int32_t tamanioTexto = strlen(textoEscribir);
@@ -266,6 +269,9 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 				textoEscribir, socketMemoria);
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));
 		free(textoEscribir);
+		if(string_equals_ignore_case(rta, "ABORTAR")){
+			abortarPCB(pcb,entrada);
+		}
 	} else if (string_equals_ignore_case(lista[0], "entrada-salida")) {
 		int32_t tiempoDeEjec = (int32_t) strtol(lista[1], NULL, 10);
 		log_info(CPULog, "[PID:%s] Instruccion: entrada-salida de tiempo %s.",
@@ -283,6 +289,21 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 		rta = "Comando no interpretado.\n";
 	}
 	return rta;
+}
+
+/* Mueve el puntero de instruccion del PCB
+ * a la última instrucción.
+*/
+void abortarPCB(t_pcb* pcb, FILE* entrada){
+	uint32_t numeroInstruccion = pcb->contadorPuntero;
+	char* instruccion = malloc(TAMINSTRUCCION);
+	while (pcb->cantidadInstrucciones != numeroInstruccion) {
+		fgets(instruccion, TAMINSTRUCCION+1, entrada);
+		numeroInstruccion++;
+	}
+	pcb->contadorPuntero=(pcb->cantidadInstrucciones -1);
+	free(instruccion);
+	//log_info(CPULog, "[PID:%s]ABORTO - Debería ir a finalizar, el PC ahora es %u\n",string_itoa(pcb->idProceso),pcb->contadorPuntero);
 }
 
 /***********-----------GESTION-----------**************/

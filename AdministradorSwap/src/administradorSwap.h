@@ -21,8 +21,8 @@ typedef struct {
 	char* nombre_swap;
 	uint32_t cantidad_paginas;
 	uint32_t tamano_pagina;
-	uint32_t retardo_compactacion;
-	uint32_t retardo_swap;
+	double retardo_compactacion;
+	double retardo_swap;
 } t_configuracion;
 
 //Comienzo de espacio libre y cantidad de paginas secuenciales libres.
