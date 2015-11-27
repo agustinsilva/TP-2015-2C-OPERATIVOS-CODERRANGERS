@@ -129,6 +129,8 @@ void consumirRecursos() {
 				log_error(planificadorLog, "Error al enviar el proc/pcb al cpu",
 						"ERROR");
 			}
+			//mantengo el tiempo de creacion
+			printf("tiempo creacion: %d", pcb->tiempoCreacion);
 			//Asigno Tiempo de Ejecucion
 			pcb->tiempoEjecucion = time(NULL);
 			//Acumulo Tiempo Ejecucion
@@ -244,6 +246,18 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	pcbBloqueado->retardo = retardo;
 	//Mantengo el tiempo de creacion
 	pcbBloqueado->tiempoCreacion = pcbFinListo->tiempoCreacion;
+	//Calculo el tiempo de ejecucion
+	int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
+		if (pcbFinListo->idProceso == proc_metrica->idProceso)
+			return 1;
+		else
+			return 0;
+	}
+	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
+
+
+
 	list_add(proc_bloqueados, pcbBloqueado);
 	//Asigno CPU nuevamente libre
 	list_add(cpu_listos, cpuOcupado);
@@ -334,9 +348,9 @@ void logearFinalizacionCpu(int32_t socketCpu) {
 	double tiempoEjecucion = pcb_metrica->tiempoEjecucion;
 	log_info(planificadorLog, "Tiempo de ejecucion proceso: %d es %.f segundos", pcb->idProceso, tiempoEjecucion);
 	//Logeo Metricas de PCB
-	double tiempoVida = calculoDiferenciaTiempoActual(pcb->tiempoCreacion);
-	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoVida);
-	pcb_metrica->tiempoRespuesta = tiempoVida;
+	double tiempoRespuesta = calculoDiferenciaTiempoActual(pcb->tiempoCreacion);
+	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoRespuesta);
+	pcb_metrica->tiempoRespuesta = tiempoRespuesta;
 
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
 	list_add(cpu_listos, cpu);

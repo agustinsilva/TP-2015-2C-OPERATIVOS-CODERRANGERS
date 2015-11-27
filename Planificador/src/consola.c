@@ -205,6 +205,7 @@ void encolar(char* path) {
 		pcb->path = strdup(path); //TODO: revisar codigo maligno
 		pcb->flagFin = 0;
 		time(&pcb->tiempoCreacion);
+
 		list_add(proc_listos,pcb);
 		//Creo lista Metrica
 		t_proc_metricas *pcb_metrica = malloc(sizeof(t_proc_metricas));
