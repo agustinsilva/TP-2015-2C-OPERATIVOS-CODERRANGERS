@@ -148,20 +148,20 @@ void printearTabla(){
 }
 
 void doStats(){
-	pthread_mutex_lock(&sem_stats);
-	int32_t totales = 0;
-	int32_t pf = 0;
-	void tasaAciertos(t_Stats* stats){
-		totales+=(stats->pagsTotales);
-		pf+=(stats->pageFaults);
-	}
-	list_iterate(estadisticas, (void*)tasaAciertos);
+	if(configuracion->tlb_habilitada){
+		pthread_mutex_lock(&sem_stats);
+		int32_t totales = 0;
+		t_Stats* estadistica = buscarEstadisticaPorProceso(stat_TLB);
 
-	if(totales!=0){
-		int32_t tasa_aciertos = (totales-pf)*100/totales;
-		log_info(MemoriaLog,BOLD "\n*Tasa de aciertos histórica: %d %*\n" RESET_NON_BOLD, tasa_aciertos);
+		if(estadistica!=NULL){
+			totales =(estadistica->hit) + (estadistica->miss);
+			if(totales!=0){
+				int32_t tasa_aciertos = (estadistica->hit)*100/totales;
+				log_info(MemoriaLog,BOLD "\n*Tasa de aciertos histórica: %d %*\n" RESET_NON_BOLD, tasa_aciertos);
+			}
+		}
+		pthread_mutex_unlock(&sem_stats);
 	}
-	pthread_mutex_unlock(&sem_stats);
 }
 
 /* -------------------------------------------------------------------------------------*/

@@ -56,6 +56,7 @@
 #define memoria_principal 2
 #define dummy -5
 #define marco_victima -4
+#define stat_TLB -5
 
 //Estructuras
 typedef struct
@@ -115,6 +116,8 @@ typedef struct {
 	int32_t idProc;
 	int32_t pagsTotales;
 	int32_t pageFaults;
+	int32_t miss;
+	int32_t hit;
 }t_Stats;
 
 typedef struct {
