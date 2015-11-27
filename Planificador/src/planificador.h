@@ -84,6 +84,9 @@ t_log* planificadorLog;
 #define ENVIARPCB 2
 #define ERROR 5
 
+//Codigo de configuracion inicial enviada por el planificador.
+#define CFG_INICIAL_PLN 26
+
 //Colores Consola
 #define ANSI_COLOR_RED     "\x1b[31m"
 #define ANSI_COLOR_GREEN   "\x1b[32m"
@@ -106,7 +109,7 @@ void finalizarProceso(uint32_t*);
 t_pcb* recibirPcb(uint32_t );
 void iniciarHiloBloqueados();
 void creoPadre(int32_t);
-char* serializarTipoPlanificacion(int32_t*);
+void enviarTipoPlanificacion();
 void logearResultadoCpu(int32_t);
 void logearFinalizacionCpu(int32_t);
 char* serializarPCB(t_pcb*, uint32_t*);
@@ -130,4 +133,5 @@ char* recibirMensaje(int32_t);
 void tituloInicial();
 double calculoDiferenciaTiempoActual(time_t);
 void mostrarMetricas();
+void enviarEnteros(int32_t, int32_t);
 #endif /* PLANIFICADOR_H_ */

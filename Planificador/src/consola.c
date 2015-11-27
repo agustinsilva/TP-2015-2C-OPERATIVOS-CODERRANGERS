@@ -277,3 +277,13 @@ int contarInstrucciones(char* path) {
 	fclose(fp);
 	return cantidad_lineas;
 }
+
+void enviarEnteros(int32_t fdSocket, int32_t entero)
+{
+	int32_t enviado = send(fdSocket, &entero, sizeof(int32_t), 0);
+	if(enviado!=sizeof(int32_t))
+	{
+		printf("No se envió correctamente la información entera\n");
+		return;
+	}
+}

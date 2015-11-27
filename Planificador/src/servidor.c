@@ -3,11 +3,11 @@
 //falta optimizar con shared library sockets
 void* iniciarServidor() {
 	socketCpuPadre = 0;
-	fd_set set_maestro, set_temporal, socketsHilos;
+	fd_set set_maestro, set_temporal; //, socketsHilos;
 	int32_t fdMaximo, socketProcesado, socketReceptor, nuevoFd;
 	FD_ZERO(&set_maestro);	//Limpia el set maestro
 	FD_ZERO(&set_temporal); //Limpia el set temporal
-	FD_ZERO(&socketsHilos);
+	//FD_ZERO(&socketsHilos);
 	struct sockaddr_storage remoteaddr; //dirección del cliente
 	socklen_t addrlen;
 	socketReceptor = crearSocketReceptor();
@@ -426,50 +426,26 @@ void creoPadre(int32_t socketProcesado){
 		socketCpuPadre = socketProcesado;
 	printf("socketCpuPadre %d\n", socketCpuPadre);
 	//Envio el tipo de planificacion al cpu
-	int32_t totalPaquete;
-	char* tipoPlanificacion = serializarTipoPlanificacion(&totalPaquete);
-	//char* mensaje = malloc(totalPaquete);
-	//memcpy(mensaje, tipoPlanificacion, totalPaquete); //NO Entiendo para que es esta linea(marian)
-	int sendByte = send(socketCpuPadre, tipoPlanificacion, totalPaquete, 0);
-	if (sendByte < 0) {
-		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
-	}
-	free(tipoPlanificacion);
+	enviarTipoPlanificacion();
 }
-char* serializarTipoPlanificacion(int32_t *totalPaquete) {
-	int32_t codigo, tipoPlanificacion, quantum;
-	codigo = 26;
-	quantum = configuracion->quantum;
+void enviarTipoPlanificacion() {
+	int32_t codigo, tipoPlanificacion;
+	codigo = CFG_INICIAL_PLN;
 	string_trim(&(configuracion->algoritmoPlanificacion));
-
-	if(!strcmp(configuracion->algoritmoPlanificacion,"FIFO")){ //si es fifo
-		*totalPaquete = 2 * sizeof(int32_t);
+	if(!strcmp(configuracion->algoritmoPlanificacion,"FIFO"))
+	{ //si es fifo
 		tipoPlanificacion = 0; //Tipo FIFO
 	}
-	else {//si es RoundRobin
-		*totalPaquete = 3 * sizeof(int32_t);
+	else
+	{//si es RoundRobin
 		tipoPlanificacion = 1; //Tipo Round Robin
 	}
-
-	char *paqueteSerializado = malloc(*totalPaquete);
-	int offset = 0;
-	int medidaAMandar;
-
-	medidaAMandar = sizeof(codigo);
-	memcpy(paqueteSerializado + offset, &codigo, medidaAMandar);
-	offset += medidaAMandar;
-
-	medidaAMandar = sizeof(tipoPlanificacion);
-	memcpy(paqueteSerializado + offset, &tipoPlanificacion, medidaAMandar);
-	offset += medidaAMandar;
-
-	if(tipoPlanificacion == 1){
-		medidaAMandar = sizeof(quantum);
-		memcpy(paqueteSerializado + offset, &quantum, medidaAMandar);
-		offset += medidaAMandar;
+	enviarEnteros(socketCpuPadre,codigo);
+	enviarEnteros(socketCpuPadre,tipoPlanificacion);
+	if(tipoPlanificacion == 1)
+	{
+		enviarEnteros(socketCpuPadre,(configuracion->quantum));
 	}
-
-	return paqueteSerializado;
 }
 
 void logearResultadoCpu(int32_t socketCpu) {
