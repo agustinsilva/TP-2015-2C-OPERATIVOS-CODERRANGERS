@@ -8,6 +8,7 @@ int main(void) {
 	tituloInicial();
 	pthread_mutex_init(&mutexListaCpus, NULL);
 	sem_init(&semCpuPadre, 0, 0);
+	sem_init(&semConexionPadre, 0, 0);
 	sem_init(&semPorcentaje, 0, 1);
 	hiloPadre();
 	iniciarCronTasks();
@@ -18,6 +19,7 @@ int main(void) {
 }
 
 void crearHilosCPU() {
+	sem_wait(&semConexionPadre);
 	int rtaHilo = 0;
 	int cantidad = 1;
 	listaCPU = list_create();
@@ -90,7 +92,7 @@ int abrirArchivoYValidar(t_pcb* pcb, sock_t* socketPlanificador,
 		numeroInstruccion++;
 	}
 
-	if (configCPUPadre.tipoPlanificacion == 1) { //RR
+	if (configCPUPadre.tipoPlanificacion) { //RR
 		int32_t cantInstruccionesEjecutadas = 0;
 		while (QUANTUMRESTANTE > 0) {
 			if (fgets(instruccion, TAMINSTRUCCION + 1, entrada) != NULL) {
@@ -232,6 +234,8 @@ char* procesarInstruccion(char **lista, t_pcb *pcb,
 		char *instruccion) {
 	char* rta;
 	if (string_equals_ignore_case(lista[0], "iniciar")) {
+		log_info(CPULog, " [PID:%s] Instruccion: iniciar",
+								string_itoa(pcb->idProceso));
 		rta = informarAdminMemoriaComandoIniciar(lista[1], pcb->idProceso,
 				socketMemoria);
 		usleep(fromSecondstoMicroSeconds(configuracion->retardo));

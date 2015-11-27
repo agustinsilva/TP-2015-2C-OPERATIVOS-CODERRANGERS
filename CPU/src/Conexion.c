@@ -15,7 +15,7 @@ int conectarCPUPadreAPlanificador(){
 	if (codigo == CFG_INICIAL_PLN)
 	{
 		configCPUPadre.tipoPlanificacion = deserializarEntero(socketPlanificadorPadre);//0: FIFO, 1: RR
-		if(configCPUPadre.tipoPlanificacion==1){
+		if(configCPUPadre.tipoPlanificacion){
 			configCPUPadre.quantum = deserializarEntero(socketPlanificadorPadre);
 		}else{
 			configCPUPadre.quantum = 0;
@@ -23,6 +23,7 @@ int conectarCPUPadreAPlanificador(){
 
 		printf("Tipo de planificacion: %d , quantum: %d \n",configCPUPadre.tipoPlanificacion,configCPUPadre.quantum);
 	}
+	sem_post(&semConexionPadre);
 	pthread_t hiloPorcentaje;
 	int32_t hilo;
 	hilo = pthread_create(&hiloPorcentaje, NULL,(void*) enviarPorcentaje, NULL);

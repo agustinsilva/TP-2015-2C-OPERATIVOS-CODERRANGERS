@@ -100,6 +100,7 @@ t_list* listaCPU;
 pthread_mutex_t mutexListaCpus;
 sem_t semCpuPadre;
 sem_t semPorcentaje;
+sem_t semConexionPadre;
 
 //Firma de funciones
 int conf_es_valida(t_config*);
