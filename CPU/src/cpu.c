@@ -10,8 +10,8 @@ int main(void) {
 	sem_init(&semCpuPadre, 0, 0);
 	sem_init(&semConexionPadre, 0, 0);
 	sem_init(&semPorcentaje, 0, 1);
-	hiloPadre();
 	iniciarCronTasks();
+	hiloPadre();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
 	puts("Fin de cpu \n");
 	limpiarRecursos();

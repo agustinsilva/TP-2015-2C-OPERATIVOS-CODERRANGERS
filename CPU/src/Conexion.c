@@ -334,14 +334,14 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 
 int32_t deserializarEntero(sock_t* socket)
 {
-	int32_t enteroSinSigno;
-	int32_t status = recv(socket->fd, &enteroSinSigno, sizeof(int32_t), 0);
+	int32_t entero;
+	int32_t status = recv(socket->fd, &entero, sizeof(int32_t), 0);
 	if(status == -1 || status == 0)
 	{
-		enteroSinSigno = ANORMAL;
-		printf("Se recibio mal el entero.");
+		entero = ANORMAL;
+		printf("Se recibio mal el entero.\n");
 	}
-	return enteroSinSigno;
+	return entero;
 }
 
 char* recibirMensaje(sock_t* socket){
@@ -504,8 +504,8 @@ void enviarPorcentaje(){
 		int32_t tamListaTemp = strlen(listaTemporal);
 		int32_t tamanio = sizeof(int32_t) + sizeof(int32_t) + tamListaTemp;
 		char* message = malloc(tamanio);
-		memcpy(message, &cabecera, sizeof(cabecera));
-		offset = sizeof(cabecera);
+		memcpy(message, &cabecera, sizeof(int32_t));
+		offset = sizeof(int32_t);
 		memcpy(message + offset, &tamListaTemp, sizeof(int32_t));
 		offset = offset + sizeof(int32_t);
 		memcpy(message + offset, listaTemporal, tamListaTemp);

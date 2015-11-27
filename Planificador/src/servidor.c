@@ -49,6 +49,7 @@ void* iniciarServidor() {
 					switch (cabecera) {
 					case AGREGARPADRECPU:
 						creoPadre(socketProcesado);
+						FD_CLR(socketProcesado, &set_maestro);
 						break;
 					case AGREGARHILOCPU:
 						creoCpu(socketProcesado);
