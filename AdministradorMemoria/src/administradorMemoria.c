@@ -69,9 +69,9 @@ void limpiarRecursos()
 {
 	if(configuracion->tlb_habilitada){
 		limpiarTLB();
-		limpiarEstadisticas();
 	}
 
+	limpiarEstadisticas();
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)) {
 		limpiarOrdenMarcos();
 	}
@@ -85,8 +85,17 @@ void setUp()
 {
 	if(configuracion->tlb_habilitada) {
 		TLB = list_create();
-		estadisticas = list_create();
 	}
+
+	estadisticas = list_create();
+	t_Stats* tlb_stats = malloc(sizeof(t_Stats));
+	tlb_stats->idProc = stat_TLB;
+	tlb_stats->hit=0;
+	tlb_stats->miss=0;
+	tlb_stats->pagsTotales=0;
+	tlb_stats->pageFaults=0;
+
+	list_add(estadisticas,tlb_stats);
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
 		ordenMarcos = list_create();
