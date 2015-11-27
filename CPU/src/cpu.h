@@ -56,8 +56,8 @@ typedef struct {
 }t_pcb;
 
 typedef struct {
-	uint32_t tipoPlanificacion;
-	uint32_t quantum;
+	int32_t tipoPlanificacion;
+	int32_t quantum;
 }t_cpu_padre;
 
 
@@ -99,6 +99,7 @@ t_cpu_padre configCPUPadre;
 t_list* listaCPU;
 pthread_mutex_t mutexListaCpus;
 sem_t semCpuPadre;
+sem_t semPorcentaje;
 
 //Firma de funciones
 int conf_es_valida(t_config*);
@@ -119,7 +120,7 @@ char* procesarInstruccion(char**, t_pcb*, char*,sock_t*,sock_t*,int32_t, char*);
 void crearHilosCPU (void);
 int hiloPadre();
 void enviarCodigoOperacion(sock_t* , int32_t);
-uint32_t deserializarEnteroSinSigno(sock_t*);
+int32_t deserializarEntero(sock_t*);
 char* recibirMensaje(sock_t*);
 int conectarCPUPadreAPlanificador();
 char* serializarPCB(t_pcb*, uint32_t, char*);

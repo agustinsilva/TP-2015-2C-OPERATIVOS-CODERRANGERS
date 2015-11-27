@@ -11,12 +11,12 @@ int conectarCPUPadreAPlanificador(){
 	enviarCodigoOperacion(socketPlanificadorPadre,CONEXION_CPU_PADRE);
 	//Recibe respuesta
 	printf("Esperando respuesta de Planificador\n");
-	uint32_t codigo = deserializarEnteroSinSigno(socketPlanificadorPadre);
+	int32_t codigo = deserializarEntero(socketPlanificadorPadre);
 	if (codigo == CFG_INICIAL_PLN)
 	{
-		configCPUPadre.tipoPlanificacion = deserializarEnteroSinSigno(socketPlanificadorPadre);//0: FIFO, 1: RR
+		configCPUPadre.tipoPlanificacion = deserializarEntero(socketPlanificadorPadre);//0: FIFO, 1: RR
 		if(configCPUPadre.tipoPlanificacion==1){
-			configCPUPadre.quantum = deserializarEnteroSinSigno(socketPlanificadorPadre);
+			configCPUPadre.quantum = deserializarEntero(socketPlanificadorPadre);
 		}else{
 			configCPUPadre.quantum = 0;
 		}
@@ -28,11 +28,12 @@ int conectarCPUPadreAPlanificador(){
 	hilo = pthread_create(&hiloPorcentaje, NULL,(void*) enviarPorcentaje, NULL);
 	if (hilo) {
 		fprintf(stderr, "Error - pthread_create() return code: %d\n", hilo);
-		printf("Se cerrara el programa");
+		printf("Se cerrara el programa\n");
 		return EXIT_FAILURE;
 	}
 	while(1){
 //		uint32_t codigoRecibido = deserializarEnteroSinSigno(socketPlanificadorPadre);
+		sem_wait(&semPorcentaje);
 		int32_t codigoRecibido;
 		int32_t status = recv(socketPlanificadorPadre->fd, &codigoRecibido, sizeof(int32_t), 0);
 
@@ -242,7 +243,7 @@ char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina, sock_t* socketM
 	}
 
 	//Recibe respuesta :(exitoso=1, longitud y contenido)
-	uint32_t lecturaExitosa = deserializarEnteroSinSigno(socketMemoria);
+	int32_t lecturaExitosa = deserializarEntero(socketMemoria);
 	if(lecturaExitosa==PEDIDO_ERROR){
 		return PEDIDO_ERROR;
 		log_error(CPULog,"El pedido de lectura no fue exitoso.","ERROR");
@@ -324,17 +325,17 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 
 void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 	int32_t enviado = send(socket->fd, &entero, sizeof(int32_t), 0);
-	if(enviado!=sizeof(int32_t)){
+	if(enviado<=0){
 		printf("No se envió correctamente la información entera\n");
 		log_error(CPULog,"Error al enviar codigo de operacion.","ERROR");
 		return;
 	}
 }
 
-uint32_t deserializarEnteroSinSigno(sock_t* socket)
+int32_t deserializarEntero(sock_t* socket)
 {
-	uint32_t enteroSinSigno;
-	int32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	int32_t enteroSinSigno;
+	int32_t status = recv(socket->fd, &enteroSinSigno, sizeof(int32_t), 0);
 	if(status == -1 || status == 0)
 	{
 		enteroSinSigno = ANORMAL;
@@ -482,15 +483,15 @@ char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuc
 void enviarPorcentaje(){
 	while (1) {
 		sem_wait(&semCpuPadre);
-//		pthread_mutex_lock(&mutexListaCpus);
-		uint32_t cabecera = PORCENTAJES_CPU;
-		uint32_t offset = 0;
+	pthread_mutex_lock(&mutexListaCpus);
+		int32_t cabecera = PORCENTAJES_CPU;
+		int32_t offset = 0;
 		int32_t status;
 
 		//char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
 
 //VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
-		char* listaTemporal = malloc(1000);
+		/*char* listaTemporal = malloc(1000);
 		t_CPUsConectados* temporal;
 		uint32_t indice= 0;
 
@@ -502,42 +503,38 @@ void enviarPorcentaje(){
 			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
 			strcat(listaTemporal, "\n");
 			indice++;
+		}*/
+
+		char* listaTemporal= string_new();
+		t_CPUsConectados* temporal;
+		int32_t indice= 0;
+
+		while (indice < configuracion->cantidadHilos) {
+			temporal = list_get(listaCPU, indice);
+			string_append(&listaTemporal, "CPU:");
+			string_append(&listaTemporal, string_itoa(temporal->numeroCPU));
+			string_append(&listaTemporal, ", Porcentaje de uso:");
+			string_append(&listaTemporal, string_itoa(temporal->porcentajeProcesado));
+			string_append(&listaTemporal, "\n");
+			indice++;
 		}
 
-
-//		char* listaTemporal= string_new();
-//		t_CPUsConectados* temporal;
-//		uint32_t indice= 0;
-//
-//		while (indice < configuracion->cantidadHilos) {
-//			temporal = list_get(listaCPU, indice);
-//			string_append(&listaTemporal, "CPU:");
-//			string_append(&listaTemporal, string_itoa(temporal->idCPU));
-//			string_append(&listaTemporal, ", Porcentaje de uso:");
-//			string_append(&listaTemporal, string_itoa(temporal->porcentajeProcesado));
-//			string_append(&listaTemporal, "\n");
-//			indice++;
-//		}
-
 		int32_t tamListaTemp = strlen(listaTemporal);
-		int32_t tamanio = sizeof(cabecera) + sizeof(int32_t) + tamListaTemp;
+		int32_t tamanio = sizeof(int32_t) + sizeof(int32_t) + tamListaTemp;
 		char* message = malloc(tamanio);
 		memcpy(message, &cabecera, sizeof(cabecera));
 		offset = sizeof(cabecera);
-//		printf("tam lista %d", tamListaTemp);
-//		printf("%s",listaTemporal);
 		memcpy(message + offset, &tamListaTemp, sizeof(int32_t));
 		offset = offset + sizeof(int32_t);
 		memcpy(message + offset, listaTemporal, tamListaTemp);
-		offset = offset + sizeof(tamListaTemp);
+		offset = offset + tamListaTemp;
 		status = send(socketPlanificadorPadre->fd,message,tamanio,0);
-//		printf("socket plani padre %d \n",socketPlanificadorPadre->fd);
-//		printf("status: %d \n", status);
-		if (status < 0) {
+		if (status <= 0) {
 			printf("Error al enviar el porcentaje a Planificador");
 		}
 		free(message);
 		free(listaTemporal);
-//		pthread_mutex_unlock(&mutexListaCpus);
+		pthread_mutex_unlock(&mutexListaCpus);
+		sem_post(&semPorcentaje);
 	}
 }

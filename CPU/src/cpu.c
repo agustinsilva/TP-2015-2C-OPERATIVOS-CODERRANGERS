@@ -8,6 +8,7 @@ int main(void) {
 	tituloInicial();
 	pthread_mutex_init(&mutexListaCpus, NULL);
 	sem_init(&semCpuPadre, 0, 0);
+	sem_init(&semPorcentaje, 0, 1);
 	hiloPadre();
 	iniciarCronTasks();
 	crearHilosCPU(); //CREA LA CANTIDAD DE CPUs INDICADOS POR EL ARCHIVO DE CONFIGURACION
