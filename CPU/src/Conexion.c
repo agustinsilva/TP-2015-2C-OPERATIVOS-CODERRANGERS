@@ -33,7 +33,6 @@ int conectarCPUPadreAPlanificador(){
 		return EXIT_FAILURE;
 	}
 	while(1){
-//		uint32_t codigoRecibido = deserializarEnteroSinSigno(socketPlanificadorPadre);
 		sem_wait(&semPorcentaje);
 		int32_t codigoRecibido;
 		int32_t status = recv(socketPlanificadorPadre->fd, &codigoRecibido, sizeof(int32_t), 0);
@@ -41,7 +40,7 @@ int conectarCPUPadreAPlanificador(){
 		if(status == -1 || status == 0)
 		{
 			codigoRecibido = ANORMAL;
-			printf("error, recibi mal el cod");
+			printf("Error al recibir código de Pedido de Porcentaje de CPU's\n");
 			break;
 		}
 		if (codigoRecibido == PORCENTAJES_CPU)
@@ -484,31 +483,13 @@ char* informarEntradaSalida(t_pcb* pcb, int32_t tiempo, char* resultadosDeEjecuc
 void enviarPorcentaje(){
 	while (1) {
 		sem_wait(&semCpuPadre);
-	pthread_mutex_lock(&mutexListaCpus);
+		pthread_mutex_lock(&mutexListaCpus);
 		int32_t cabecera = PORCENTAJES_CPU;
 		int32_t offset = 0;
 		int32_t status;
-
-		//char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
-
-//VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
-		/*char* listaTemporal = malloc(1000);
+		char* listaTemporal = string_new();
 		t_CPUsConectados* temporal;
-		uint32_t indice= 0;
-
-		while (indice < configuracion->cantidadHilos) {
-			temporal = list_get(listaCPU, indice);
-			strcat(listaTemporal, "CPU:");
-			strcat(listaTemporal, string_itoa(temporal->numeroCPU));
-			strcat(listaTemporal, ", Porcentaje de uso:");
-			strcat(listaTemporal, string_itoa(temporal->porcentajeProcesado));
-			strcat(listaTemporal, "\n");
-			indice++;
-		}*/
-
-		char* listaTemporal= string_new();
-		t_CPUsConectados* temporal;
-		int32_t indice= 0;
+		int32_t indice = 0;
 
 		while (indice < configuracion->cantidadHilos) {
 			temporal = list_get(listaCPU, indice);

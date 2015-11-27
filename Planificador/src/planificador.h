@@ -24,7 +24,7 @@
 typedef struct {
 	uint32_t puertoEscucha;
 	char* algoritmoPlanificacion;
-	uint32_t quantum;
+	int32_t quantum;
 }t_configuracion;
 
 typedef struct {
@@ -106,7 +106,7 @@ void finalizarProceso(uint32_t*);
 t_pcb* recibirPcb(uint32_t );
 void iniciarHiloBloqueados();
 void creoPadre(int32_t);
-char* serializarTipoPlanificaion(uint32_t*);
+char* serializarTipoPlanificacion(int32_t*);
 void logearResultadoCpu(int32_t);
 void logearFinalizacionCpu(int32_t);
 char* serializarPCB(t_pcb*, uint32_t*);

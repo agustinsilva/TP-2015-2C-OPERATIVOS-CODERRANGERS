@@ -426,27 +426,28 @@ void creoPadre(int32_t socketProcesado){
 		socketCpuPadre = socketProcesado;
 	printf("socketCpuPadre %d\n", socketCpuPadre);
 	//Envio el tipo de planificacion al cpu
-	uint32_t *totalPaquete = malloc(sizeof(uint32_t));
-	char* tipoPlanificacion = serializarTipoPlanificaion(totalPaquete);
-	char* mensaje = malloc(*totalPaquete);
-	memcpy(mensaje, tipoPlanificacion, *totalPaquete); //NO Entiendo para que es esta linea(marian)
-	int sendByte = send(socketCpuPadre, mensaje, *totalPaquete, 0);
+	int32_t totalPaquete;
+	char* tipoPlanificacion = serializarTipoPlanificacion(&totalPaquete);
+	//char* mensaje = malloc(totalPaquete);
+	//memcpy(mensaje, tipoPlanificacion, totalPaquete); //NO Entiendo para que es esta linea(marian)
+	int sendByte = send(socketCpuPadre, tipoPlanificacion, totalPaquete, 0);
 	if (sendByte < 0) {
 		log_error(planificadorLog, "Error al enviar el tipo de planificacion", "ERROR");
 	}
+	free(tipoPlanificacion);
 }
-char* serializarTipoPlanificaion(uint32_t *totalPaquete) {
-	uint32_t codigo, tipoPlanificacion, quantum;
+char* serializarTipoPlanificacion(int32_t *totalPaquete) {
+	int32_t codigo, tipoPlanificacion, quantum;
 	codigo = 26;
 	quantum = configuracion->quantum;
 	string_trim(&(configuracion->algoritmoPlanificacion));
 
 	if(!strcmp(configuracion->algoritmoPlanificacion,"FIFO")){ //si es fifo
-		*totalPaquete = 2 * sizeof(uint32_t);
+		*totalPaquete = 2 * sizeof(int32_t);
 		tipoPlanificacion = 0; //Tipo FIFO
 	}
 	else {//si es RoundRobin
-		*totalPaquete = 3 * sizeof(uint32_t);
+		*totalPaquete = 3 * sizeof(int32_t);
 		tipoPlanificacion = 1; //Tipo Round Robin
 	}
 
