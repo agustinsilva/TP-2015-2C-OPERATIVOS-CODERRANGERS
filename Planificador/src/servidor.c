@@ -69,7 +69,7 @@ void* iniciarServidor() {
 						break;
 					}
 					if (cabecera <= 0) {
-						log_info(planificadorLog, "Se desconecto cpu con socketId: %d", socketProcesado);
+						log_info(planificadorLog, "Se desconecto cpu, socketId: %d", socketProcesado);
 						close(socketProcesado);
 						FD_CLR(socketProcesado, &set_maestro);
 					}
@@ -218,7 +218,7 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	free(mensajeALogear);
 	//recibo pcb
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
-
+	pcbBloqueado->tiempoEspera = time(NULL); //Seteo tiempo espera para calcular cuando sea atendido la espera
 	//Metodos para buscar
 	int _pcbById(t_pcb *proc_ejecutado) {
 		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
@@ -271,6 +271,15 @@ void iniciarHiloBloqueados() {
 		while (list_size(proc_bloqueados) > 0) {
 			//Agarro el primero de cada la cola
 			t_pcb *pcbBloqueado = list_get(proc_bloqueados, 0);
+			//Sumo tiempo de espera en cola de bloqueados
+			int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
+				if (pcbBloqueado->idProceso == proc_metrica->idProceso)
+					return 1;
+				else
+					return 0;
+			}
+			t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
+			pcb_metrica->tiempoEspera += calculoDiferenciaTiempoActual(pcbBloqueado->tiempoEspera);
 			//hago sleep
 			usleep(pcbBloqueado->retardo * 1000000);
 			//Reviso el Flag de finalizacion
@@ -418,16 +427,16 @@ void creoCpu(int32_t socketCpu){
 	list_add(cpu_listos, hilosConectados);
 	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
-	log_info(planificadorLog,"Se conecto Cpu con socketId: %d", socketCpu);
+	log_info(planificadorLog,"Se conecto Cpu, socketId: %d", socketCpu);
 }
 
 //Agrego socket Padre y le informo el tipo de planificacion
 void creoPadre(int32_t socketProcesado){
 	if (socketCpuPadre == 0)
 		socketCpuPadre = socketProcesado;
-	printf("socketCpuPadre %d\n", socketCpuPadre);
 	//Envio el tipo de planificacion al cpu
 	enviarTipoPlanificacion();
+	log_info(planificadorLog,"Se conecto Cpu Padre, socketId: %d", socketCpuPadre);
 }
 void enviarTipoPlanificacion() {
 	int32_t codigo, tipoPlanificacion;

@@ -17,7 +17,7 @@ void* mostrarConsola() {
 			printf("1 - Correr PATH\n");
 			printf("2 - Finalizar PID \n");
 			printf("3 - Estado de procesos \n");
-			printf("4 - Cpu\n");
+			printf("4 - Ver Estado Cpu\n");
 			printf("5 - Ver Metricas procesos\n");
 			printf("666 - Kill 'em All\n");
 			printf("-------------------- \n");
@@ -53,7 +53,7 @@ void* mostrarConsola() {
 				printf("Las metricas de los procesos finalizados:\n");
 				mostrarMetricas();
 				break;
-			case 6:
+			case 666:
 				//Metodo que ejecuta el Correr
 				printf("Todos los procesos deben morir\n");
 				killThemAll();
@@ -210,6 +210,7 @@ void encolar(char* path) {
 		t_proc_metricas *pcb_metrica = malloc(sizeof(t_proc_metricas));
 		pcb_metrica->idProceso = contadorProceso;
 		pcb_metrica->tiempoEjecucion = 0;
+		pcb_metrica->tiempoRespuesta = 0;
 		pcb_metrica->tiempoEspera = 0;
 		list_add(proc_metricas,pcb_metrica);
 		sem_post(&sincroproc);
