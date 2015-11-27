@@ -23,6 +23,15 @@ int main(void)
 	{
 		log_info(MemoriaLog,"Se conectó al Swap\n");
 		sock_t* servidor = create_server_socket(configuracion->puerto_escucha);
+
+		if(servidor==NULL){
+			log_error(MemoriaLog, "No se está pudiendo crear el socket servidor \n");
+			limpiarRecursos();
+			log_info(MemoriaLog, "Finaliza Administrador de Memoria\n");
+			log_destroy(MemoriaLog);
+			return EXIT_FAILURE;
+		}
+
 		listen_connections(servidor);
 		int32_t accept=1;
 		while(accept)

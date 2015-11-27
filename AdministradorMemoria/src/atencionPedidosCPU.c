@@ -298,7 +298,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 
 			switch(marco){
 				case -1: {
-					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 					enviarEnteros(cpuSocket, pedido_error);
 					break;
 				}
@@ -363,7 +363,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 		pthread_mutex_unlock(&sem_TP);
 
 		switch(marco){
-			case -1: log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+			case -1: log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 			enviarEnteros(cpuSocket, pedido_error);
 			break;
 			case swap_in:{
@@ -454,7 +454,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 			switch(marco){
 				case -1: {
-					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 					enviarEnteros(cpuSocket, pedido_error);
 					break;
 				}
@@ -528,7 +528,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 		switch(marco){
 			case -1: {
-				log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+				log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 				enviarEnteros(cpuSocket, pedido_error); break;
 			}
 			case swap_in:{
