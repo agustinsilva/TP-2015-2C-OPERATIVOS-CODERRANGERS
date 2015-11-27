@@ -43,6 +43,7 @@
 #define pedido_exitoso 1
 #define pedido_error 0
 #define pedido_no_memoria -1
+#define pedido_aborto 99
 #define swap_in -2
 #define marcos_insuficientes -1
 #define marcos_no_libres -2
