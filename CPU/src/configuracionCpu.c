@@ -33,7 +33,7 @@ int cargarArchivoDeConfiguracion()
 	configuracion->ipMemoria = config_get_string_value(fd_configuracion, "IP_MEMORIA");
 	configuracion->puertoMemoria = config_get_int_value(fd_configuracion, "PUERTO_MEMORIA");
 	configuracion->cantidadHilos = config_get_int_value(fd_configuracion, "CANTIDAD_HILOS");
-	configuracion->retardo = config_get_int_value(fd_configuracion, "RETARDO");
+	configuracion->retardo = config_get_double_value(fd_configuracion, "RETARDO");
 	
 	log_info(CPULog,
 		"\nIP_PLANIFICADOR: %s\n"
@@ -41,7 +41,7 @@ int cargarArchivoDeConfiguracion()
 		"IP_MEMORIA: %s\n"
 		"PUERTO_MEMORIA: %d\n"
 		"CANTIDAD_HILOS: %d\n"
-		"RETARDO: %d\n",
+		"RETARDO: %f\n",
 		configuracion->ipPlanificador, configuracion->puertoPlanificador , configuracion->ipMemoria ,
 		configuracion->puertoMemoria, configuracion->cantidadHilos , configuracion->retardo);
 	return 0;

@@ -143,9 +143,6 @@ char* informarAdminMemoriaComandoIniciar(char* cantidadPaginas, int32_t pid,sock
 	if(!status)	{
 		printf("No se envió el mensaje iniciar al Administrador de Memoria.\n");
 	}
-	else {
-		printf("Se envió el mensaje iniciar correctamente al Admin de Memoria.\n");
-	}
 
 	//Recibe respuesta
 	status = recv(socketMemoria->fd,&entero,sizeof(int32_t),0);
@@ -191,9 +188,6 @@ char* informarAdminMemoriaComandoFinalizar(int32_t pid,char* resultadosDeEjecuci
 	if(!status)	{
 		printf("No se envió el mensaje finalizar al Administrador de Memoria.\n");
 	}
-	else {
-		printf("Se envió el mensaje finalizar correctamente al Admin de Memoria.\n");
-	}
 
 	//Recibe respuesta
 	status = recv(socketMemoria->fd,&entero,sizeof(int32_t),0);
@@ -238,43 +232,40 @@ char* informarAdminMemoriaComandoLeer(int32_t pid, char* pagina, sock_t* socketM
 	if(!status)	{
 		printf("No se envió el mensaje leer Administrador de Memoria.\n");
 	}
-	else {
-		printf("Se envió el mensaje leer correctamente al Admin de Memoria.\n");
-	}
 
-	//Recibe respuesta :(exitoso=1, longitud y contenido)
-	int32_t lecturaExitosa = deserializarEntero(socketMemoria);
-	if(lecturaExitosa==PEDIDO_ERROR){
-		return PEDIDO_ERROR;
-		log_error(CPULog,"El pedido de lectura no fue exitoso.","ERROR");
-	}
-
-	char* contenido = recibirMensaje(socketMemoria);
-	log_info(CPULog,"[PID:%s] Lectura realizada. Contenido: %s",string_itoa(pid),contenido);
-
-	//mProc 10 - Pagina 2 leida: contenido
-	cabecera = RESPUESTA_PLANIFICADOR_LOGEAR;
 	char* mensaje = string_new();
-	offset = 0;
-	string_append(&mensaje, "mProc ");
-	string_append(&mensaje, string_itoa(pid));
-	string_append(&mensaje, " - Pagina ");
-	string_append(&mensaje, pagina);
-	string_append(&mensaje," leida: ");
-	string_append(&mensaje,contenido);
-	string_append(&mensaje,"\n");
+	int32_t lectura = deserializarEntero(socketMemoria);
+	if(lectura==PEDIDO_ERROR){
+		log_error(CPULog,"El pedido de lectura no fue exitoso.\n");
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje," - El pedido de lectura no fue exitoso.\n");
+	}else if(lectura==ABORTAR){
+		log_warning(CPULog,"[PID:%s] El pedido de lectura abortó el proceso.\n",string_itoa(pid));
+		string_append(&mensaje, "ABORTAR");
+	}else{
+		char* contenido = recibirMensaje(socketMemoria);
+		log_info(CPULog,"[PID:%s] Lectura realizada. Contenido: %s",string_itoa(pid),contenido);
+
+		//mProc 10 - Pagina 2 leida: contenido
+		cabecera = RESPUESTA_PLANIFICADOR_LOGEAR;
+		offset = 0;
+		string_append(&mensaje, "mProc ");
+		string_append(&mensaje, string_itoa(pid));
+		string_append(&mensaje, " - Pagina ");
+		string_append(&mensaje, pagina);
+		string_append(&mensaje," leida: ");
+		string_append(&mensaje,contenido);
+		string_append(&mensaje,"\n");
+	}
 	return mensaje;
 }
 
 char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char* texto,sock_t* socketMemoria){
 	int32_t status;
 	int32_t entero;
-	//Envia aviso al Adm de Memoria: comando Escribir.
-
 	int32_t cabecera = ESCRIBIR;
-
-	char*textoAEscribir=texto;
-	uint32_t longitudMensaje= strlen (textoAEscribir);
+	uint32_t longitudMensaje= strlen(texto);
 
 	uint32_t offset=0;
 	uint32_t tamanio = sizeof(cabecera) + sizeof(pid) + sizeof(numeroPagina) + longitudMensaje +  sizeof(uint32_t);
@@ -287,38 +278,36 @@ char* informarAdminMemoriaComandoEscribir(int32_t pid, int32_t numeroPagina,char
 	offset = offset + sizeof(numeroPagina);
 	memcpy(message + offset,&longitudMensaje, sizeof(uint32_t));
 	offset = offset + sizeof(uint32_t);
-	memcpy(message + offset, textoAEscribir, longitudMensaje);
+	memcpy(message + offset, texto, longitudMensaje);
 	offset = offset + sizeof(longitudMensaje);
 	status = send(socketMemoria->fd,message,tamanio,0);
-
 	free(message);
 
 	if(!status)	{
 		printf("No se envió el mensaje escribir al Administrador de Memoria.\n");
 	}
-	else {
-		printf("Se envió el mensaje escribir correctamente al Admin de Memoria.\n");
-	}
 
 	//Recibe respuesta
-	status = recv(socketMemoria->fd,&entero,sizeof(int32_t),0);
+	entero = deserializarEntero(socketMemoria);
 	cabecera = RESPUESTA_PLANIFICADOR_LOGEAR;
 	char* mensaje = string_new();
-	offset = 0;
 	if(entero==PEDIDO_ERROR){//mProc X - Fallo Escritura
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Fallo Escritura.\n");
-		log_error(CPULog,"Error en la escritura del proceso.","ERROR");
-	} else {
+		log_error(CPULog,"El pedido de escritura no fue exitoso.\n");
+	}else if(entero==ABORTAR){
+		log_warning(CPULog,"[PID:%s] El pedido de escritura abortó el proceso.\n",string_itoa(pid));
+		string_append(&mensaje, "ABORTAR");
+	}else{
 		string_append(&mensaje, "mProc ");
 		string_append(&mensaje, string_itoa(pid));
 		string_append(&mensaje, " - Página ");
 		string_append(&mensaje, string_itoa(numeroPagina));
 		string_append(&mensaje, " escrita: ");
-		string_append(&mensaje, textoAEscribir);
+		string_append(&mensaje, texto);
 		string_append(&mensaje, "\n");
-		log_info(CPULog,"Se escribió %s en el Proceso %s, Página %d",textoAEscribir, string_itoa(pid), numeroPagina);
+		log_info(CPULog,"[PID:%s] [Página:%d] Se escribió %s\n", string_itoa(pid), numeroPagina, texto);
 	}
 	return mensaje;
 }

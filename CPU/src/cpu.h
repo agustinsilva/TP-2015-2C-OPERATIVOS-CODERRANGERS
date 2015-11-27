@@ -39,7 +39,7 @@ typedef struct {
 	char* ipMemoria;
 	uint32_t puertoMemoria;
 	uint32_t cantidadHilos;
-	uint32_t retardo;
+	double retardo;
 }t_configuracion;
 
 typedef struct {
@@ -71,6 +71,7 @@ typedef struct {
 #define FINALIZAR 2
 #define LEER 3
 #define ESCRIBIR 4
+#define ABORTAR 99
 /*con planificador*/
 #define FIN_QUANTUM 4
 #define ENTRADA_SALIDA 5
@@ -117,7 +118,7 @@ char* informarAdminMemoriaComandoFinalizar(int32_t, char*, sock_t*, sock_t*);
 char* informarAdminMemoriaComandoLeer(int32_t , char* ,sock_t*);
 char* informarEntradaSalida(t_pcb* , int32_t , char* , sock_t*);
 int informarPlanificadorLiberacionCPU(t_pcb*, char*, sock_t*);
-char* procesarInstruccion(char**, t_pcb*, char*,sock_t*,sock_t*,int32_t, char*);
+char* procesarInstruccion(char**, t_pcb*, char*,sock_t*,sock_t*,int32_t, char*,FILE*);
 void crearHilosCPU (void);
 int hiloPadre();
 void enviarCodigoOperacion(sock_t* , int32_t);
@@ -137,4 +138,5 @@ char* depurarInstruccion(char*);
 int fromSecondstoMicroSeconds(uint32_t);
 void enviarPorcentaje();
 FILE* abrirArchivo(t_pcb*);
+void abortarPCB(t_pcb*, FILE*);
 #endif /* CPU_H_ */
