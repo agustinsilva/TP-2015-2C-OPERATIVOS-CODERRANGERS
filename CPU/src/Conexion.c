@@ -490,7 +490,7 @@ void enviarPorcentaje(){
 		//char listaTemporal[TAMINSTRUCCION]="HARDCODEADO";
 
 //VA TOMANDO DE LISTA CPU LOS DIFERENTES CPU (id, % y tiempo), CONCATENA Y ARMA EL STRING.//AUMENTA EL INDICE Y LO COMPLETA CON LOS DATOS RESTANTES DE CPU.
-		char* listaTemporal= (char*) malloc(1000);
+		char* listaTemporal = malloc(1000);
 		t_CPUsConectados* temporal;
 		uint32_t indice= 0;
 
@@ -537,6 +537,7 @@ void enviarPorcentaje(){
 			printf("Error al enviar el porcentaje a Planificador");
 		}
 		free(message);
+		free(listaTemporal);
 //		pthread_mutex_unlock(&mutexListaCpus);
 	}
 }
