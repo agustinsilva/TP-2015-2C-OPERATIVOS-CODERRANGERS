@@ -107,18 +107,16 @@ int32_t swapIN(sock_t* swapSocket, sock_t* cpuSocket, int32_t idmProc, int32_t n
 		} else {  /* no tengo para desalojar */
 
 			if(marcoAReemplazar==marcos_insuficientes || marcoAReemplazar==marcos_no_libres){
-				t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
-				pedido->encontro=pedido_error;
-				enviarEnteros(cpuSocket,pedido->encontro);
-				free(pedido);
+//				t_LecturaSwap* pedido = malloc(sizeof(t_LecturaSwap));
+//				pedido->encontro=pedido_error;
+				enviarEnteros(cpuSocket,pedido_aborto);
+//				free(pedido);
 
 				if(marcoAReemplazar==marcos_insuficientes){
-					log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos para reemplazo local\n");
-					abortarProceso(idmProc);
+					log_info(MemoriaLog, " - *Proceso Abortado - Se finalizará PID %d* - Razón: Falta de marcos para reemplazo local\n", idmProc);
 					return marcos_insuficientes;
 				}else{
-					log_info(MemoriaLog, " - *Proceso Abortado* - Razón: Falta de marcos disponibles\n");
-					abortarProceso(idmProc);
+					log_info(MemoriaLog, " - *Proceso Abortado - Se finalizará PID %d* - Razón: Falta de marcos disponibles\n", idmProc);
 					return marcos_no_libres;
 				}
 			}
@@ -161,30 +159,20 @@ int32_t doSwap(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar, int
 bool escribirEnSwap(t_TP* entradaARemoverDeMP, sock_t* swapSocket){
 
 	t_MP* mp = buscarEnMemoriaPrincipal(entradaARemoverDeMP->frame);
-	printf("Busca\n");
-	printf("marco a limpiar %d\n", entradaARemoverDeMP->frame);
-	printf("contenido a sacar %s\n", mp->contenido);
 
-	printf("socket swap: %d\n", clientSocketSwap->fd);
 	enviarEnteros(clientSocketSwap, codigo_escribir);
-	printf("se eenvio el codigo \n");
 	enviarEnteros(clientSocketSwap, entradaARemoverDeMP->idProc);
-	printf("se eenvio el id de proc \n");
 	enviarEnteros(clientSocketSwap, entradaARemoverDeMP->nroPag);
-	printf("se eenvio el nro de pag \n");
 	enviarStrings(clientSocketSwap, mp->contenido, configuracion->tamanio_marco);
-	printf("se eenvio el contenido \n");
 
-	printf("Envia todo \n");
 	int32_t confirmacionSwap;
 	int32_t recibidoConfirmacion = recv(clientSocketSwap->fd, &confirmacionSwap, sizeof(int32_t), 0);
-	printf("recibido confirmacion %d\n", recibidoConfirmacion);
+
 	if(recibidoConfirmacion<=0){
 		log_error(MemoriaLog,RED "No se recibió la confirmación de Swap\n"RESET);
 		return false;
 	}
 
-	printf("recibe confirmacion \n");
 	if(confirmacionSwap==pedido_error){
 		log_error(MemoriaLog,RED "No se pudo guardar la página en la partición\n"RESET);
 		return false;
@@ -426,7 +414,7 @@ void manejarMemoriaPrincipalLectura(t_MP* entradaMP, sock_t* cpuSocket){
 		strcpy(pedido->contenido, entradaMP->contenido);
 
 		enviarContenidoPagina(cpuSocket,pedido);
-		//TODO
+
 		free(pedido->contenido);
 		free(pedido);
 	}
@@ -480,11 +468,12 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 
 		ordenarPorCargaMarcos(proc->marcos);
 
-		void printearr(t_Orden* ord){
-			printf("marco: %d, orden %d, puntero %d \n", ord->marco, ord->orden, ord->puntero);
-		}
-		list_iterate(proc->marcos, (void*) printearr);
-
+//		void printearr(t_Orden* ord){
+//			printf("marco: %d, orden %d, puntero %d \n", ord->marco, ord->orden, ord->puntero);
+//		}
+//		list_iterate(proc->marcos, (void*) printearr);
+		printf("deberia printear\n");
+//TODO
 		int32_t marcoVictima = marco_victima;
 
 		bool buscar00(t_Orden* entrada){
@@ -505,6 +494,7 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 			}
 		}
 		t_Orden* victima = list_find(proc->marcos, (void*) buscar00);
+		printf("primera busqueda\n");
 
 		if(victima!=NULL && marcoVictima!=marco_victima){
 			adelantarPuntero(proc->marcos);
@@ -627,14 +617,6 @@ int32_t reemplazarLRU(t_list* tablaDelProceso){
 	}
 }
 
-void abortarProceso(int32_t idmProc){
-	vaciarMarcosOcupados(idmProc);
-	eliminarTablaDePaginas(idmProc);
-
-	if(configuracion->tlb_habilitada){
-		eliminarDeTLBPorPID(idmProc);
-	}
-}
 
 int32_t calcularCantPaginasEnMP(int32_t idmProc){
 	bool porPIDyPresente(t_TP* entrada){
