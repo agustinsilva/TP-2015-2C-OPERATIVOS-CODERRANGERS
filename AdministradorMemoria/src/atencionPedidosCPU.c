@@ -335,13 +335,13 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 					retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 
 					pthread_mutex_lock(&sem_MP);
+					pthread_mutex_lock(&sem_TLB);
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					manejarMemoriaPrincipalLectura(miss, cpuSocket);
-					pthread_mutex_unlock(&sem_MP);
 
-					pthread_mutex_lock(&sem_TLB);
 					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
 					pthread_mutex_unlock(&sem_TLB);
+					pthread_mutex_unlock(&sem_MP);
 					break;
 				}
 			}
@@ -501,13 +501,13 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					retardo(configuracion->retardo_memoria, memoria_principal, idmProc, nroPagina, marco);
 
 					pthread_mutex_lock(&sem_MP);
+					pthread_mutex_lock(&sem_TLB);
 					t_MP* miss = buscarEnMemoriaPrincipal(marco);
 					manejarMemoriaPrincipalEscritura(miss, cpuSocket, contenido, idmProc, nroPagina);
-					pthread_mutex_unlock(&sem_MP);
 
-					pthread_mutex_lock(&sem_TLB);
 					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
 					pthread_mutex_unlock(&sem_TLB);
+					pthread_mutex_unlock(&sem_MP);
 					break;
 				}
 			}

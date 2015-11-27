@@ -161,18 +161,30 @@ int32_t doSwap(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar, int
 bool escribirEnSwap(t_TP* entradaARemoverDeMP, sock_t* swapSocket){
 
 	t_MP* mp = buscarEnMemoriaPrincipal(entradaARemoverDeMP->frame);
+	printf("Busca\n");
+	printf("marco a limpiar %d\n", entradaARemoverDeMP->frame);
+	printf("contenido a sacar %s\n", mp->contenido);
 
-	enviarEnteros(swapSocket, codigo_escribir);
-	enviarEnteros(swapSocket, entradaARemoverDeMP->idProc);
-	enviarEnteros(swapSocket, entradaARemoverDeMP->nroPag);
-	enviarStrings(swapSocket, mp->contenido, configuracion->tamanio_marco);
+	printf("socket swap: %d\n", clientSocketSwap->fd);
+	enviarEnteros(clientSocketSwap, codigo_escribir);
+	printf("se eenvio el codigo \n");
+	enviarEnteros(clientSocketSwap, entradaARemoverDeMP->idProc);
+	printf("se eenvio el id de proc \n");
+	enviarEnteros(clientSocketSwap, entradaARemoverDeMP->nroPag);
+	printf("se eenvio el nro de pag \n");
+	enviarStrings(clientSocketSwap, mp->contenido, configuracion->tamanio_marco);
+	printf("se eenvio el contenido \n");
 
+	printf("Envia todo \n");
 	int32_t confirmacionSwap;
-	int32_t recibidoConfirmacion = recv(swapSocket->fd, &confirmacionSwap, sizeof(int32_t), 0);
+	int32_t recibidoConfirmacion = recv(clientSocketSwap->fd, &confirmacionSwap, sizeof(int32_t), 0);
+	printf("recibido confirmacion %d\n", recibidoConfirmacion);
 	if(recibidoConfirmacion<=0){
 		log_error(MemoriaLog,RED "No se recibió la confirmación de Swap\n"RESET);
 		return false;
 	}
+
+	printf("recibe confirmacion \n");
 	if(confirmacionSwap==pedido_error){
 		log_error(MemoriaLog,RED "No se pudo guardar la página en la partición\n"RESET);
 		return false;
@@ -215,6 +227,7 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	}
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
+		printf("llega a querer actualizar el clock \n");
 		bool porPID(t_Marcos* entrada){
 			return entrada->idProc == idmProc;
 		}
@@ -413,6 +426,7 @@ void manejarMemoriaPrincipalLectura(t_MP* entradaMP, sock_t* cpuSocket){
 		strcpy(pedido->contenido, entradaMP->contenido);
 
 		enviarContenidoPagina(cpuSocket,pedido);
+		//TODO
 		free(pedido->contenido);
 		free(pedido);
 	}
