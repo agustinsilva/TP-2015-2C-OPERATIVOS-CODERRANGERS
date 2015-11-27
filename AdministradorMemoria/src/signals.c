@@ -138,9 +138,9 @@ void printearTabla(){
 	void printear(t_MP* entrada){
 		if(index==0){
 			printf(" Marco \t| Contenido\t\n");
-			printf("---------------------------------------\n");
+			printf("---------------------------\n");
 		}
-		printf("   %d\t| %s\t|\n", entrada->marco, entrada->contenido);
+		printf("   %d\t| %s\n", entrada->marco, entrada->contenido);
 		index++;
 	}
 	list_iterate(memoriaPrincipal, (void*)printear);
@@ -177,15 +177,10 @@ void statsPerMinute(){
 }
 
 void finalizacion(){
-	printf("\nSe intentó dar de baja el programa\n");
-	printf("¿Seguro quiere darlo de baja? [S/N]");
-	char respuesta;
-	scanf("%c" ,&respuesta);
-	if(respuesta=='s' || respuesta=='S'){
-		clean_socket(clientSocketSwap);
-		limpiarCPUs();
-		exit(1);
-	}
+	printf("\nSe dio de baja el programa deliberadamente\n");
+	clean_socket(clientSocketSwap);
+	limpiarCPUs();
+	exit(1);
 }
 
 

@@ -298,7 +298,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 
 			switch(marco){
 				case -1: {
-					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 					enviarEnteros(cpuSocket, pedido_error);
 					break;
 				}
@@ -319,6 +319,12 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 						pthread_mutex_lock(&sem_TLB);
 						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
+
+						if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
+							if(entradaTLB!=NULL){
+								log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+							}
+						}
 						pthread_mutex_unlock(&sem_TLB);
 					}
 					void impr(t_MP* entrada){
@@ -340,15 +346,16 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 					manejarMemoriaPrincipalLectura(miss, cpuSocket);
 
 					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
+
+					if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
+						if(entradaTLB!=NULL){
+							log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+						}
+					}
+
 					pthread_mutex_unlock(&sem_TLB);
 					pthread_mutex_unlock(&sem_MP);
 					break;
-				}
-			}
-
-			if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
-				if(entradaTLB!=NULL){
-					log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
 				}
 			}
 
@@ -363,7 +370,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 		pthread_mutex_unlock(&sem_TP);
 
 		switch(marco){
-			case -1: log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+			case -1: log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 			enviarEnteros(cpuSocket, pedido_error);
 			break;
 			case swap_in:{
@@ -454,7 +461,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 			switch(marco){
 				case -1: {
-					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+					log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 					enviarEnteros(cpuSocket, pedido_error);
 					break;
 				}
@@ -476,6 +483,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 						pthread_mutex_lock(&sem_TLB);
 						eliminarDeTLBPorMarco(marco);
 						entradaTLB = actualizarTLB(idmProc,nroPagina,marco);
+
+						if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
+							log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+						}
 						pthread_mutex_unlock(&sem_TLB);
 
 						retardo(configuracion->retardo_memoria, memoria_principal, idmProc, entradaTLB->pagina, entradaTLB->marco);
@@ -506,15 +517,15 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					manejarMemoriaPrincipalEscritura(miss, cpuSocket, contenido, idmProc, nroPagina);
 
 					entradaTLB = actualizarTLB(idmProc, nroPagina, marco);
+
+					if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
+						log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
+					}
 					pthread_mutex_unlock(&sem_TLB);
 					pthread_mutex_unlock(&sem_MP);
 					break;
 				}
 			}
-			if(marco!=marcos_no_libres && marco!=marcos_insuficientes && marco!=-1){
-				log_info(MemoriaLog,"-" RED " *TLB MISS*" RESET" Nro. Página: %d, Nro. Marco: %d \n", entradaTLB->pagina, marco);
-			}
-
 		}
 
 	}
@@ -528,7 +539,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 
 		switch(marco){
 			case -1: {
-				log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso\n" RESET);
+				log_error(MemoriaLog, RED "Se intentó acceder a una página que no corresponde al proceso, o a un proceso ya finalizado\n" RESET);
 				enviarEnteros(cpuSocket, pedido_error); break;
 			}
 			case swap_in:{
