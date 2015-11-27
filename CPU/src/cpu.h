@@ -83,6 +83,9 @@ typedef struct {
 #define PORCENTAJE 100
 #define TIEMPO_MINUTO 60
 
+//Codigo de configuracion inicial enviada por el planificador.
+#define CFG_INICIAL_PLN 26
+
 //CONSOLA
 #define BOLD "\e[1m"
 #define RESET_NON_BOLD "\e[21m"

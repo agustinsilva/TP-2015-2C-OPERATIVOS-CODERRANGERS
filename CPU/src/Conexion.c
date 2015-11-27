@@ -3,7 +3,7 @@
 int conectarCPUPadreAPlanificador(){
 	socketPlanificadorPadre = create_client_socket(configuracion->ipPlanificador,configuracion->puertoPlanificador);
 	int32_t validationConnection = connect_to_server(socketPlanificadorPadre);
-	if (validationConnection != 0 )
+	if (validationConnection != 0)
 	{
 		printf("No se ha podido conectar correctamente al Planificador.\n");
 		return EXIT_FAILURE;
@@ -12,7 +12,7 @@ int conectarCPUPadreAPlanificador(){
 	//Recibe respuesta
 	printf("Esperando respuesta de Planificador\n");
 	uint32_t codigo = deserializarEnteroSinSigno(socketPlanificadorPadre);
-	if (codigo == 26 )
+	if (codigo == CFG_INICIAL_PLN)
 	{
 		configCPUPadre.tipoPlanificacion = deserializarEnteroSinSigno(socketPlanificadorPadre);//0: FIFO, 1: RR
 		if(configCPUPadre.tipoPlanificacion==1){
@@ -334,11 +334,11 @@ void enviarCodigoOperacion(sock_t* socket, int32_t entero){
 uint32_t deserializarEnteroSinSigno(sock_t* socket)
 {
 	uint32_t enteroSinSigno;
-	uint32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
+	int32_t status = recv(socket->fd, &enteroSinSigno, sizeof(uint32_t), 0);
 	if(status == -1 || status == 0)
 	{
 		enteroSinSigno = ANORMAL;
-		printf("error, recibi mal el cod");
+		printf("Se recibio mal el entero.");
 	}
 	return enteroSinSigno;
 }

@@ -334,7 +334,7 @@ void procesarLectura(t_mensaje* detalle,sock_t* socketMemoria)
 			printf("No se envió la cantidad de bytes a enviar luego\n");
 		}
 	}
-	sleep(configuracion->retardo_swap);
+	usleep(deSegundoAMicroSegundos(configuracion->retardo_swap));
 }
 
 void compactacionBruta()
@@ -370,7 +370,7 @@ void compactacionBruta()
 	nodoLibre->paginas = totalLibres;
 	list_destroy_and_destroy_elements(espacioLibre,(void*)limpiarNodosLibres);
 	list_add(espacioLibre,nodoLibre);
-	sleep(configuracion->retardo_compactacion);
+	usleep(deSegundoAMicroSegundos(configuracion->retardo_compactacion));
 	log_info(SwapLog,"Finalizacion de compactacion en memoria de swap");
 }
 
@@ -397,7 +397,7 @@ void procesarEscritura(t_mensaje* detalle,sock_t* socketMemoria)
 		printf("No se envió la cantidad de bytes a enviar luego\n");
 	}
 	free(detalle->contenidoPagina);
-	sleep(configuracion->retardo_swap);
+	usleep(deSegundoAMicroSegundos(configuracion->retardo_swap));
 }
 
 bool compararUbicaciones(void* nodoAnterior,void* nodo)
@@ -452,4 +452,9 @@ bool compararNodoEstadistica(void* nodo)
 {
 	t_estadistica* nodoEstadistica = nodo;
 	return nodoEstadistica->PID == pidCondicion;
+}
+
+int deSegundoAMicroSegundos(uint32_t seconds)
+{
+	return seconds * 1000000;
 }

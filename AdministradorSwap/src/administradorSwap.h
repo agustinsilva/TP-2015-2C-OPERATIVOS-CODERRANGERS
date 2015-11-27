@@ -134,4 +134,5 @@ void* buscarEstadisticaPorPID(int32_t);
 t_estadistica* sacarNodoEstadistica(int32_t);
 void mostrarEstadisticas(int32_t);
 void tituloInicial();
+int deSegundoAMicroSegundos(uint32_t);
 #endif /* ADMINSWAP_H_ */
