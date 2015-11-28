@@ -1,10 +1,25 @@
-all: planificador
+CC=gcc
+DEPS=src/planificador.h
+RM=rm -f
+CFLAGS= -lSockets -lcommons -pthread
+#Compilar planificador
+all: Debug/Planificador
 
-planificador: planificador.o 
-	gcc -L../commons  -Wall -g -o job job.o  -lcommons
+Debug/%.o:src/%.c $(DEPS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-planificador.o: planificador.c
-	gcc -g -c  planificador.c planificador.h
+Debug/Planificador: DebugDir  Debug/configuracionPlanificador.o Debug/consola.o Debug/planificador.o Debug/servidor.o
+	$(CC)  -g -fPIC -Wall -pthread  -fmessage-length=0 -o  Debug/"Planificador" Debug/configuracionPlanificador.o Debug/consola.o Debug/planificador.o Debug/servidor.o -lSockets -lcommons
+
+DebugDir:
+	mkdir -p Debug
 
 clean:
-	rm planificador.o  planificador planificador.h.gch
+	$(RM) Debug/configuracionPlanificador.o
+	$(RM) Debug/consola.o	
+	$(RM) Debug/planificador.o
+	$(RM) Debug/servidor.o
+	$(RM) Debug/Planificador.h.gch
+	$(RM) Debug/Planificador
+
+.PHONY: clean all
