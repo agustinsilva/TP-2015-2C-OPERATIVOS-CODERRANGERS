@@ -112,10 +112,10 @@ void consumirRecursos() {
 		while (list_size(cpu_listos) > 0 && list_size(proc_listos) > 0) {
 			sem_wait(&mutex);
 			//Agarro el primero de cada la cola
-			t_list *cpu_ocupado = list_take_and_remove(cpu_listos, 1);
-			t_list *proc_ejecutado = list_take_and_remove(proc_listos, 1);
-			t_pcb *pcb = list_get(proc_ejecutado, 0);
-			t_hilosConectados *cpu = list_get(cpu_ocupado, 0);
+			t_pcb *pcb = list_get(proc_listos, 0);
+			t_hilosConectados *cpu = list_get(cpu_listos, 0);
+			list_remove(proc_listos, 0);
+			list_remove(cpu_listos, 0);
 			pcb->estadoProceso = 1; //PCB en estado de ejecucion
 			cpu->estadoHilo = 1; // CPU en estado de ejecucion
 			cpu->idProceso = pcb->idProceso; //Asigno al cpu su IdProceso que va a ejec.
@@ -126,8 +126,7 @@ void consumirRecursos() {
 			memcpy(mensaje, pcbSerializado, *totalPaquete);
 			int sendByte = send(cpu->socketHilo, mensaje, *totalPaquete, 0);
 			if (sendByte < 0) {
-				log_error(planificadorLog, "Error al enviar el proc/pcb al cpu",
-						"ERROR");
+				log_error(planificadorLog, "Error al enviar el proc/pcb al cpu","ERROR");
 			}
 			//Asigno Tiempo de Ejecucion
 			pcb->tiempoEjecucion = time(NULL);
@@ -224,11 +223,8 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
 	//pcbBloqueado->tiempoEspera = time(NULL); //Seteo tiempo espera para calcular cuando sea atendido la espera
 	//Metodos para buscar
-	int _pcbById(t_pcb *proc_ejecutado) {
-		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
-			return 1;
-		else
-			return 0;
+	bool _pcbById(t_pcb *proc_ejecutado) {
+		return (pcbBloqueado->idProceso == proc_ejecutado->idProceso);
 	}
 	int _cpuById(t_hilosConectados *cpu_ocupado) {
 		if (pcbBloqueado->idProceso == cpu_ocupado->idProceso)
@@ -243,20 +239,20 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbBloqueado->flagFin = 1;
 	//Sacar pcb de ejecutados - Meterlo en bloqueados
-	list_remove_and_destroy_by_condition(proc_ejecutados, (void*) _pcbById, (void*) pcbDestroy);
+	list_remove_by_condition(proc_ejecutados, (void*) _pcbById);
 	pcbBloqueado->estadoProceso = 3; //Asigno estado Bloqueado
 	pcbBloqueado->retardo = retardo;
 	//Mantengo el tiempo de creacion
 	pcbBloqueado->tiempoCreacion = pcbFinListo->tiempoCreacion;
+	//Asigno tiempo de espera
+	pcbBloqueado->tiempoEspera = time(NULL);
+
 	//Calculo el tiempo de ejecucion
-//	int _pcbMetricaByCpuPidDos(t_proc_metricas *proc_metrica){
-//		if (pcbFinListo->idProceso == proc_metrica->idProceso)
-//			return 1;
-//		else
-//			return 0;
-//	}
-//	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPidDos);
-//	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
+	bool _pcbMetricaByCpuPidDos(t_proc_metricas *proc_metrica){
+		return (pcbFinListo->idProceso == proc_metrica->idProceso);
+	}
+	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPidDos);
+	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
 
 
 	list_add(proc_bloqueados, pcbBloqueado);
