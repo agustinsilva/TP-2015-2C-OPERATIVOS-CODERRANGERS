@@ -129,8 +129,6 @@ void consumirRecursos() {
 				log_error(planificadorLog, "Error al enviar el proc/pcb al cpu",
 						"ERROR");
 			}
-			//mantengo el tiempo de creacion
-			printf("tiempo creacion: %d", pcb->tiempoCreacion);
 			//Asigno Tiempo de Ejecucion
 			pcb->tiempoEjecucion = time(NULL);
 			//Acumulo Tiempo Ejecucion
@@ -181,6 +179,9 @@ void replanificar(int32_t socketCpu) {
 	}
 	//Reviso el Flag de finalizacion
 	t_pcb *pcbFinListo = list_find(proc_ejecutados, (void*) _pcbById);
+	if (pcbFinListo->flagFin != 1)
+		pcbReplanificar->flagFin = 0;
+
 	if(pcbFinListo != NULL && pcbFinListo->flagFin == 1)
 		pcbReplanificar->contadorPuntero = pcbReplanificar->cantidadInstrucciones;
 	//mantengo el tiempo de creacion
@@ -205,6 +206,7 @@ void replanificar(int32_t socketCpu) {
 	cpuOcupado->idProceso = -1; //Sin id proceso asignado
 	list_add(cpu_listos, cpuOcupado);
 	list_add(proc_listos, pcbReplanificar);
+
 	sem_post(&mutex);
 	sem_post(&sincrocpu); // Aumento semaforo cpu
 	sem_post(&sincroproc); // Aumento semaforo Proc
@@ -220,7 +222,7 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	free(mensajeALogear);
 	//recibo pcb
 	t_pcb* pcbBloqueado = recibirPcb(socketCpu);
-	pcbBloqueado->tiempoEspera = time(NULL); //Seteo tiempo espera para calcular cuando sea atendido la espera
+	//pcbBloqueado->tiempoEspera = time(NULL); //Seteo tiempo espera para calcular cuando sea atendido la espera
 	//Metodos para buscar
 	int _pcbById(t_pcb *proc_ejecutado) {
 		if (pcbBloqueado->idProceso == proc_ejecutado->idProceso)
@@ -247,15 +249,14 @@ void bloquearProceso(int32_t socketCpu, uint32_t *hiloBloqueado){
 	//Mantengo el tiempo de creacion
 	pcbBloqueado->tiempoCreacion = pcbFinListo->tiempoCreacion;
 	//Calculo el tiempo de ejecucion
-	int _pcbMetricaByCpuPid(t_proc_metricas *proc_metrica){
-		if (pcbFinListo->idProceso == proc_metrica->idProceso)
-			return 1;
-		else
-			return 0;
-	}
-	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
-	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
-
+//	int _pcbMetricaByCpuPidDos(t_proc_metricas *proc_metrica){
+//		if (pcbFinListo->idProceso == proc_metrica->idProceso)
+//			return 1;
+//		else
+//			return 0;
+//	}
+//	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPidDos);
+//	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcbFinListo->tiempoEjecucion);
 
 
 	list_add(proc_bloqueados, pcbBloqueado);
