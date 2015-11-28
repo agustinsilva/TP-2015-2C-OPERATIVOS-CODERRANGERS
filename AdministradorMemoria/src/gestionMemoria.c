@@ -402,6 +402,7 @@ void manejarMemoriaPrincipalEscritura(t_MP* entradaMP, sock_t* cpuSocket, char* 
 	}
 	else {
 		log_error(MemoriaLog, "Entrada de memoria Nula\n");
+		enviarEnteros(cpuSocket,pedido_error);
 	}
 }
 
@@ -417,6 +418,9 @@ void manejarMemoriaPrincipalLectura(t_MP* entradaMP, sock_t* cpuSocket){
 
 		free(pedido->contenido);
 		free(pedido);
+	}else {
+		log_error(MemoriaLog, "Entrada de memoria Nula\n");
+		enviarEnteros(cpuSocket,pedido_error);
 	}
 }
 
