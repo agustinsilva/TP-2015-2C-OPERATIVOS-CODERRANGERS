@@ -40,9 +40,7 @@ int cargarArchivoDeConfiguracion()
 	configuracion->tamanio_marco = config_get_int_value(fd_configuracion, "TAMANIO_MARCO");
 	configuracion->entradas_tlb = config_get_int_value(fd_configuracion, "ENTRADAS_TLB");
 	configuracion->tlb_habilitada = config_get_int_value(fd_configuracion, "TLB_HABILITADA");
-	printf("antes del double");
 	configuracion->retardo_memoria = config_get_double_value(fd_configuracion, "RETARDO_MEMORIA");
-	printf("despues del double");
 	configuracion->algoritmo_reemplazo = string_new();
 	configuracion->algoritmo_reemplazo = config_get_string_value(fd_configuracion, "ALGORITMO_REEMPLAZO");
 

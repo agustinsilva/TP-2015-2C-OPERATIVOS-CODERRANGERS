@@ -25,27 +25,25 @@ void sacarSiEstaEnClock(t_TP* e){
 			if(orden!=NULL){
 				list_remove_and_destroy_by_condition(marcoMP->marcos,(void*)pagina,(void*)ordenDestroyer);
 				if(orden==NULL){
-					printf("se borro bien\n");
+	//				printf("se borro bien\n");
 				}
 			} else{
-				printf("No se encontro el orden para sacar... \n");
+//				printf("No se encontro el orden para sacar... \n");
 			}
 
 		}else{
-			printf("No hay marcos para sacar...\n");
+//			printf("No hay marcos para sacar...\n");
 		}
 	}
 }
 
 void escribirPagsModificadas(sock_t* socketSwap){
 
-	printf("Entra\n");
 	bool modificadasEnMP(t_TP* entrada){
 		return entrada->present==true && entrada->modified==true;
 	}
 	t_list* pagsAEscribir = list_filter(tablasDePaginas, (void*) modificadasEnMP);
 
-	printf("Filtra\n");
 	void escribirModificadas(t_TP* entrada){
 		if(escribirEnSwap(entrada, socketSwap)){
 			log_info(MemoriaLog, "Se escribió la página %d del proceso %d antes de limpiar la memoria.\n", entrada->nroPag, entrada->idProc);

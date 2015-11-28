@@ -215,7 +215,7 @@ t_MP* actualizarMP(int32_t idmProc, int32_t nroPagina, int32_t marcoAReemplazar,
 	}
 
 	if(string_equals_ignore_case(configuracion->algoritmo_reemplazo, CLOCKM)){
-		printf("llega a querer actualizar el clock \n");
+//		printf("llega a querer actualizar el clock \n");
 		bool porPID(t_Marcos* entrada){
 			return entrada->idProc == idmProc;
 		}
@@ -476,7 +476,7 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 //			printf("marco: %d, orden %d, puntero %d \n", ord->marco, ord->orden, ord->puntero);
 //		}
 //		list_iterate(proc->marcos, (void*) printearr);
-		printf("deberia printear\n");
+
 //TODO
 		int32_t marcoVictima = marco_victima;
 
@@ -498,7 +498,7 @@ int32_t reemplazarCLOCKM(t_list* tablaDelProceso, int32_t idmProc){
 			}
 		}
 		t_Orden* victima = list_find(proc->marcos, (void*) buscar00);
-		printf("primera busqueda\n");
+
 
 		if(victima!=NULL && marcoVictima!=marco_victima){
 			adelantarPuntero(proc->marcos);

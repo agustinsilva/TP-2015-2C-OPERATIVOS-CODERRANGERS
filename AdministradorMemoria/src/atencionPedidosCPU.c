@@ -34,7 +34,7 @@ int32_t enviarMensaje(sock_t* socket, char* mensaje)
 
 int32_t hiloEjecucionCPU(t_HiloCPU* paramsCPU)
 {
-	printf("Esperando pedidos de Cpu \n");
+	log_info(MemoriaLog,"Esperando pedidos de Cpu \n");
 
 	int32_t codigoOperacion;
 	codigoOperacion = recibirCodigoOperacion(paramsCPU->cpuSocket);
@@ -224,11 +224,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 	int32_t nroPagina;
 	int32_t recibidoProc = recv(cpuSocket->fd, &idmProc, sizeof(int32_t), 0);
 	int32_t recibidoPag = recv(cpuSocket->fd, &nroPagina, sizeof(int32_t), 0);
-/*	if(recibidoProc!=sizeof(int32_t) || recibidoPag!=sizeof(int32_t))
-*   {
-		printf("No se recibió correctamente la información de la CPU\n");
-		return;
-	}*/
+
 	if(recibidoProc <= 0 || recibidoPag <= 0) {
 		log_error(MemoriaLog,RED"No se recibió correctamente la información de la CPU\n"RESET);
 		return;
@@ -306,10 +302,11 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 						}
 						pthread_mutex_unlock(&sem_TLB);
 					}
-					void impr(t_MP* entrada){
-							printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
-						}
-					list_iterate(memoriaPrincipal, (void*)impr);
+
+//					void impr(t_MP* entrada){
+//							printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
+//						}
+//					list_iterate(memoriaPrincipal, (void*)impr);
 
 					pthread_mutex_lock(&sem_stats);
 					(estadisticaProc->pageFaults)++;
@@ -380,7 +377,7 @@ void lectura(sock_t* cpuSocket, sock_t* swapSocket){
 	avanzarTiempo(idmProc, nroPagina);
 	pthread_mutex_unlock(&sem_TP);
 
-	printf("Fin operación leer %d\n", nroPagina);
+	log_info(MemoriaLog,"Fin operación leer %d\n", nroPagina);
 }
 
 void escritura(sock_t* cpuSocket, sock_t* swapSocket){
@@ -487,10 +484,10 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 					    pthread_mutex_unlock(&sem_MP);
 					}
 
-					void impr(t_MP* entrada){
-						printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
-					}
-					list_iterate(memoriaPrincipal, (void*)impr);
+//					void impr(t_MP* entrada){
+//						printf("marco %d - ocupado: %d - contenido %s\n", entrada->marco, entrada->ocupado, entrada->contenido);
+//					}
+//					list_iterate(memoriaPrincipal, (void*)impr);
 
 					pthread_mutex_lock(&sem_stats);
 					(estadisticaProc->pageFaults)++;
@@ -572,7 +569,7 @@ void escritura(sock_t* cpuSocket, sock_t* swapSocket){
 	pthread_mutex_unlock(&sem_TP);
 
 	free(contenido);
-	printf("Fin operación escribir %d\n", nroPagina);
+	log_info(MemoriaLog,"Fin operación escribir %d\n", nroPagina);
 }
 
 void enviarEnteros(sock_t* socket, int32_t entero)
