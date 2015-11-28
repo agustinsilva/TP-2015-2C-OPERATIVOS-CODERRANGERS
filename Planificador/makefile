@@ -1,7 +1,7 @@
 CC=gcc
 DEPS=src/planificador.h
 RM=rm -f
-CFLAGS= -lSockets -lcommons -pthread
+CFLAGS= -lSockets -lcommons -pthread -g3
 #Compilar planificador
 all: Debug/Planificador
 

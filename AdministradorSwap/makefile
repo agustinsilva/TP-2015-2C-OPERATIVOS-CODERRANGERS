@@ -1,7 +1,7 @@
 CC=gcc
 DEPS=src/administradorSwap.h
 RM=rm -f
-CFLAGS= -lSockets -lcommons
+CFLAGS= -lSockets -lcommons -g3
 #Compilar administrador de swap
 all: Debug/AdministradorSwap
 

@@ -1,7 +1,7 @@
 CC=gcc
 DEPS=src/cpu.h
 RM=rm -f
-CFLAGS= -lSockets -lcommons -pthread
+CFLAGS= -lSockets -lcommons -pthread -g3
 #Compilar cpu
 all: Debug/Cpu
 

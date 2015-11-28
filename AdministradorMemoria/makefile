@@ -1,7 +1,7 @@
 CC=gcc
 DEPS=src/administradorMemoria.h
 RM=rm -f
-CFLAGS= -lSockets -lcommons -pthread
+CFLAGS= -lSockets -lcommons -pthread -g3
 #Compilar administrador de Memoria
 all: Debug/AdministradorMemoria
 
