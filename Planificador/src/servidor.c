@@ -343,12 +343,12 @@ void logearFinalizacionCpu(int32_t socketCpu) {
 	t_proc_metricas *pcb_metrica = list_find(proc_metricas, (void*) _pcbMetricaByCpuPid);
 	pcb_metrica->tiempoEjecucion += calculoDiferenciaTiempoActual(pcb->tiempoEjecucion);
 	double tiempoEjecucion = pcb_metrica->tiempoEjecucion;
-	log_info(planificadorLog, "Tiempo de ejecucion proceso: %d es %.f segundos", pcb->idProceso, tiempoEjecucion);
+	log_info(planificadorLog, "Metrica -- proceso: %d -- Tiempo de ejecucion %.f segundos", pcb->idProceso, tiempoEjecucion);
 	//Logeo Metricas de PCB
 	double tiempoRespuesta = calculoDiferenciaTiempoActual(pcb->tiempoCreacion);
-	log_info(planificadorLog, "Tiempo de respuesta proceso: %d es %.f segundos", pcb->idProceso, tiempoRespuesta);
+	log_info(planificadorLog, "Metrica -- proceso: %d -- Tiempo de respuesta %.f segundos", pcb->idProceso, tiempoRespuesta);
 	pcb_metrica->tiempoRespuesta = tiempoRespuesta;
-
+	log_info(planificadorLog, "Metrica -- proceso: %d -- Tiempo de espera %.f segundos", pcb->idProceso, pcb_metrica->tiempoEspera);
 	list_remove_by_condition(cpu_ocupados, (void*) _cpuBySocket);
 	list_add(cpu_listos, cpu);
 	sem_post(&mutex);
